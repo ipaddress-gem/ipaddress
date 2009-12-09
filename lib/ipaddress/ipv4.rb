@@ -1,5 +1,6 @@
 require 'ipaddress/ipbase'
 require 'ipaddress/prefix'
+require 'pp'
 
 # 
 # =Name
@@ -191,11 +192,11 @@ module IPAddress; class IPv4 < IPBase
   # Returns the broadcast address for the given IP.
   #
   #   ip = IPAddress("172.16.10.64/24")
-  #   ip.broadcast
-  #     #=> "172.16.10.255"
+  #   ip.broadcast.to_s
+  #     #=> "172.16.10.255/24"
   #
   def broadcast
-    [broadcast_u32].pack("N").unpack("CCCC").join(".")
+    self.class.parse_u32(broadcast_u32, @prefix)
   end
   
   #
@@ -214,61 +215,60 @@ module IPAddress; class IPv4 < IPBase
   end
 
   #
-  # Returns the network number for the given IP.
+  # Returns a new IPv4 object with the network number 
+  # for the given IP.
   #
   #   ip = IPAddress("172.16.10.64/24")
-  #   ip.network
-  #     #=> "172.16.10.0"
+  #   ip.network.to_s
+  #     #=> "172.16.10.0/24"
   #
   def network
-    [network_u32].pack("N").unpack("CCCC").join(".")
+    self.class.parse_u32(network_u32, @prefix)
   end
 
   #
-  # This method takes the object network number (if it's
-  # not already a network) and returns a string with the
+  # Returns a new IPv4 object with the
   # first host IP address in the range.
   # 
   # Example: given the 192.168.100.0/24 network, the first
   # host IP address is 192.168.100.1.
   #
   #   ip = IPAddress("192.168.100.0/24")
-  #   ip.first
-  #     #=> "192.168.100.1"
+  #   ip.first.to_s
+  #     #=> "192.168.100.1/24"
   #
   # The object IP doesn't need to be a network: the method
   # automatically gets the network number from it
   #
   #   ip = IPAddress("192.168.100.50/24")
-  #   ip.first
-  #     #=> "192.168.100.1"
+  #   ip.first.to_s
+  #     #=> "192.168.100.1/24"
   #
   def first
-    [network_u32 + 1].pack("N").unpack("CCCC").join(".")
+    self.class.parse_u32(network_u32+1, @prefix)
   end
 
   #
-  # Like its sibling method IPv4#last, this method takes 
-  # the object network number (if it's
-  # not already a network) and returns a string with the
+  # Like its sibling method IPv4#first, this method 
+  # returns a new IPv4 object with the 
   # last host IP address in the range.
   # 
   # Example: given the 192.168.100.0/24 network, the last
   # host IP address is 192.168.100.1.
   #
   #   ip = IPAddress("192.168.100.0/24")
-  #   ip.last
-  #     #=> "192.168.100.254"
+  #   ip.last.to_s
+  #     #=> "192.168.100.254/24"
   #
   # The object IP doesn't need to be a network: the method
   # automatically gets the network number from it
   #
   #   ip = IPAddress("192.168.100.50/24")
-  #   ip.last
-  #     #=> "192.168.100.254"
+  #   ip.last.to_s
+  #     #=> "192.168.100.254/24"
   #
   def last
-    [broadcast_u32 - 1].pack("N").unpack("CCCC").join(".")
+    self.class.parse_u32(broadcast_u32-1, @prefix)
   end
 
   #
@@ -296,9 +296,12 @@ module IPAddress; class IPv4 < IPBase
   # Iterates over all the IP addresses for the given
   # network (or IP address).
   #
+  # The object yielded is a new IPv4 object created
+  # from the iteration.
+  #
   #   ip = IPaddress("10.0.0.1/29")
   #   ip.each do |i|
-  #     p i
+  #     p i.address
   #   end
   #     #=> "10.0.0.0"
   #     #=> "10.0.0.1"
@@ -311,7 +314,7 @@ module IPAddress; class IPv4 < IPBase
   #
   def each
     (network_u32..broadcast_u32).each do |i|
-      yield [i].pack("N").unpack("CCCC").join(".")
+      yield self.class.parse_u32(i, @prefix)
     end
   end
 
@@ -364,18 +367,19 @@ module IPAddress; class IPv4 < IPBase
     to_a.size
   end
 
+  #
   # Returns an array with the IP addresses of
   # all the hosts in the network.
-  #
   # 
   #   ip = IPaddress("10.0.0.1/29")
-  #   ip.hosts
+  #   ip.hosts.map {|i| i.address}
   #     #=> ["10.0.0.1",
   #     #=>  "10.0.0.2",
   #     #=>  "10.0.0.3",
   #     #=>  "10.0.0.4",
   #     #=>  "10.0.0.5",
   #     #=>  "10.0.0.6"]
+  #
   def hosts
     to_a[1..-2]
   end
@@ -414,11 +418,11 @@ module IPAddress; class IPv4 < IPBase
   #   ip.include? addr
   #     #=> true
   #
-  #   ip.include? "172.16.0.48"
+  #   ip.include? IPAddress("172.16.0.48/16")
   #     #=> false
   #
   def include?(oth)
-    to_a.include?(oth.to_s.split("/").first)
+    to_a.map{|i| i.address}.include?(oth.address) and @prefix <= oth.prefix
   end
 
   #
@@ -476,9 +480,33 @@ module IPAddress; class IPv4 < IPBase
   end
   alias_method :/, :subnet
 
+  
+  #
+  # Returns a new IPv4 object from the supernetting
+  # of the instance network.
+  #
+  # Supernetting is similar to subnetting, except
+  # that you getting as a result a network with a
+  # smaller prefix (bigger host space). For example,
+  # given the network
+  #
+  #   ip = IPAddress("172.16.10.0/24")
+  #
+  # you can supernet it with a new /23 prefix
+  #
+  #   ip.supernet(23).to_s
+  #     #=> "172.16.10.0/23"
+  #
+  # However if you supernet it with a /22 prefix, the
+  # network address will change:
+  #
+  #   ip.supernet(22).to_s
+  #     #=> "172.16.8.0/22"
+  # 
   def supernet(new_prefix)
-    raise ArgumentError, "Can't supernet a /1 network" if prefix < 1
-    IPv4.new(@address+"/#{new_prefix}").network
+    raise ArgumentError, "Can't supernet a /1 network" if new_prefix < 1
+    raise ArgumentError, "New prefix must be smaller than existing prefix" if new_prefix >= @prefix.to_i
+    self.class.new(@address+"/#{new_prefix}").network
   end
   
   
@@ -511,8 +539,35 @@ module IPAddress; class IPv4 < IPBase
   end
   
   def self.summarize(*args)
-    arr = args.sort
+    puts "CHIAMATA A SUMMARIZE!!:"
+    pp args
+    
+    # return argument if only one network given
+    return args.flatten if args.size == 1
+    
+    enum=args.sort.each_cons(2)
+    unless enum.all? {|x,y| x.broadcast_u32 == y.network_u32-1}
+      raise ArgumentError, "Networks must be contiguous to be summarized"
+    end
+    
+    result = []
+    enum.each do |x,y|
+      snet = x.supernet(x.prefix.to_i-1)
+      if snet.include? y
+        result << snet
+      else
+        result << x.network unless result.any?{|i| i.include? x}
+      end
+    end
 
+    lst = enum.to_a.flatten.last.network
+    result << lst unless result.any?{|i| i.include? lst}
+    
+    if result.size == args.size
+      return result
+    else
+      return self.summarize(*result)
+    end
   end
   
   
@@ -544,7 +599,7 @@ module IPAddress; class IPv4 < IPBase
 
   
   def subnet_even(subnets)
-    new_prefix = prefix.to_i + Math::log2(subnets).ceil
+    new_prefix = @prefix.to_i + Math::log2(subnets).ceil
     networks = Array.new
     (0..subnets-1).each do |i|
       mul = i * (2**(32-new_prefix))
