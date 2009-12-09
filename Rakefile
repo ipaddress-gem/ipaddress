@@ -1,5 +1,8 @@
 require 'rubygems'
 require 'rake'
+require 'rake/clean'
+require 'rcov/rcovtask'
+
 
 begin
   require 'jeweler'
@@ -53,4 +56,10 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+desc "Open an irb session preloaded with this library"
+task :console do
+  sh "irb -rubygems -I lib -r ipaddress.rb"
+end
+
 
