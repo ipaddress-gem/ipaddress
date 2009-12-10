@@ -422,7 +422,8 @@ module IPAddress; class IPv4 < IPBase
   #     #=> false
   #
   def include?(oth)
-    to_a.map{|i| i.address}.include?(oth.address) and @prefix <= oth.prefix
+    @prefix <= oth.prefix and network_u32 == self.class.new(oth.address+"/#@prefix").network_u32
+    #    to_a.map{|i| i.address}.include?(oth.address) and @prefix <= oth.prefix
   end
 
   #
@@ -537,21 +538,17 @@ module IPAddress; class IPv4 < IPBase
       IPAddress::IPv4.new(ip)
     end
   end
+
+  #
   
   def self.summarize(*args)
-    puts "CHIAMATA A SUMMARIZE!!:"
-    pp args
-    
-    # return argument if only one network given
-    return args.flatten if args.size == 1
+    # one network? no need to summarize
+    return args.flatten.first if args.size == 1
     
     enum=args.sort.each_cons(2)
-    unless enum.all? {|x,y| x.broadcast_u32 == y.network_u32-1}
-      raise ArgumentError, "Networks must be contiguous to be summarized"
-    end
     
-    result = []
-    enum.each do |x,y|
+    result, arr, last = [], args.sort, args.sort.last.network
+    arr.each_cons(2) do |x,y|
       snet = x.supernet(x.prefix.to_i-1)
       if snet.include? y
         result << snet
@@ -559,9 +556,7 @@ module IPAddress; class IPv4 < IPBase
         result << x.network unless result.any?{|i| i.include? x}
       end
     end
-
-    lst = enum.to_a.flatten.last.network
-    result << lst unless result.any?{|i| i.include? lst}
+    result << last unless result.any?{|i| i.include? last}
     
     if result.size == args.size
       return result
