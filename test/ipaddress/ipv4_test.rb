@@ -1,5 +1,4 @@
 require 'test_helper'
-
  
 class IPv4Test < Test::Unit::TestCase
   

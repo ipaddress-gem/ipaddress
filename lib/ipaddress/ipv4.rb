@@ -5,72 +5,17 @@ require 'pp'
 # 
 # =Name
 # 
-# Net::DNS::Resolver - DNS resolver class
+# IPAddress::IPv4 - IP version 4 address manipulation library
 #
 # =Synopsis
 #
-#    require 'net/dns/resolver'
+#    require 'ipaddress'
 #
 # =Description
 # 
-# The Net::DNS::Resolver class implements a complete DNS resolver written
-# in pure Ruby, without a single C line of code. It has all of the 
-# tipical properties of an evoluted resolver, and a bit of OO which 
-# comes from having used Ruby. 
-# 
-# This project started as a porting of the Net::DNS Perl module, 
-# written by Martin Fuhr, but turned out (in the last months) to be
-# an almost complete rewriting. Well, maybe some of the features of
-# the Perl version are still missing, but guys, at least this is
-# readable code! 
+# This library provides a complete 
 #
-# FIXME
 #
-# =Environment
-#
-# The Following Environment variables can also be used to configure 
-# the resolver:
-#
-# * +RES_NAMESERVERS+: A space-separated list of nameservers to query.
-#
-#      # Bourne Shell
-#      $ RES_NAMESERVERS="192.168.1.1 192.168.2.2 192.168.3.3"
-#      $ export RES_NAMESERVERS
-#
-#      # C Shell
-#      % setenv RES_NAMESERVERS "192.168.1.1 192.168.2.2 192.168.3.3"
-#
-# * +RES_SEARCHLIST+: A space-separated list of domains to put in the 
-#   search list.
-#
-#      # Bourne Shell
-#      $ RES_SEARCHLIST="example.com sub1.example.com sub2.example.com"
-#      $ export RES_SEARCHLIST
-#
-#      # C Shell
-#      % setenv RES_SEARCHLIST "example.com sub1.example.com sub2.example.com"
-#  
-# * +LOCALDOMAIN+: The default domain.
-#
-#      # Bourne Shell
-#      $ LOCALDOMAIN=example.com
-#      $ export LOCALDOMAIN
-#
-#      # C Shell
-#      % setenv LOCALDOMAIN example.com
-#
-# * +RES_OPTIONS+: A space-separated list of resolver options to set.  
-#   Options that take values are specified as option:value.
-#
-#      # Bourne Shell
-#      $ RES_OPTIONS="retrans:3 retry:2 debug"
-#      $ export RES_OPTIONS
-#
-#      # C Shell
-#      % setenv RES_OPTIONS "retrans:3 retry:2 debug"
-#        
-
-
 module IPAddress; class IPv4 < IPBase
                     
   include IPAddress
@@ -91,12 +36,35 @@ module IPAddress; class IPv4 < IPBase
 
   
   #
-  # Creates a new IPv4 address.
+  # Creates a new IPv4 address object.
   #
   # An IPv4 address can be expressed in any of the following forms:
   # 
-  #   * 10.1.1.1
-  #   *
+  # * "10.1.1.1/24": ip address and prefix. This is the common and
+  #     suggested way to create an object                  .
+  # * "10.1.1.1/255.255.255.0": ip address and netmask. Although
+  #     convenient sometimes, this format is less clear than the previous
+  #     one.             
+  # * "10.1.1.1": if the address alone is specified, the prefix will be 
+  #     assigned using the classful boundaries. In this case, the 
+  #     prefix would be /8, a 255.0.0.0 netmask
+  # 
+  # It is advisable to use the syntactic shortcut provided with the
+  # IPAddress() method, as in all the examples below.
+  # 
+  # Examples:
+  #
+  #   # These two methods return the same object
+  #   ip = IPAddress::IPv4.new("10.0.0.1/24")
+  #   ip = IPAddress("10.0.0.1/24")
+  #   
+  #   # These three are the same
+  #   IPAddress("10.0.0.1/8")
+  #   IPAddress("10.0.0.1/255.0.0.0")
+  #   IPAddress("10.0.0.1")
+  #   #=> #<IPAddress::IPv4:0xb7b1a438 
+  #         @octets=[10, 0, 0, 1], @address="10.0.0.1", @prefix=8>
+  #
   def initialize(str)
     ip, netmask = str.split("/")
     
@@ -126,34 +94,125 @@ module IPAddress; class IPv4 < IPBase
 
   end # def initialize
 
+  #
+  # Returns the address portion of the IPv4 object
+  # as a string.
+  #
+  #   ip = IPAddress("172.16.100.4/22")
+  #   ip.address
+  #     #=> "172.16.100.4"
+  #
   def address
     @address
   end
-  
+
+  #
+  # Returns the prefix portion of the IPv4 object
+  # as a IPAddress::Prefix object
+  #
+  #   ip = IPAddress("172.16.100.4/22")
+  #   ip.prefix
+  #     #=> 22
+  #   ip.prefix.class
+  #     #=> IPAddress::Prefix
+  #
   def prefix
     @prefix
   end
 
+  #
+  # Set a new prefix number for the object
+  #
+  # This is useful if you want to change the prefix
+  # to an object created with IPv4::parse_u32 or
+  # if the object was created using the classful
+  # mask.
+  #
+  #   ip = IPAddress("172.16.100.4")
+  #   puts ip
+  #     #=> 172.16.100.4/16
+  #   
+  #   ip.prefix = 22
+  #   puts ip
+  #     #=> 172.16.100.4/22
+  #
   def prefix=(num)
     @prefix = Prefix.new(num)
   end
 
+  # 
+  # Returns the address as an array of decimal values
+  #
+  #   ip = IPAddress("172.16.100.4")
+  #   ip.octets
+  #     #=> [172, 16, 100, 4]
+  #
   def octets
     @octets
   end
   
+  #
+  # Returns a string with the IP address in canonical
+  # form.
+  #
+  #   ip = IPAddress("172.16.100.4/22")
+  #   ip.to_s
+  #     #=> "172.16.100.4/22"
+  #
   def to_s
     "#@address/#@prefix"
   end
 
+  # 
+  # Returns the prefix as a string in IP format
+  #
+  #   ip = IPAddress("172.16.100.4/22")
+  #   ip.netmask
+  #     #=> "255.255.252.0"
+  #
   def netmask
     @prefix.to_ip
   end
 
+  #
+  # Like IPv4#prefix=, this method allow you to 
+  # change the prefix / netmask of an IP address
+  # object.
+  #
+  #   ip = IPAddress("172.16.100.4")
+  #   puts ip
+  #     #=> 172.16.100.4/16
+  #
+  #   ip.netmask = "255.255.252.0"
+  #   puts ip
+  #     #=> 172.16.100.4/22
+  #
   def netmask=(addr)
     @prefix = Prefix.parse_netmask(addr)
   end
-  
+
+  #
+  # Returns the address portion in unsigned
+  # 32 bits integer format.
+  #
+  # This method is identical to the C function
+  # inet_pton to create a 32 bits address family 
+  # structure. 
+  #
+  #   ip = IPAddress("10.0.0.0/8")
+  #   ip.to_u32
+  #     #=> 167772160
+  #
+  # It is usually used to include an IP address
+  # in a data packet to be sent over a socket
+  #
+  #   a = Socket.open(params) # socket details here
+  #   ip = IPAddress("10.1.1.0/24")
+  #   binary_data = ["Address: "].pack("a*") + ip.to_u32 
+  #   
+  #   # Send binary data
+  #   a.puts binary_data
+  #
   def to_u32
     @octets.pack("CCCC").unpack("N").first
   end
@@ -423,7 +482,7 @@ module IPAddress; class IPv4 < IPBase
   #
   def include?(oth)
     @prefix <= oth.prefix and network_u32 == self.class.new(oth.address+"/#@prefix").network_u32
-    #    to_a.map{|i| i.address}.include?(oth.address) and @prefix <= oth.prefix
+    # to_a.map{|i| i.address}.include?(oth.address) and @prefix <= oth.prefix
   end
 
   #
@@ -481,7 +540,6 @@ module IPAddress; class IPv4 < IPBase
   end
   alias_method :/, :subnet
 
-  
   #
   # Returns a new IPv4 object from the supernetting
   # of the instance network.
@@ -509,8 +567,11 @@ module IPAddress; class IPv4 < IPBase
     raise ArgumentError, "New prefix must be smaller than existing prefix" if new_prefix >= @prefix.to_i
     self.class.new(@address+"/#{new_prefix}").network
   end
-  
-  
+
+  #
+  # Returns the difference between two IP addresses
+  # in unsigned int 32 bits format
+  #  
   def -(oth)
     return (to_u32 - oth.to_u32).abs
   end
