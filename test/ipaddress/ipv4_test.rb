@@ -280,24 +280,24 @@ class IPv4Test < Test::Unit::TestCase
     ip2 = @klass.new("172.16.11.2/24")
     assert_equal "172.16.10.0/23", @klass.summarize(ip1,ip2).to_s
 
-    ip1 = IPAddress("10.0.0.1/24")
-    ip2 = IPAddress("10.0.1.1/24")
-    ip3 = IPAddress("10.0.2.1/24")
-    ip4 = IPAddress("10.0.3.1/24")
+    ip1 = @klass.new("10.0.0.1/24")
+    ip2 = @klass.new("10.0.1.1/24")
+    ip3 = @klass.new("10.0.2.1/24")
+    ip4 = @klass.new("10.0.3.1/24")
     assert_equal "10.0.0.0/22", @klass.summarize(ip1,ip2,ip3,ip4).to_s
     
     # Summarize non homogeneous networks
-    ip1 = IPAddress("10.0.1.1/24")
-    ip2 = IPAddress("10.0.2.1/24")
-    ip3 = IPAddress("10.0.3.1/24")
-    ip4 = IPAddress("10.0.4.1/24")
+    ip1 = @klass.new("10.0.1.1/24")
+    ip2 = @klass.new("10.0.2.1/24")
+    ip3 = @klass.new("10.0.3.1/24")
+    ip4 = @klass.new("10.0.4.1/24")
     result = ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
     assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_s}
 
-    ip1 = IPAddress("10.0.1.1/24")
-    ip2 = IPAddress("10.10.2.1/24")
-    ip3 = IPAddress("172.16.0.1/24")
-    ip4 = IPAddress("172.16.1.1/24")
+    ip1 = @klass.new("10.0.1.1/24")
+    ip2 = @klass.new("10.10.2.1/24")
+    ip3 = @klass.new("172.16.0.1/24")
+    ip4 = @klass.new("172.16.1.1/24")
     result = ["10.0.1.0/24","10.10.2.0/24","172.16.0.0/23"]
     assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_s}
 
