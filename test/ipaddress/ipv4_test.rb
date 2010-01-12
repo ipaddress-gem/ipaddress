@@ -59,6 +59,7 @@ class IPv4Test < Test::Unit::TestCase
     @invalid_ipv4.each do |i|
       assert_raise(ArgumentError) {@klass.new(i)}
     end
+    assert_raise (ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
   def test_attributes
@@ -215,16 +216,18 @@ class IPv4Test < Test::Unit::TestCase
     ip2 = @klass.new("10.1.1.1/16")
     ip3 = @klass.new("172.16.1.1/14")
     ip4 = @klass.new("10.1.1.1/8")
-    
+
     # ip1 should be major than ip2
     assert_equal true, ip1 > ip2
-    assert_equal false, ip1 < ip2    
+    assert_equal false, ip1 < ip2
+    assert_equal false, ip2 > ip1        
     # ip2 should be minor than ip3
     assert_equal true, ip2 < ip3
     assert_equal false, ip2 > ip3
     # ip1 should be minor than ip3
     assert_equal true, ip1 < ip3
     assert_equal false, ip1 > ip3
+    assert_equal false, ip3 < ip1
     # ip1 should be equal to itself
     assert_equal true, ip1 == ip1
     # ip1 should be equal to ip4
@@ -234,7 +237,13 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_s}
   end
 
-  
+  def test_method_minus
+    ip1 = @klass.new("10.1.1.1/8")
+    ip2 = @klass.new("10.1.1.10/8")    
+    assert_equal 9, ip2 - ip1
+    assert_equal 9, ip1 - ip2
+  end
+
   def test_method_netmask_equal
     ip = @klass.new("10.1.1.1/16")
     assert_equal 16, ip.prefix.to_i

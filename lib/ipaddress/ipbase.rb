@@ -34,7 +34,9 @@ module IPAddress
   #
   def self.valid_ipv4_netmask?(addr)
     arr = addr.split(".").map{|i| i.to_i}.pack("CCCC").unpack("B*").first.scan(/01/)
-    valid_ipv4?(addr) && arr.empty?
+    arr.empty? && valid_ipv4?(addr)
+  rescue
+    return false
   end
   
       

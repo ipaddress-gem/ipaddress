@@ -27,7 +27,7 @@ class PrefixTest < Test::Unit::TestCase
       24 => 4294967040,
       30 => 4294967292}
     
-    @klass = IPAddress::Prefix
+    @klass = IPAddress::Prefix32
   end
 
   def test_attributes
