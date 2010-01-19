@@ -3,7 +3,7 @@ $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 
 require 'ipaddress/ipbase'
 require 'ipaddress/ipv4'
-
+require 'ipaddress/ipv6'
 
 def IPAddress(str)
   if str.include? "-"

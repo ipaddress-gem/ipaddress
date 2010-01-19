@@ -5,3 +5,15 @@ Description goes here.
 == Copyright
 
 Copyright (c) 2009 Marco Ceresa. See LICENSE for details.
+
+
+=IPv6
+
+== Special addresses
+
+=== Unspecified address
+
+=== Loopback address
+
+
+ 

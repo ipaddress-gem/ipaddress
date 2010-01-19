@@ -1,4 +1,5 @@
 module IPAddress
+
   class Prefix
 
     include Comparable
@@ -9,11 +10,6 @@ module IPAddress
       @prefix = num.to_i
     end
 
-    def bits
-      "1" * @prefix + "0" * (@size - @prefix)
-      #sprintf "%0#@sizeb",(@mask & ~(@mask >> @prefix))
-    end
-  
     def to_s
       "#@prefix"
     end
@@ -29,13 +25,18 @@ module IPAddress
 
    end # class Prefix
 
+
   class Prefix32 < Prefix
 
     def initialize(num)
-      raise ArgumentError unless (1..32).include? num
-      @mask = 0xffffffff
-      @size = 32
+      unless (1..32).include? num
+        raise ArgumentError, "Prefix must be in range 1..128, got: #{num}"
+      end
       super(num)
+    end
+
+    def bits
+      "1" * @prefix + "0" * (32 - @prefix)
     end
 
     def to_ip
@@ -69,19 +70,20 @@ module IPAddress
   class Prefix128 < Prefix
 
     def initialize(num)
-      raise ArgumentError unless (1..128).include? num
-      @mask = 0xffffffffffffffffffffffffffffffff
-      @size = 128
+      unless (1..128).include? num
+        raise ArgumentError, "Prefix must be in range 1..128, got: #{num}"
+      end
       super(num)
     end
 
-    def to_u128
-      [bits].pack("B*").unpack("N4").first
+    def bits
+      "1" * @prefix + "0" * (128 - @prefix)
     end
-      
 
-  end
-  
-  
+    def to_u128
+      eval "0b#{bits}.to_i"
+    end
+
+  end # class Prefix123 < Prefix
 
 end # module IPAddress

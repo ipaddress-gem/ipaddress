@@ -33,7 +33,6 @@ module IPAddress;
       /^10./ => 16, # Class B, from 128.0.0.0 to 191.255.255.255
       /^110/ => 24  # Class C, D and E, from 192.0.0.0 to 255.255.255.254
     }
-
     
     #
     # Creates a new IPv4 address object.
@@ -203,18 +202,30 @@ module IPAddress;
     #   ip.to_u32
     #     #=> 167772160
     #
+    def to_u32
+      data.unpack("N").first
+    end
+    alias_method :to_i, :to_u32
+
+    # Returns the address portion of an IPv4 object
+    # in a network byte order format.
+    #
+    #   ip = IPAddress("172.16.10.1/24")
+    #   ip.data
+    #     #=> "\254\020\n\001"
+    #
     # It is usually used to include an IP address
     # in a data packet to be sent over a socket
     #
     #   a = Socket.open(params) # socket details here
     #   ip = IPAddress("10.1.1.0/24")
-    #   binary_data = ["Address: "].pack("a*") + ip.to_u32 
+    #   binary_data = ["Address: "].pack("a*") + ip.data 
     #   
     #   # Send binary data
     #   a.puts binary_data
     #
-    def to_u32
-      @octets.pack("CCCC").unpack("N").first
+    def data
+      @octets.pack("CCCC")
     end
 
     #
@@ -244,7 +255,7 @@ module IPAddress;
     #     #=> "01111111000000000000000000000001"
     #
     def bits
-      @octets.pack("CCCC").unpack("B*").first
+      data.unpack("B*").first
     end
 
     #
@@ -598,6 +609,14 @@ module IPAddress;
       else
         IPAddress::IPv4.new(ip)
       end
+    end
+
+    #
+    # Docs here
+    # TODO
+    #
+    def self.parse_data(str)
+      self.new str.unpack("CCCC").join(".")
     end
 
     #

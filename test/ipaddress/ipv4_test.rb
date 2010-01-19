@@ -1,7 +1,7 @@
 require 'test_helper'
  
 class IPv4Test < Test::Unit::TestCase
-  
+
   def setup
     @klass = IPAddress::IPv4
 
@@ -53,6 +53,13 @@ class IPv4Test < Test::Unit::TestCase
       ip = @klass.new(i)
       assert_instance_of @klass, ip
     end
+    assert_instance_of IPAddress::Prefix32, @ip.prefix
+    assert_raise (ArgumentError) do
+      @klass.new 
+    end
+    assert_nothing_raised do
+      @klass.new "10.0.0.0/8"
+    end
   end
 
   def test_initialize_format_error
@@ -77,6 +84,10 @@ class IPv4Test < Test::Unit::TestCase
   
   def test_initialize_should_require_ip
     assert_raise(ArgumentError) { @klass.new }
+  end
+
+  def test_method_data
+    assert_equal "\254\020\n\001", @ip.data
   end
   
   def test_method_to_s
@@ -312,7 +323,12 @@ class IPv4Test < Test::Unit::TestCase
 
   end
 
-  
+  def test_classmethod_parse_data
+    ip = @klass.parse_data "\254\020\n\001"
+    assert_instance_of @klass, ip
+    assert_equal "172.16.10.1", ip.address
+    assert_equal "172.16.10.1/16", ip.to_s
+  end
   
 end # class IPv4Test
 
