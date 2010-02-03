@@ -36,12 +36,14 @@ module IPAddress;
         raise ArgumentError, "Invalid IP #{ip.inspect}"
       end
       
-      # Check the prefix
-      if netmask =~ /^\d{1,3}$/  
-        @prefix = Prefix128.new(netmask.to_i)
-      else
-        @prefix = Prefix128.new(128)
-      end
+#      # Check the prefix
+#      if netmask =~ /^\d{1,3}$/  
+#        @prefix = Prefix128.new(netmask.to_i)
+#      else
+#        @prefix = Prefix128.new(128)
+#      end
+
+      @prefix = Prefix128.new(netmask ? netmask : 128)
 
     end # def initialize
 
@@ -58,6 +60,27 @@ module IPAddress;
       @prefix
     end
 
+    #
+    # Set a new prefix number for the object
+    #
+    # This is useful if you want to change the prefix
+    # to an object created with IPv6::parse_u128 or
+    # if the object was created using the default prefix
+    # of 128 bits.
+    #
+    #   ip = IPAddress("2001:db8::8:800:200c:417a")
+    #   puts ip
+    #     #=> 2001:db8::8:800:200c:417a/128
+    #
+    #   ip.prefix = 64
+    #   puts ip
+    #     #=> 2001:db8::8:800:200c:417a/64
+    #
+    def prefix=(num)
+      @prefix = Prefix128.new(num)
+    end
+
+
     def to_string
       "#@address/#@prefix"
     end
@@ -69,6 +92,25 @@ module IPAddress;
     def to_i
       to_hex.hex
     end
+    alias_method :to_u128, :to_i
+
+    #
+    # Returns the 16-bits value specified by index
+    #
+    #   ip = IPAddress("2001:db8::8:800:200c:417a/64")
+    #   ip[0]
+    #     #=> 8193
+    #   ip[1]
+    #     #=> 3512
+    #   ip[2]
+    #     #=> 0
+    #   ip[3]
+    #     #=> 0
+    #
+    def [](index)
+      @groups[index]
+    end
+    alias_method :group, :[]
 
     def to_hex
       hexs.to_s
@@ -92,6 +134,18 @@ module IPAddress;
 
     def loopback?
       @prefix == 128 and @compressed == "::1"
+    end
+
+    #
+    # Returns the address portion of an IP in binary format,
+    # as a string containing a sequence of 0 and 1
+    #
+    #   ip = IPAddress("2001:db8::8:800:200c:417a")
+    #   ip.bits
+    #     #=> "01111111000000000000000000000001"
+    #
+    def bits
+      data.unpack("B*").first
     end
       
     #
@@ -119,6 +173,15 @@ module IPAddress;
   
     def self.parse_data(str)
       self.new(IN6FORMAT % str.unpack("n8"))
+    end
+
+    def self.parse_u128(u128, prefix=128)
+      str = IN6FORMAT % (0..7).map{|i| (u128>>(112-16*i))&0xffff}
+      self.new(str + "/#{prefix}")
+    end
+
+    def self.parse_hex(hex, prefix=128)
+      self.parse_u128(hex.hex, prefix)
     end
     
   private

@@ -134,7 +134,7 @@ class IPv4Test < Test::Unit::TestCase
 
   def test_method_bits
     ip = @klass.new("127.0.0.1")
-    assert_equal ip.bits, "01111111000000000000000000000001"
+    assert_equal "01111111000000000000000000000001", ip.bits
   end
 
   def test_method_first
@@ -255,6 +255,15 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal 9, ip1 - ip2
   end
 
+  def test_method_plus
+    ip1 = @klass.new("172.16.10.1/24")
+    ip2 = @klass.new("172.16.11.2/24")
+    assert_equal "172.16.10.0/23", (ip1 + ip2).to_s
+    ip2 = @klass.new("172.16.12.2/24")
+    assert_equal [ip1.network.to_s,ip2.network.to_s], (ip1 + ip2).map{|i| i.to_s}
+  end
+  
+  
   def test_method_netmask_equal
     ip = @klass.new("10.1.1.1/16")
     assert_equal 16, ip.prefix.to_i

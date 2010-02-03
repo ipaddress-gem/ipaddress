@@ -225,7 +225,7 @@ module IPAddress;
     #   a.puts binary_data
     #
     def data
-      @octets.pack("CCCC")
+      @octets.pack("C4")
     end
 
     #
@@ -588,6 +588,25 @@ module IPAddress;
     end
 
     #
+    # Returns a new IPv4 object which is the result 
+    # of the summarization, if possible, of the two 
+    # objects
+    #
+    # Example:
+    #
+    #   ip1 = IPAddress("172.16.10.1/24")
+    #   ip2 = IPAddress("172.16.11.2/24")
+    #   puts ip1 + ip2
+    #     #=>"172.16.10.0/23"
+    #
+    # If the networks are not contiguous, returns
+    # the two network numbers from the objects
+    #
+    def +(oth)
+      self.class.summarize(self,oth)
+    end
+
+    #
     # Creates a new IPv4 object from an
     # unsigned 32bits integer.
     #
@@ -603,7 +622,7 @@ module IPAddress;
     #     #=> "10.0.0.0/8"
     #
     def self.parse_u32(u32, prefix=nil)
-      ip = [u32].pack("N").unpack("CCCC").join(".")
+      ip = [u32].pack("N").unpack("C4").join(".")
       if prefix
         IPAddress::IPv4.new(ip+"/#{prefix}")
       else
@@ -616,7 +635,7 @@ module IPAddress;
     # TODO
     #
     def self.parse_data(str)
-      self.new str.unpack("CCCC").join(".")
+      self.new str.unpack("C4").join(".")
     end
 
     #
@@ -712,7 +731,7 @@ module IPAddress;
     private
     
     def bits_from_address(ip)
-      ip.split(".").map{|i| i.to_i}.pack("CCCC").unpack("B*").first
+      ip.split(".").map{|i| i.to_i}.pack("C4").unpack("B*").first
     end
     
     def prefix_from_ip(ip)
