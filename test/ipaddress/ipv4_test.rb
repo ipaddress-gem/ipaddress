@@ -46,6 +46,11 @@ class IPv4Test < Test::Unit::TestCase
       "172.16.5.4/16"    => "172.16.0.0/16",
       "192.168.4.3/24"   => "192.168.4.0/24",
       "192.168.100.5/30" => "192.168.100.4/30"}
+
+    @class_a = @klass.new("10.0.0.1/8")
+    @class_b = @klass.new("172.16.0.1/16")
+    @class_c = @klass.new("192.168.0.1/24")
+    
   end
 
   def test_initialize
@@ -218,6 +223,28 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal 1, @ip[3]
   end
 
+  def test_method_a?
+    assert_equal true, @class_a.a?
+    assert_equal false, @class_b.a?
+    assert_equal false, @class_c.a?
+  end
+
+  def test_method_b?
+    assert_equal true, @class_b.b?
+    assert_equal false, @class_a.b?
+    assert_equal false, @class_c.b?
+  end
+
+  def test_method_c?
+    assert_equal true, @class_c.c?
+    assert_equal false, @class_a.c?
+    assert_equal false, @class_b.c?
+  end
+
+  def test_method_to_ipv6
+    assert_equal "ac10:0a01", @ip.to_ipv6
+  end
+  
   def test_method_reverse
     assert_equal "1.10.16.172.in-addr.arpa", @ip.reverse
   end
@@ -297,6 +324,11 @@ class IPv4Test < Test::Unit::TestCase
       ip.prefix = addr.split("/").last.to_i
       assert_equal ip.to_s, addr
     end
+  end
+
+  def test_classhmethod_extract
+    str = "foobar172.16.10.1barbaz"
+    assert_equal "172.16.10.1/16", @klass.extract(str).to_s
   end
 
   def test_classmethod_summarize

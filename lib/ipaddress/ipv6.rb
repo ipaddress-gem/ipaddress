@@ -36,12 +36,12 @@ module IPAddress;
         raise ArgumentError, "Invalid IP #{ip.inspect}"
       end
       
-#      # Check the prefix
-#      if netmask =~ /^\d{1,3}$/  
-#        @prefix = Prefix128.new(netmask.to_i)
-#      else
-#        @prefix = Prefix128.new(128)
-#      end
+      #      # Check the prefix
+      #      if netmask =~ /^\d{1,3}$/  
+      #        @prefix = Prefix128.new(netmask.to_i)
+      #      else
+      #        @prefix = Prefix128.new(128)
+      #      end
 
       @prefix = Prefix128.new(netmask ? netmask : 128)
 
@@ -94,6 +94,10 @@ module IPAddress;
     end
     alias_method :to_u128, :to_i
 
+    def network?
+      to_u128 | @prefix.to_u128 == @prefix.to_u128
+    end
+
     #
     # Returns the 16-bits value specified by index
     #
@@ -136,6 +140,10 @@ module IPAddress;
       @prefix == 128 and @compressed == "::1"
     end
 
+    def mapped?
+      false
+    end
+    
     #
     # Returns the address portion of an IP in binary format,
     # as a string containing a sequence of 0 and 1
@@ -147,7 +155,7 @@ module IPAddress;
     def bits
       data.unpack("B*").first
     end
-      
+    
     #
     # Expands an IPv6 address in the canocical form
     #
@@ -161,6 +169,10 @@ module IPAddress;
     def self.compress(str)
       self.new(str).compressed
     end
+
+    def literal
+      @address.gsub(":","-") + ".ipv6-literal.net"
+    end
     
     def self.groups(str)
       l, r = if str =~ /^(.*)::(.*)$/
@@ -170,7 +182,7 @@ module IPAddress;
              end
       (l + Array.new(8-l.size-r.size, '0') + r).map {|i| i.hex}
     end
-  
+    
     def self.parse_data(str)
       self.new(IN6FORMAT % str.unpack("n8"))
     end
@@ -184,42 +196,64 @@ module IPAddress;
       self.parse_u128(hex.hex, prefix)
     end
     
-  private
+    private
 
-  def compress_address
-    str = @groups.map{|i| i.to_s 16}.join ":"
-    loop do
-      break if str.sub!(/\A0:0:0:0:0:0:0:0\Z/, '::')
-      break if str.sub!(/\b0:0:0:0:0:0:0\b/, ':')
-      break if str.sub!(/\b0:0:0:0:0:0\b/, ':')
-      break if str.sub!(/\b0:0:0:0:0\b/, ':')
-      break if str.sub!(/\b0:0:0:0\b/, ':')
-      break if str.sub!(/\b0:0:0\b/, ':')
-      break if str.sub!(/\b0:0\b/, ':')
-      break
+    def compress_address
+      str = @groups.map{|i| i.to_s 16}.join ":"
+      loop do
+        break if str.sub!(/\A0:0:0:0:0:0:0:0\Z/, '::')
+        break if str.sub!(/\b0:0:0:0:0:0:0\b/, ':')
+        break if str.sub!(/\b0:0:0:0:0:0\b/, ':')
+        break if str.sub!(/\b0:0:0:0:0\b/, ':')
+        break if str.sub!(/\b0:0:0:0\b/, ':')
+        break if str.sub!(/\b0:0:0\b/, ':')
+        break if str.sub!(/\b0:0\b/, ':')
+        break
+      end
+      str.sub(/:{3,}/, '::')
     end
-    str.sub(/:{3,}/, '::')
-  end
- 
+    
   end # class IPv6
 
-class IPAddress::IPv6::Unspecified < IPAddress::IPv6
-  def initialize
-    @address = ("0000:"*8).chop
-    @groups = Array.new(8,0)
-    @prefix = Prefix128.new(128)
+  class IPAddress::IPv6::Unspecified < IPAddress::IPv6
+    def initialize
+      @address = ("0000:"*8).chop
+      @groups = Array.new(8,0)
+      @prefix = Prefix128.new(128)
+      @compressed = compress_address
+    end # class IPv6::Unspecified
   end
-end
 
-class IPAddress::IPv6::Loopback < IPAddress::IPv6
-  def initialize
-    @address = ("0000:"*7)+"0001"
-    @groups = Array.new(7,0).push(1) 
-    @prefix = Prefix128.new(128)
-  end
-end
+  class IPAddress::IPv6::Loopback < IPAddress::IPv6
+    def initialize
+      @address = ("0000:"*7)+"0001"
+      @groups = Array.new(7,0).push(1) 
+      @prefix = Prefix128.new(128)
+      @compressed = compress_address
+    end
+  end # class IPv6::Loopback
 
- 
+  class IPAddress::IPv6::Mapped < IPAddress::IPv6
+
+    attr_reader :ipv4
+
+    def initialize(str)
+      string, netmask = str.split("/")
+      @ipv4 = IPAddress::IPv4.extract(string)
+      super("::FFFF:#{@ipv4.to_ipv6}/#{netmask}")
+    end
+
+    def to_s
+      "::FFFF:#{@ipv4.address}/#@prefix"
+    end
+
+    def mapped?
+      true
+    end
+  
+  end # class IPv6::Mapped
+  
+      
 
 end # module IPAddress
 

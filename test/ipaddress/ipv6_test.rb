@@ -32,7 +32,9 @@ class IPv6Test < Test::Unit::TestCase
       
     
     @ip = @klass.new "2001:db8::8:800:200c:417a/64"
+    @network = @klass.new "2001:db8:8:800::/64"
     @arr = [8193,3512,0,0,8,2048,8204,16762]
+    @hex = "20010db80000000000080800200c417a"
   end
   
   
@@ -76,15 +78,28 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal "2001:db8::8:800:200c:417a/64", ip.to_s
   end
 
+  def test_method_mapped?
+    assert_equal false, @ip.mapped?
+  end
+
+  def test_method_literal
+    str = "2001-0db8-0000-0000-0008-0800-200c-417a.ipv6-literal.net"
+    assert_equal str, @ip.literal
+  end
+
   def test_method_group
     @arr.each_with_index do |val,index|
       assert_equal val, @ip[index]
     end
   end
 
+  def test_method_network?
+    assert_equal true, @network.network?
+    assert_equal false, @ip.network?
+  end
+
   def test_method_to_hex
-    hex = "20010db80000000000080800200c417a"
-    assert_equal hex, @ip.to_hex
+    assert_equal @hex, @ip.to_hex
   end
   
   def test_method_to_s
@@ -167,6 +182,93 @@ class IPv6Test < Test::Unit::TestCase
     end
   end
 
+  def test_classmethod_parse_hex
+    assert_equal @ip.to_s, @klass.parse_hex(@hex,64).to_s
+  end
+
 end # class IPv4Test
 
+class IPv6UnspecifiedTest < Test::Unit::TestCase
   
+  def setup
+    @klass = IPAddress::IPv6::Unspecified
+    @ip = @klass.new
+    @str = "::/128"
+    @string = "0000:0000:0000:0000:0000:0000:0000:0000/128"
+    @u128 = 0
+    @address = "::"
+  end
+
+  def test_initialize
+    assert_nothing_raised {@klass.new}
+    assert_instance_of @klass, @ip
+  end
+
+  def test_attributes
+    assert_equal @address, @ip.compressed
+    assert_equal 128, @ip.prefix
+    assert_equal true, @ip.unspecified?
+    assert_equal @str, @ip.to_s
+    assert_equal @string, @ip.to_string
+    assert_equal @u128, @ip.to_u128
+  end
+  
+end # class IPv6UnspecifiedTest
+
+
+class IPv6LoopbackTest < Test::Unit::TestCase
+  
+  def setup
+    @klass = IPAddress::IPv6::Loopback
+    @ip = @klass.new
+    @str = "::1/128"
+    @string = "0000:0000:0000:0000:0000:0000:0000:0001/128"
+    @u128 = 1
+    @address = "::1"
+  end
+
+  def test_initialize
+    assert_nothing_raised {@klass.new}
+    assert_instance_of @klass, @ip
+  end
+
+  def test_attributes
+    assert_equal @address, @ip.compressed
+    assert_equal 128, @ip.prefix
+    assert_equal true, @ip.loopback?
+    assert_equal @str, @ip.to_s
+    assert_equal @string, @ip.to_string
+    assert_equal @u128, @ip.to_u128
+  end
+  
+end # class IPv6LoopbackTest
+
+class IPv6MappedTest < Test::Unit::TestCase
+  
+  def setup
+    @klass = IPAddress::IPv6::Mapped
+    @ip = @klass.new("::172.16.10.1")
+    @str = "::FFFF:172.16.10.1/128"
+    @string = "0000:0000:0000:0000:0000:ffff:ac10:0a01/128"
+    @u128 = 281473568475649
+    @address = "::ffff:ac10:a01"
+  end
+
+  def test_initialize
+    assert_nothing_raised {@klass.new("::172.16.10.1")}
+    assert_instance_of @klass, @ip
+  end
+
+  def test_attributes
+    assert_equal @address, @ip.compressed
+    assert_equal 128, @ip.prefix
+    assert_equal @str, @ip.to_s
+    assert_equal @string, @ip.to_string
+    assert_equal @u128, @ip.to_u128
+  end
+
+  def test_mapped?
+    assert_equal true, @ip.mapped?
+  end
+  
+end # class IPv6MappedTest

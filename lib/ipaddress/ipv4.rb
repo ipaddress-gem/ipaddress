@@ -33,6 +33,8 @@ module IPAddress;
       /^10./ => 16, # Class B, from 128.0.0.0 to 191.255.255.255
       /^110/ => 24  # Class C, D and E, from 192.0.0.0 to 255.255.255.254
     }
+
+    REGEXP = Regexp.new(/((25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)/)
     
     #
     # Creates a new IPv4 address object.
@@ -607,6 +609,38 @@ module IPAddress;
     end
 
     #
+    # Docs here
+    # TODO
+    #
+    def a?
+      CLASSFUL.index(8) === bits
+    end
+    
+    #
+    # Docs here
+    # TODO
+    #
+    def b?
+      CLASSFUL.index(16) === bits
+    end
+
+    #
+    # Docs here
+    # TODO
+    #
+    def c?
+      CLASSFUL.index(24) === bits
+    end
+
+    #
+    # Docs here
+    # TODO
+    #
+    def to_ipv6
+      "%.4x:%.4x" % [to_u32].pack("N").unpack("nn")
+    end
+
+    #
     # Creates a new IPv4 object from an
     # unsigned 32bits integer.
     #
@@ -624,9 +658,9 @@ module IPAddress;
     def self.parse_u32(u32, prefix=nil)
       ip = [u32].pack("N").unpack("C4").join(".")
       if prefix
-        IPAddress::IPv4.new(ip+"/#{prefix}")
+        self.new(ip+"/#{prefix}")
       else
-        IPAddress::IPv4.new(ip)
+        self.new(ip)
       end
     end
 
@@ -638,6 +672,14 @@ module IPAddress;
       self.new str.unpack("C4").join(".")
     end
 
+    #
+    # Docs here
+    # TODO
+    #
+    def self.extract(str)
+      self.new REGEXP.match(str).to_s
+    end
+    
     #
     # Summarization (or aggregation) is the process when two or more
     # networks are taken together to check if a supernet, including all
@@ -721,13 +763,10 @@ module IPAddress;
         return self.summarize(*result)
       end
     end
-    
-    
 
     #
     # private methods
     #
-
     private
     
     def bits_from_address(ip)
@@ -738,7 +777,6 @@ module IPAddress;
       bits = bits_from_address(ip)
       CLASSFUL.each {|reg,prefix| return prefix if bits =~ reg}
     end
-
     
     def subnet_even(subnets)
       new_prefix = @prefix.to_i + Math::log2(subnets).ceil
@@ -755,7 +793,6 @@ module IPAddress;
       networks[-2..-1] = IPAddress::IPv4.summarize(networks[-2],networks[-1])
       return networks
     end
-    
   
   end # class IPv4
 end # module IPAddress
