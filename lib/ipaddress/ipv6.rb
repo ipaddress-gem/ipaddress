@@ -27,7 +27,6 @@ module IPAddress;
     def initialize(str)
       ip, netmask = str.split("/")
       
-      # Check the ip and remove white space
       if IPAddress.valid_ipv6?(ip)
         @groups = self.class.groups(ip)
         @address = IN6FORMAT % @groups
@@ -35,13 +34,6 @@ module IPAddress;
       else
         raise ArgumentError, "Invalid IP #{ip.inspect}"
       end
-      
-      #      # Check the prefix
-      #      if netmask =~ /^\d{1,3}$/  
-      #        @prefix = Prefix128.new(netmask.to_i)
-      #      else
-      #        @prefix = Prefix128.new(128)
-      #      end
 
       @prefix = Prefix128.new(netmask ? netmask : 128)
 

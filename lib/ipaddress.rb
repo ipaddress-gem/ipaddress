@@ -6,8 +6,11 @@ require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
 
 def IPAddress(str)
-  if str.include? "-"
+  case str
+  when /\-/
     IPAddress::Range.new(str)
+  when /[:\.]/
+    IPAddress::IPv6::Mapped.new(str)
   else
     begin
       IPAddress::IPv4.new(str)
@@ -16,7 +19,7 @@ def IPAddress(str)
     end
   end
 end
-  
+
 
 
 

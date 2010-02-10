@@ -30,6 +30,8 @@ class IPv6Test < Test::Unit::TestCase
       "1080:0:0:0:8:800:200C:417A" => 21932261930451111902915077091070067066,
       "1080::8:800:200C:417A" => 21932261930451111902915077091070067066}
       
+    @invalid_ipv6 = [":1:2:3:4:5:6:7",
+                     ":1:2:3:4:5:6:7"]
     
     @ip = @klass.new "2001:db8::8:800:200c:417a/64"
     @network = @klass.new "2001:db8:8:800::/64"
@@ -44,8 +46,14 @@ class IPv6Test < Test::Unit::TestCase
   end
 
   def test_initialize
-    assert_equal 128, @klass.new("::").prefix
-    assert_equal false, "write the initialize tests!!"
+    assert_instance_of @klass, @ip
+    @valid_ipv6.keys.each do |ip|
+      assert_nothing_raised {@klass.new ip}
+    end
+    @invalid_ipv6.each do |ip|
+      assert_raise(ArgumentError) {@klass.new ip}
+    end
+    assert_equal 64, @ip.prefix
   end
   
   def test_attribute_groups
@@ -252,11 +260,19 @@ class IPv6MappedTest < Test::Unit::TestCase
     @string = "0000:0000:0000:0000:0000:ffff:ac10:0a01/128"
     @u128 = 281473568475649
     @address = "::ffff:ac10:a01"
+
+    @valid_mapped = {'::13.1.68.3' => 281470899930115,
+      '0:0:0:0:0:FFFF:129.144.52.38' => 281472855454758,
+      '::FFFF:129.144.52.38' => 281472855454758}
   end
 
   def test_initialize
     assert_nothing_raised {@klass.new("::172.16.10.1")}
     assert_instance_of @klass, @ip
+    @valid_mapped.each do |ip, u128|
+      assert_nothing_raised {@klass.new ip}
+      assert_equal u128, @klass.new(ip).to_u128
+    end
   end
 
   def test_attributes
