@@ -1,10 +1,121 @@
-= ipaddress
+= IPAddress
 
-Description goes here.
+IPAddress is a Ruby library designed to work with IPv4 and
+IPv6 addresses. The library provides a complete set of methods to
+handle IP addresses for any need, from simple scripting to full
+network design.
 
-== Copyright
+IPAddress is written with a full OO interface, and its code is easy to
+read, maintain and extend at one's will. This document provides a
+brief introduction to the library and examples of typical usage.
 
-Copyright (c) 2009 Marco Ceresa. See LICENSE for details.
+= Installation
+
+Install the library using rubygems
+
+  $ gem install ipaddress
+
+You can then use it in your programs:
+  
+  require 'rubygems'  # optional
+  require 'ipaddress'
+
+Another way would be to clone the git repository
+
+  $ git clone git://github.com/bluemonk/net-dns.git
+
+And then install the library
+ 
+  $ cd ipaddress
+  ipaddress$ rake install
+
+= Documentation
+
+The code is fully documented with RDoc. You can generate the
+documentation with Rake:
+
+  ipaddress$ rake rdoc
+
+The latest documentation can be found online at the following address
+
+http://marcoceresa.com/ipaddress
+
+= Usage
+
+In this section I will illustrate how to use the IPAddress library
+through some examples of common tasks.
+
+== IPv4
+
+Class IPAddress::IPv4 is used to handle IPv4 type addresses. IPAddress
+is similar to other IP Addresses libraries, like Ruby's own
+IPAddr. However it works slightly different, as we will see.
+
+=== Create a new IPv4 address
+
+The usual way to express an IP Address is using its dotted decimal
+form, such as 172.16.10.1, and a prefix, such as 24, separated by a
+slash. 
+
+  172.16.10.1/24
+
+To create a new IPv4 object, you can use IPv4 own class
+
+  ip = IPAddress::IPv4.new "172.16.10.1/24"
+
+or, in a easier way, using the IPAddress wrapper method
+
+  ip = IPAddress "172.16.10.1/24"
+
+You can specify an IPv4 address in any of two ways:
+
+  IPAddress "172.16.10.1/24"
+  IPAddress "172.16.10.1/255.255.255.0"
+  
+In this example, prefix /24 and netmask 255.255.255.0 are the same and
+you have the flexibility to use either one of them.
+
+=== Classful networks
+
+If you don't specify a prefix (or a subnet mask), then the library
+will create an object base on the CLASSFUL network from the given
+IP. Remember the CLASSFUL network are the following (RFC 791)
+
+  Class A, from 0.0.0.0 to 127.255.255.255
+  Class B, from 128.0.0.0 to 191.255.255.255
+  Class C, from 192.0.0.0 to 255.255.255.255
+
+Since classful networks here are only considered to calculate the default
+prefix number, classes D and E are not considered. 
+
+You can easily check which CLASSFUL network the IP belongs:
+
+  ip = IPAddress("10.0.0.1/24")
+  ip.a?
+    #=> true
+  
+  ip = IPAddress("172.16.10.1/24")
+  ip.b?
+    #=> true
+  
+  ip = IPAddress("192.168.1.1/30")
+  ip.c?
+    #=> true
+
+These methods are only checking the address portion of an IP, and are
+indipendent from its prefix.
+
+For more information on CLASSFUL networks visit the following
+Wikipedia page: http://en.wikipedia.org/wiki/Classful_network
+
+=== Handling the IPv4 address
+
+Once created, you can obtain the attributes for an IPv4 object:
+
+  
+
+
+  
 
 
 =IPv6
@@ -15,5 +126,8 @@ Copyright (c) 2009 Marco Ceresa. See LICENSE for details.
 
 === Loopback address
 
+== Copyright
+
+Copyright (c) 2009 Marco Ceresa. See LICENSE for details.
 
  

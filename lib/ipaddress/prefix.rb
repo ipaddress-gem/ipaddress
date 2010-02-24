@@ -1,4 +1,19 @@
 module IPAddress
+  
+  #
+  # =NAME
+  #   
+  # IPAddress::Prefix
+  #
+  # =SYNOPSIS
+  #  
+  # Parent class for Prefix32 and Prefix128
+  #
+  # =DESCRIPTION
+  #
+  # IPAddresS::Prefix is the parent class for IPAddress::Prefix32 
+  # and IPAddress::Prefix128, 
+
 
   class Prefix
 

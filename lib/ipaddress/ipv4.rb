@@ -1,21 +1,20 @@
 require 'ipaddress/ipbase'
 require 'ipaddress/prefix'
 
-# 
-# =Name
-# 
-# IPAddress::IPv4 - IP version 4 address manipulation library
-#
-# =Synopsis
-#
-#    require 'ipaddress'
-#
-# =Description
-# 
-# This library provides a complete 
-#
-#
 module IPAddress; 
+  # 
+  # =Name
+  # 
+  # IPAddress::IPv4 - IP version 4 address manipulation library
+  #
+  # =Synopsis
+  #
+  #    require 'ipaddress'
+  #
+  # =Description
+  # 
+  # TODO
+  #
   class IPv4 < IPBase
     
     include IPAddress
@@ -34,6 +33,9 @@ module IPAddress;
       /^110/ => 24  # Class C, D and E, from 192.0.0.0 to 255.255.255.254
     }
 
+    #
+    # Regular expression to match an IPv4 address
+    #
     REGEXP = Regexp.new(/((25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)/)
     
     #
@@ -48,7 +50,7 @@ module IPAddress;
     #     one.             
     # * "10.1.1.1": if the address alone is specified, the prefix will be 
     #     assigned using the classful boundaries. In this case, the 
-    #     prefix would be /8, a 255.0.0.0 netmask
+    #     prefix would be /8, a 255.0.0.0 netmask.
     # 
     # It is advisable to use the syntactic shortcut provided with the
     # IPAddress() method, as in all the examples below.
@@ -495,7 +497,6 @@ module IPAddress;
     #
     def include?(oth)
       @prefix <= oth.prefix and network_u32 == self.class.new(oth.address+"/#@prefix").network_u32
-      # to_a.map{|i| i.address}.include?(oth.address) and @prefix <= oth.prefix
     end
 
     #
@@ -609,32 +610,59 @@ module IPAddress;
     end
 
     #
-    # Docs here
-    # TODO
+    # Checks whether the ip address belongs to a 
+    # RFC 791 CLASS A network, no matter
+    # what the subnet mask is.
+    #
+    # Example:
+    # 
+    #   ip = IPAddress("10.0.0.1/24")
+    #   ip.a?
+    #     #=> true
     #
     def a?
       CLASSFUL.index(8) === bits
     end
     
     #
-    # Docs here
-    # TODO
+    # Checks whether the ip address belongs to a
+    # RFC 791 CLASS B network, no matter
+    # what the subnet mask is.
+    #
+    # Example:
+    #
+    #   ip = IPAddress("172.16.10.1/24")
+    #   ip.b?
+    #     #=> true
     #
     def b?
       CLASSFUL.index(16) === bits
     end
 
     #
-    # Docs here
-    # TODO
+    # Checks whether the ip address belongs to a
+    # RFC 791 CLASS C network, no matter
+    # what the subnet mask is.
+    #
+    # Example:
+    #
+    #   ip = IPAddress("192.168.1.1/30")
+    #   ip.c?
+    #     #=> true
     #
     def c?
       CLASSFUL.index(24) === bits
     end
 
     #
-    # Docs here
-    # TODO
+    # Return the ip address in a format compatible
+    # with the IPv6 Mapped IPv4 addresses
+    # 
+    # Example:
+    #
+    #   ip = IPAddress("172.16.10.1/24")
+    #   ip.to_ipv6
+    #     #=> "ac10:0a01"
     #
     def to_ipv6
       "%.4x:%.4x" % [to_u32].pack("N").unpack("nn")
@@ -665,16 +693,33 @@ module IPAddress;
     end
 
     #
-    # Docs here
-    # TODO
+    # Creates a new IPv4 object from binary data,
+    # like the one you get from a network stream.
+    # 
+    # For example, on a network stream the IP 172.16.0.1
+    # is represented with the binary "\254\020\n\001".
+    # 
+    #   ip = IPAddress::IPv4::parse_data "\254\020\n\001"
+    #   ip.prefix = 24
+    #
+    #   ip.to_s
+    #     #=> "172.16.10.1/24"
     #
     def self.parse_data(str)
       self.new str.unpack("C4").join(".")
     end
 
     #
-    # Docs here
-    # TODO
+    # Exctract an IPv4 address from a string and 
+    # returns a new object
+    #
+    # Example:
+    #
+    #   str = "foobar172.16.10.1barbaz"
+    #   ip = self.extract str
+    #
+    #   ip.to_s
+    #     #=> "172.16.10.1/16"
     #
     def self.extract(str)
       self.new REGEXP.match(str).to_s
@@ -743,8 +788,6 @@ module IPAddress;
     def self.summarize(*args)
       # one network? no need to summarize
       return args.flatten.first if args.size == 1
-      
-      enum=args.sort.each_cons(2)
       
       result, arr, last = [], args.sort, args.sort.last.network
       arr.each_cons(2) do |x,y|

@@ -39,8 +39,6 @@ module IPAddress
     return false
   end
   
-      
-  
   def self.valid_ipv6?(addr)
     # IPv6 (normal)
     return true if /\A[\dA-Fa-f]{1,4}(:[\dA-Fa-f]{1,4})*\Z/ =~ addr
