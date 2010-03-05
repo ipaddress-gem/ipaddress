@@ -7,7 +7,7 @@ require 'ipaddress/ipv6'
 
 def IPAddress(str)
   case str
-  when /[:\.]/
+  when /:.+\./
     IPAddress::IPv6::Mapped.new(str)
   else
     begin

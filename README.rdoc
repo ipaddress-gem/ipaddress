@@ -112,7 +112,104 @@ Wikipedia page: http://en.wikipedia.org/wiki/Classful_network
 
 Once created, you can obtain the attributes for an IPv4 object:
 
+  ip = IPAddress("172.16.10.1/24")
+
+  ip.address
+    #=> "172.16.10.1"
+  ip.prefix
+    #=> 24
+
+In case you need to retrieve the netmask in IPv4 format, you can use
+the IPv4#netmask method:
+
+  ip.netmask
+    #=> "255.255.255.0"
+
+A special attribute, IPv4#octets, is available to get the four 
+decimal octets from the IP address:
+
+  ip.octets
+    #=> [172,16,10,1]
+
+A shortcut, IPv4#[], is provided to access a given octet whithin the
+range:
+
+  ip[1]
+    #=> 16
+
+If you need to print out the IPv4 address in a canonical form, you can
+use IPv4#to_s
+
+  ip.to_s
+    #=> "172.16.10.l/24"
+
+=== Changing netmask
+    
+You can set a new prefix (netmask) after creating an IPv4 
+object. For example:
+
+  ip.prefix = 25
+  ip.to_s
+    #=> "172.16.10.l/25"
+    
+If you need to use a netmask in IPv4 format, you can achive so by
+using the IPv4#netmask= method
+
+  ip.netmask = "255.255.255.252"
+  ip.to_s
+    #=> "172.16.10.1/30"
+
+=== Working with networks and broadcasts
+
+
+
+=== IP special formats    
+
+The IPAddress library provides a complete set of methods to access an
+IPv4 address in special formats, such as binary, 32 bits unsigned int,
+data and hexadecimal.
+
+Let's take the following IPv4 as an example:
+
+  ip = IPAddress "172.16.10.1/24"
+  ip.address
+    #=> "172.16.10.1"
+
+The first thing to highlight here is that all these conversion methods
+only take into consideration the address portion of an IPv4 object and
+not the prefix (netmask).
+
+So, to express the address in binary format, use the IPv4#bits method:
+
+  ip.bits
+    #=> "10101100000100000000101000000001"
+
+To calculate the 32 bits unsigned int format of the ip address, use
+the IPv4#to_u32 method
+
+  ip.to_u32
+    #=> 2886732289
+
+This method is the equivalent of the Unix call pton(), expressing an
+IP address in the so called +network byte order+ notation. However, if
+you want to trasmit your IP over a network socket, you might need to
+transform it in data format using the IPv4#data method:
+
+  ip.data
+    #=> "\254\020\n\001"
+
+Finally, you can transform an IPv4 address into a format which is
+suitable to use in IPv4-IPv6 mapped addresses:
+
+  ip.to_ipv6
+    #=> "ac10:0a01"
+
+
+
   
+
+
+    
 
 
   
