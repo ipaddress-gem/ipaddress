@@ -131,7 +131,7 @@ decimal octets from the IP address:
   ip.octets
     #=> [172,16,10,1]
 
-A shortcut, IPv4#[], is provided to access a given octet whithin the
+Shortcut method IPv4#[], provides access to a given octet whithin the
 range:
 
   ip[1]
@@ -159,9 +159,107 @@ using the IPv4#netmask= method
   ip.to_s
     #=> "172.16.10.1/30"
 
-=== Working with networks and broadcasts
+=== Working with networks, broadcasts and addresses
 
+Some very important topics in dealing with IP addresses are the
+concepts of +network+ and +broadcast+, as well as the addresses
+included in a range.
 
+When you specify an IPv4 address such as "172.16.10.1/24", you are
+actually handling two different information: 
+ 
+  * The IP address itself, "172.16.10.1"
+  * The subnet mask which indicates the network
+
+The network number is the IP which has all zeroes in the host
+portion. In our example, because the prefix is 24, we identify our
+network number to have the last 8 (32-24) bits all zeroes.  Thus, IP
+address "172.16.10.1/24" belongs to network "172.16.10.0/24".
+
+This is very important because, for instance, IP "172.16.10.1/16" is
+very different to the previous one, belonging to the very different
+network "172.16.0.0/16".
+
+With IPAddress it's very easy to calculate the network for an IP
+address:
+
+  ip = IPAddress "172.16.10.1/24"
+  net = ip.network
+    #=> #<IPAddress::IPv4:0xb7a5ab24 @octets=[172, 16, 10, 0], 
+                                     @prefix=24,
+                                     @address="172.16.10.0">
+  net.to_s
+    #=> "172.16.10.0/24"
+
+The IPv4#network method creates a new IPv4 object from the network
+number, calculated after the original object. We want to outline here
+that the network address is a perfect legitimate IPv4 address, which
+just happen to have all zeroes in the host portion. 
+
+You can use method IPv4#network? to check whether an IP address is a
+network or not:
+
+  ip1 = IPAddress "172.16.10.1/24"
+  ip2 = IPAddress "172.16.10.4/30"
+
+  ip1.network?
+    #=> false
+  ip2.network?
+    #=> true
+
+The broadcast address is the contrary than the network number: where
+the network number has all zeroes in the host portion, the broadcast
+address has all one's. For example, ip "172.16.10.1/24" has broadcast
+"172.16.10.255/24", where ip "172.16.10.1/16" has broadcast
+"172.16.255.255/16".
+
+Method IPv4#broadcast has the same behaviour as is #network
+counterpart: it creates a new IPv4 object to handle the broadcast
+address:
+ 
+  ip = IPAddress "172.16.10.1/24"
+  bcast = ip.broadcast
+    #=> #<IPAddress::IPv4:0xb7a406fc @octets=[172, 16, 10, 255],
+                                     @prefix=24, 
+                                     @address="172.16.10.255">
+  bcast.to_s
+    #=> "172.16.10.255/24"
+
+So we see that the netmask essentially specifies a range for IP
+addresses that are included in a network: all the addresses between
+the network number and the broadcast. IPAddress has many methods to
+iterate between those addresses. Let's start with IPv4#each, which
+iterates over all addresses in a range
+
+  ip = IPAddress "172.16.10.1/24"
+
+  ip.each do |addr|
+    puts addr
+  end
+
+It is important to note that it doesn't matter if the original IP is a
+host IP or a network number (or a broadcast address): the #each method
+only considers the range that the original IP specifies. 
+
+If you only want to iterate over hosts IP, use the Ipv4#each_host
+method:
+
+  ip = IPAddress "172.16.10.1/24"
+
+  ip.each_host do |host|
+    puts host
+  end
+
+Methods IPv4#first and IPv4#last return a new object containing
+respectively the first and the last host address in the range
+
+  ip = IPAddress "172.16.10.100/24"
+
+  ip.first.to_s
+    #=> "172.16.10.1/24"
+
+  ip.last.to_s
+    #=> "172.16.10.254/24"
 
 === IP special formats    
 
@@ -204,6 +302,41 @@ suitable to use in IPv4-IPv6 mapped addresses:
   ip.to_ipv6
     #=> "ac10:0a01"
 
+
+== Network design with IPAddress
+
+IPAddress includes a lot of useful methods to manipulate IPv4 and IPv6
+networks and do some basic network design. 
+
+=== Subnetting
+   # Subnetting a network
+    #
+    # If the IP Address is a network, it can be divided into
+    # multiple networks. If +self+ is not a network, the
+    # method will calculate the network from the IP and then
+    # subnet it.
+    #
+    # If +subnets+ is an even number, the resulting networks will be
+    # divided evenly from the supernet.
+    #
+    #   network = IPAddress("172.16.10.0/24")
+    #   network / 4   # implies map{|i| i.to_s}
+    #     #=> ["172.16.10.0/26",
+    #          "172.16.10.64/26",
+    #          "172.16.10.128/26",
+    #          "172.16.10.192/26"]
+    #
+    # If +num+ is a odd number, the supernet will be
+    # divided into num-1 networks with a even number of hosts and
+    # a last network with the remaining addresses.
+    #
+    #   network = IPAddress("172.16.10.0/24")
+    #   network / 3   # implies map{|i| i.to_s}
+    #     #=> ["172.16.10.0/26",
+    #          "172.16.10.64/26",
+    #          "172.16.10.128/25"]
+    #
+    # Returns an array of IPAddress objects,
 
 
   

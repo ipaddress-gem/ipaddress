@@ -519,11 +519,11 @@ module IPAddress;
     # method will calculate the network from the IP and then
     # subnet it.
     #
-    # If +num+ is an even number, the resulting networks will be
+    # If +subnets+ is an even number, the resulting networks will be
     # divided evenly from the supernet.
     #
     #   network = IPAddress("172.16.10.0/24")
-    #   network / 4
+    #   network / 4   # implies map{|i| i.to_s}
     #     #=> ["172.16.10.0/26",
     #          "172.16.10.64/26",
     #          "172.16.10.128/26",
@@ -534,7 +534,7 @@ module IPAddress;
     # a last network with the remaining addresses.
     #
     #   network = IPAddress("172.16.10.0/24")
-    #   network / 3
+    #   network / 3   # implies map{|i| i.to_s}
     #     #=> ["172.16.10.0/26",
     #          "172.16.10.64/26",
     #          "172.16.10.128/25"]
