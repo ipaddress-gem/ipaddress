@@ -519,8 +519,8 @@ module IPAddress;
     # method will calculate the network from the IP and then
     # subnet it.
     #
-    # If +subnets+ is an even number, the resulting networks will be
-    # divided evenly from the supernet.
+    # If +subnets+ is an power of two number, the resulting 
+    # networks will be divided evenly from the supernet.
     #
     #   network = IPAddress("172.16.10.0/24")
     #   network / 4   # implies map{|i| i.to_s}
@@ -529,9 +529,9 @@ module IPAddress;
     #          "172.16.10.128/26",
     #          "172.16.10.192/26"]
     #
-    # If +num+ is a odd number, the supernet will be 
-    # divided into num-1 networks with a even number of hosts and
-    # a last network with the remaining addresses.
+    # If +num+ is any other number, the supernet will be 
+    # divided into some networks with a even number of hosts and
+    # other networks with the remaining addresses.
     #
     #   network = IPAddress("172.16.10.0/24")
     #   network / 3   # implies map{|i| i.to_s}
@@ -539,18 +539,14 @@ module IPAddress;
     #          "172.16.10.64/26",
     #          "172.16.10.128/25"]
     #
-    # Returns an array of IPAddress objects,
+    # Returns an array of IPAddress objects
     #
     def subnet(subnets=2)
       unless (1..(2**(32-prefix.to_i))).include? subnets
         raise ArgumentError, "Value #{subnets} out of range" 
       end
-      
-      if subnets.even?
-        return subnet_even(subnets)
-      else
-        return subnet_odd(subnets)
-      end
+
+      calculate_subnets(subnets)
     end
     alias_method :/, :subnet
 
@@ -820,23 +816,33 @@ module IPAddress;
       bits = bits_from_address(ip)
       CLASSFUL.each {|reg,prefix| return prefix if bits =~ reg}
     end
-    
-    def subnet_even(subnets)
-      new_prefix = @prefix.to_i + Math::log2(subnets).ceil
+
+    def calculate_subnets(subnets)
+      po2 = subnets.closest_power_of_2
+      new_prefix = @prefix.to_i + Math::log2(po2).to_i
       networks = Array.new
-      (0..subnets-1).each do |i|
+      (0..po2-1).each do |i|
         mul = i * (2**(32-new_prefix))
         networks << IPAddress::IPv4.parse_u32(network_u32+mul, new_prefix)
+      end
+      until networks.size == subnets
+        networks = sum_first_found(networks)
       end
       return networks
     end
     
-    def subnet_odd(subnets)
-      networks = subnet_even(subnets+1)
-      networks[-2..-1] = IPAddress::IPv4.summarize(networks[-2],networks[-1])
-      return networks
+    def sum_first_found(arr)
+      dup = arr.dup.reverse
+      dup.each_with_index do |obj,i|
+        a = [IPAddress::IPv4.summarize(obj,dup[i+1])].flatten
+        if a.size == 1
+          dup[i..i+1] = a
+          return dup.reverse
+        end
+      end
+      return dup.reverse
     end
-  
+    
   end # class IPv4
 end # module IPAddress
 

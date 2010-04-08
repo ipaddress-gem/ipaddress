@@ -81,9 +81,9 @@ If you don't specify a prefix (or a subnet mask), then the library
 will create an object base on the CLASSFUL network from the given
 IP. Remember the CLASSFUL network are the following (RFC 791)
 
-  Class A, from 0.0.0.0 to 127.255.255.255
-  Class B, from 128.0.0.0 to 191.255.255.255
-  Class C, from 192.0.0.0 to 255.255.255.255
+* Class A, from 0.0.0.0 to 127.255.255.255
+* Class B, from 128.0.0.0 to 191.255.255.255
+* Class C, from 192.0.0.0 to 255.255.255.255
 
 Since classful networks here are only considered to calculate the default
 prefix number, classes D and E are not considered. 
@@ -168,8 +168,8 @@ included in a range.
 When you specify an IPv4 address such as "172.16.10.1/24", you are
 actually handling two different information: 
  
-  * The IP address itself, "172.16.10.1"
-  * The subnet mask which indicates the network
+* The IP address itself, "172.16.10.1"
+* The subnet mask which indicates the network
 
 The network number is the IP which has all zeroes in the host
 portion. In our example, because the prefix is 24, we identify our
@@ -309,17 +309,51 @@ IPAddress includes a lot of useful methods to manipulate IPv4 and IPv6
 networks and do some basic network design. 
 
 === Subnetting
-   # Subnetting a network
-    #
-    # If the IP Address is a network, it can be divided into
-    # multiple networks. If +self+ is not a network, the
-    # method will calculate the network from the IP and then
-    # subnet it.
-    #
-    # If +subnets+ is an even number, the resulting networks will be
-    # divided evenly from the supernet.
-    #
-    #   network = IPAddress("172.16.10.0/24")
+
+The process of subnetting is the division of a network into smaller
+(in terms of hosts capacity) networks, called subnets, so that they
+all share a common root, which is the starting network. 
+
+For example, if the have network "172.16.10.0/24", we can subnet it
+into 4 smaller subnets. The new prefix will be /26, because 4 is 2^2
+and therefore we add 2 bits to the network prefix (24+2=26).
+
+Subnetting is easy with IPAddress. Let's work out the last example:
+
+  network = IPAddress("172.16.10.0/24")
+
+  subnets = network / 4
+    #=> [#<IPAddress::IPv4:0xb7b10e10 @octets=[172,16,10,0] [...]
+         #<IPAddress::IPv4:0xb7b0f1b4 @octets=[172,16,10,64] [...]
+         #<IPAddress::IPv4:0xb7b0e5ac @octets=[172,16,10,128] [...]  
+         #<IPAddress::IPv4:0xb7b0e0c0 @octets=[172,16,10,192] [...]]
+
+  subnets.map{|i| i.to_s}
+    #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
+         "172.16.10.192/26"]
+
+You can also use method IPv4#subnets, which is an alias for
+IPv4#/. Please note that you don't have to specify a network to
+calculate a subnet: if the IPv4 object is a host IPv4, the method will
+calculate the network number for that network and then subnet it. For
+example:
+
+  ip = IPAddress("172.16.10.58/24")
+ 
+  ip.subnet(4).map{|i| i.to_s}
+    #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26",
+         "172.16.10.192/26"]
+
+Usually, subnetting implies dividing a network to a number of subnets
+which is a power of two: in this way, you can be sure that the network
+will be divived evenly, and all the subnets will have the same number
+of hosts. 
+IPAddress also handles un-even subnetting: if you specify any number
+(up to the prefix limit), the network will be divided so that the
+first power-of-two networks will be even, and all the rest will just
+fill out the space. 
+
+
     #   network / 4   # implies map{|i| i.to_s}
     #     #=> ["172.16.10.0/26",
     #          "172.16.10.64/26",

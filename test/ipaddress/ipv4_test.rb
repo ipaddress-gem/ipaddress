@@ -301,14 +301,30 @@ class IPv4Test < Test::Unit::TestCase
    def test_method_subnet
      assert_raise(ArgumentError) {@ip.subnet(0)}
      assert_raise(ArgumentError) {@ip.subnet(257)}
-     
-     # Even subnets
-     arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", "172.16.10.192/26"]
+
+     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
+            "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
+            "172.16.10.192/27", "172.16.10.224/27"]
+     assert_equal arr, @network.subnet(8).map {|s| s.to_s}
+     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
+            "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
+            "172.16.10.192/26"]
+     assert_equal arr, @network.subnet(7).map {|s| s.to_s}
+     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
+            "172.16.10.96/27", "172.16.10.128/26", "172.16.10.192/26"]
+     assert_equal arr, @network.subnet(6).map {|s| s.to_s}
+     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
+            "172.16.10.96/27", "172.16.10.128/25"]
+     assert_equal arr, @network.subnet(5).map {|s| s.to_s}
+     arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
+            "172.16.10.192/26"]
      assert_equal arr, @network.subnet(4).map {|s| s.to_s}
-     
-     # Odd subnets
      arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/25"]
      assert_equal arr, @network.subnet(3).map {|s| s.to_s}
+     arr = ["172.16.10.0/25", "172.16.10.128/25"]
+     assert_equal arr, @network.subnet(2).map {|s| s.to_s}
+     arr = ["172.16.10.0/24"]
+     assert_equal arr, @network.subnet(1).map {|s| s.to_s}
    end
 
    def test_method_supernet
