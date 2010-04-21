@@ -314,7 +314,7 @@ The process of subnetting is the division of a network into smaller
 (in terms of hosts capacity) networks, called subnets, so that they
 all share a common root, which is the starting network. 
 
-For example, if the have network "172.16.10.0/24", we can subnet it
+For example, if you have network "172.16.10.0/24", we can subnet it
 into 4 smaller subnets. The new prefix will be /26, because 4 is 2^2
 and therefore we add 2 bits to the network prefix (24+2=26).
 
@@ -348,41 +348,37 @@ Usually, subnetting implies dividing a network to a number of subnets
 which is a power of two: in this way, you can be sure that the network
 will be divived evenly, and all the subnets will have the same number
 of hosts. 
+
+=== Uneven subnetting
+
 IPAddress also handles un-even subnetting: if you specify any number
 (up to the prefix limit), the network will be divided so that the
 first power-of-two networks will be even, and all the rest will just
 fill out the space. 
 
+As an example, let's divide network 172.16.10.0/24 into 3 different subnets:
 
-    #   network / 4   # implies map{|i| i.to_s}
-    #     #=> ["172.16.10.0/26",
-    #          "172.16.10.64/26",
-    #          "172.16.10.128/26",
-    #          "172.16.10.192/26"]
-    #
-    # If +num+ is a odd number, the supernet will be
-    # divided into num-1 networks with a even number of hosts and
-    # a last network with the remaining addresses.
-    #
-    #   network = IPAddress("172.16.10.0/24")
-    #   network / 3   # implies map{|i| i.to_s}
-    #     #=> ["172.16.10.0/26",
-    #          "172.16.10.64/26",
-    #          "172.16.10.128/25"]
-    #
-    # Returns an array of IPAddress objects,
+  network = IPAddress("172.16.10.0/24")
+  network.subnet(3).map{|i| i.to_s}
+    #=> ["172.16.10.0/26",
+         "172.16.10.64/26",
+         "172.16.10.128/25"]
 
+We can go even further and divide into 11 subnets:
 
-  
-
-
-    
-
-
-  
-
+  network = IPAddress("172.16.10.0/24")
+  network.subnet(11).map{|i| i.to_s}
+    #=> ["172.16.10.0/28", "172.16.10.16/28", "172.16.10.32/28",
+         "172.16.10.48/28", "172.16.10.64/28", "172.16.10.80/28",
+         "172.16.10.96/28", "172.16.10.112/28", "172.16.10.128/27",
+         "172.16.10.160/27", "172.16.10.192/26"]
+	 
+As you can see, most of the networks are /28, with a few /27 and one
+/26 to fill up the remaning space.
 
 =IPv6
+
+Coming soon
 
 == Special addresses
 
@@ -392,6 +388,6 @@ fill out the space.
 
 == Copyright
 
-Copyright (c) 2009 Marco Ceresa. See LICENSE for details.
+Copyright (c) 2009-2010 Marco Ceresa. See LICENSE for details.
 
  
