@@ -13,7 +13,7 @@ module IPAddress;
   #
   # =Description
   # 
-  # TODO
+  # Class IPAddress::IPv4 is used to handle IPv4 type addresses. 
   #
   class IPv4 < IPBase
     
@@ -211,6 +211,7 @@ module IPAddress;
     end
     alias_method :to_i, :to_u32
 
+    #
     # Returns the address portion of an IPv4 object
     # in a network byte order format.
     #
@@ -274,7 +275,7 @@ module IPAddress;
     end
     
     #
-    # Check if the IP address is actually a network
+    # Checks if the IP address is actually a network
     #
     #   ip = IPAddress("172.16.10.64/24")
     #   ip.network?
