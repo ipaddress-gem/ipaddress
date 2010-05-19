@@ -496,11 +496,11 @@ they will be converted.
 Since IPv6 addresses are very long to write, there are some
 semplifications and compressions that you can use to shorten them. 
 
-  * Leading zeroes: all the leading zeroes within a group can be
-    omitted: "0008" would become "8"
+* Leading zeroes: all the leading zeroes within a group can be
+  omitted: "0008" would become "8"
   
-  * A string of consecutive zeroes can be replaced by the string
-    "::". This can be only applied once.
+* A string of consecutive zeroes can be replaced by the string
+  "::". This can be only applied once.
 
 Using compression, the IPv6 address written above can be shorten into
 the following, equivalent, address
@@ -538,17 +538,125 @@ it:
 
   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
 
+Access the address portion and the prefix by using the respective
+methods:
+
+  ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+
+  ip6.address
+    #=> "2001:0db8:0000:0000:0008:0800:200c:417a"
+
+  ip6.prefix
+    #=> 64
+
+A compressed version of the IPv6 address can be obtained with the
+IPv6#compressed method:
+
+  ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+
+  ip6.compressed
+    #=> "2001:db8::8:800:200c:417a"
+
+== Handling the IPv6 address
+
+Accessing the groups that form an IPv6 address is very easy with the
+IPv6#groups method:
+
+  ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+ 
+  ip6.groups
+    #=> [8193, 3512, 0, 0, 8, 2048, 8204, 16762]
+
+As with IPv4 addresses, each individual group can be accessed using
+the IPv6#[] shortcut method:
+
+  ip6[0]
+    #=> 8193
+  ip6[1]
+    #=> 3512
+  ip6[2]
+    #=> 0
+  ip6[3]
+    #=> 0
+
+Note that each 16 bits group is expressed in its decimal form. You can
+also obtain the groups into hexadecimal format using the IPv6#hexs
+method:
+
+  ip6.hexs
+    #=> => ["2001", "0db8", "0000", "0000", "0008", "0800", "200c", "417a"]
+
+A few other methods are available to transform an IPv6 address into
+decimal representation, with IPv6.to_i
+
+  ip6.to_i
+    #=> 42540766411282592856906245548098208122
+
+or to hexadecimal representation
+
+  ip6.to_hex
+    #=> "20010db80000000000080800200c417a"
+
+To print out an IPv6 address in human readable form, use the IPv6#to_s
+and IPv6#to_string methods
+
+  ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+ 
+  ip6.to_s
+    #=> "2001:db8::8:800:200c:417a/96"
+
+  ip6.to_string
+    #=> "2001:0db8:0000:0000:0008:0800:200c:417a/96"
+
+As you can see, IPv6.to_s prints out the compressed form, while
+IPv6.to_string uses the expanded version.
+
+=== Compressing and uncompressing
+
+If you have a string representing an IPv6 address, you can easily
+compress it and uncompress it using the two class methods IPv6::expand
+and IPv6::compress.
+
+For example, let's say you have the following uncompressed IPv6
+address:
+
+  ip6str = "2001:0DB8:0000:CD30:0000:0000:0000:0000"
+
+Here is the compressed version:
+
+  IPAddress::IPv6.compress ip6str
+    #=> "2001:db8:0:cd30::"
+
+The other way works as well:
+
+  ip6str = "2001:db8:0:cd30::"
+
+  IPAddress::IPv6.expand ip6str
+    #=> "2001:0DB8:0000:CD30:0000:0000:0000:0000"
+
+These methods can be used when you don't want to create a new object
+just for expanding or compressing an address (although a new object is
+actually created internally).
+ 
+== New IPv6 address from other formats
+
+You can create a new IPv6 address from different formats than just a
+string representing the colon-hex groups.
 
 
 
+The subnet mask can be changed on a later stage by using the
+appropriate setter:
 
-   
+  
 
 == Special IPv6 addresses
 
 === Unspecified address
 
 === Loopback address
+
+=== Mapped address
 
 == Copyright
 
