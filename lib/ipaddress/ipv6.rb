@@ -193,7 +193,7 @@ module IPAddress;
     #     #=> "20010db80000000000080800200c417a"
     #
     def to_hex
-      hexs.to_s
+      hexs.join("")
     end
 
     # Returns the address portion of an IPv6 object

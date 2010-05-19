@@ -471,12 +471,80 @@ This is because "172.16.10.0/22" is not a network anymore, but an host
 address.
 
 
-
 =IPv6
 
-Coming soon
+IPAddress is not only fantastic for IPv4 addresses, it's also great to
+handle IPv6 addresses family! Let's discover together how to use it in
+our projects.
 
-== Special addresses
+== IPv6 addresses
+
+IPv6 addresses are 128 bits long, in contrast with IPv4 addresses
+which are only 32 bits long. An IPv6 address is generally written as
+eight groups of four hexadecimal digits, each group representing 16
+bits or two octect. For example, the following is a valid IPv6
+address: 
+
+  1080:0000:0000:0000:0008:0800:200c:417a
+
+Letters in an IPv6 address are usually written downcase, as per
+RFC. You can create a new IPv6 object using uppercase letters, but
+they will be converted.
+
+=== Compression
+
+Since IPv6 addresses are very long to write, there are some
+semplifications and compressions that you can use to shorten them. 
+
+  * Leading zeroes: all the leading zeroes within a group can be
+    omitted: "0008" would become "8"
+  
+  * A string of consecutive zeroes can be replaced by the string
+    "::". This can be only applied once.
+
+Using compression, the IPv6 address written above can be shorten into
+the following, equivalent, address
+
+  1080::8:800:200c:417a
+
+This short version is often used in human representation.
+
+=== Network Mask
+
+As we used to do with IPv4 addresses, an IPv6 address can be written
+using the prefix notation to specify the subnet mask:
+
+  1080::8:800:200c:417a/64
+
+The /64 part means that the first 64 bits of the address are
+representing the network portion, and the last 64 bits are the host
+portion. 
+
+== Using IPAddress with IPv6 addresses
+
+All the IPv6 representations we've just seen are perfectly fine when
+you want to create a new IPv6 address:
+
+  ip6 = IPAddress "1080:0000:0000:0000:0008:0800:200C:417A"
+  
+  ip6 = IPAddress "1080:0:0:0:8:800:200C:417A"
+ 
+  ip6 = IPAddress "1080::8:800:200C:417A"
+
+All three are giving out the same IPv6 object. The default subnet mask
+for an IPv6 is 128, as IPv6 addresses don't have classes like IPv4
+addresses. If you want a different mask, you can go ahead and explicit
+it:
+
+  ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+
+
+
+
+
+   
+
+== Special IPv6 addresses
 
 === Unspecified address
 
