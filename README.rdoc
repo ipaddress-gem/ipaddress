@@ -643,12 +643,37 @@ actually created internally).
 You can create a new IPv6 address from different formats than just a
 string representing the colon-hex groups.
 
+For instance, if you have a data stream, you can use IPv6::parse_data,
+like in the following example:
 
+  data = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
 
-The subnet mask can be changed on a later stage by using the
-appropriate setter:
+  ip6 = IPAddress::IPv4::parse_data data 
+  ip6.prefix = 64
 
-  
+  ip6.to_s
+    #=> "2001:db8::8:800:200c:417a/64"
+
+A new IPv6 address can also be created from an unsigned 128 bits
+integer:
+
+  u128 = 21932261930451111902915077091070067066
+
+  ip6 = IPAddress::IPv6::parse_u128 u128
+  ip6.prefix = 64
+
+  ip6.to_s
+    #=> "1080::8:800:200c:417a/64"
+
+Finally, a new IPv6 address can be created from an hex string:
+
+  hex = "20010db80000000000080800200c417a"   
+
+  ip6 = IPAddress::IPv6::parse_hex hex
+  ip6.prefix = 64
+
+  ip6.to_s
+    #=> "2001:db8::8:800:200c:417a/64"
 
 == Special IPv6 addresses
 
