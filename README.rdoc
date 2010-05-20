@@ -822,7 +822,7 @@ group will be automatically added at the beginning
  
 making it a mapped IPv6 compatible address.
 
-= Acknowledges
+= Thanks to
  
 Thanks to Luca Russo (vargolo) for all the support and technical
 review.
