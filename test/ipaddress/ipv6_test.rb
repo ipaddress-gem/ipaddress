@@ -256,14 +256,14 @@ class IPv6MappedTest < Test::Unit::TestCase
   def setup
     @klass = IPAddress::IPv6::Mapped
     @ip = @klass.new("::172.16.10.1")
-    @str = "::FFFF:172.16.10.1/128"
+    @str = "::ffff:172.16.10.1/128"
     @string = "0000:0000:0000:0000:0000:ffff:ac10:0a01/128"
     @u128 = 281473568475649
     @address = "::ffff:ac10:a01"
 
     @valid_mapped = {'::13.1.68.3' => 281470899930115,
-      '0:0:0:0:0:FFFF:129.144.52.38' => 281472855454758,
-      '::FFFF:129.144.52.38' => 281472855454758}
+      '0:0:0:0:0:ffff:129.144.52.38' => 281472855454758,
+      '::ffff:129.144.52.38' => 281472855454758}
   end
 
   def test_initialize

@@ -652,14 +652,154 @@ appropriate setter:
 
 == Special IPv6 addresses
 
+Some IPv6 have a special meaning and are expressed in a special form,
+quite different than an usual IPv6 address. IPAddress has builtin
+support for unspecified, loopback and mapped IPv6 addresses.
+
 === Unspecified address
+
+The address with all zero bits is called the +unspecified+ address
+(corresponding to 0.0.0.0 in IPv4). It should be something like this:
+
+  0000:0000:0000:0000:0000:0000:0000:0000
+
+but, with the use of compression, it is usually written as just two
+colons:
+
+  ::
+
+or, specifying the netmask:
+
+  ::/128
+
+With IPAddress, create a new unspecified IPv6 address using its own
+subclass:
+
+  ip = IPAddress::IPv6::Unspecified.new
+
+  ip.to_s
+    #=> => "::/128"
+
+You can easily check if an IPv6 object is an unspecified address by
+using the IPv6#unspecified? method
+
+  ip.unspecified?
+    #=> true
+
+An unspecified IPv6 address can also be created with the wrapper
+method, like we've seen before
+
+  ip = IPAddress "::"
+
+  ip.unspecified?
+    #=> true
+
+This address must never be assigned to an interface and is to be used
+only in software before the application has learned its host's source
+address appropriate for a pending connection. Routers must not forward
+packets with the unspecified address.
 
 === Loopback address
 
+The loopback  address is a unicast localhost address. If an
+application in a host sends packets to this address, the IPv6 stack
+will loop these packets back on the same virtual interface.
+
+Loopback addresses are expressed in the following form:
+
+  ::1
+
+or, with their appropriate prefix,
+
+  ::1/128
+
+As for the unspecified addresses, IPv6 loopbacks can be created with
+IPAddress calling their own class:
+
+  ip = IPAddress::IPv6::Loopback.new
+
+  ip.to_s
+    #=> "::1/128"
+
+or by using the wrapper:
+
+  ip = IPAddress "::1"
+
+  ip.to_s
+    #=> "::1/128"
+
+Checking if an address is loopback is easy with the IPv6#loopback?
+method:
+
+  ip.loopback?
+    #=> true
+  
+The IPv6 loopback address corresponds to 127.0.0.1 in IPv4.
+
 === Mapped address
 
-== Copyright
+It is usually identified as a IPv4 mapped IPv6 address, a particular
+IPv6 address which aids the transition from IPv4 to IPv6. The
+structure of the address is 
+
+  ::ffff:w.y.x.z
+
+where w.x.y.z is a normal IPv4 address. For example, the following is
+a mapped IPv6 address:
+
+  ::ffff:192.168.100.1
+
+IPAddress is very powerful in handling mapped IPv6 addresses, as the
+IPv4 portion is stored internally as a normal IPv4 object. Let's have
+a look at some examples. To create a new mapped address, just use the
+class builder itself
+
+  ip6 = IPAddress::IPv6::Mapped.new "::ffff:172.16.10.1/128"
+
+or just use the wrapper method
+
+  ip6 = IPAddress "::ffff:172.16.10.1/128"
+
+Let's check it's really a mapped address:
+
+  ip6.mapped?
+    #=> true
+
+  ip6.to_s
+    #=> "::FFFF:172.16.10.1/128"
+
+Now with the +ipv4+ attribute, we can easily access the IPv4 portion
+of the mapped IPv6 address:
+
+  ip6.ipv4.address
+    #=> "172.16.10.1"
+
+Internally, the IPv4 address is stored as two 16 bits
+groups. Therefore all the usual methods for an IPv6 address are
+working perfectly fine:
+
+  ip6.to_hex
+    #=> "00000000000000000000ffffac100a01"
+
+  ip6.address
+    #=> "0000:0000:0000:0000:0000:ffff:ac10:0a01"
+
+A mapped IPv6 can also be created just by specify the address in the
+following format:
+  
+  ip6 = IPAddress "::172.16.10.1"
+
+That is, two colons and the IPv4 address. However, as by RFC, the ffff 
+group will be automatically added at the beginning
+
+  ip6.to_s
+    => "::ffff:172.16.10.1/128"
+ 
+making it a mapped IPv6 compatible address.
+  
+= Copyright
 
 Copyright (c) 2009-2010 Marco Ceresa. See LICENSE for details.
+
 
  

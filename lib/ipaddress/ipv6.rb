@@ -435,11 +435,11 @@ module IPAddress;
     def initialize(str)
       string, netmask = str.split("/")
       @ipv4 = IPAddress::IPv4.extract(string)
-      super("::FFFF:#{@ipv4.to_ipv6}/#{netmask}")
+      super("::ffff:#{@ipv4.to_ipv6}/#{netmask}")
     end
 
     def to_s
-      "::FFFF:#{@ipv4.address}/#@prefix"
+      "::ffff:#{@ipv4.address}/#@prefix"
     end
 
     def mapped?
