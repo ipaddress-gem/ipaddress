@@ -821,6 +821,11 @@ group will be automatically added at the beginning
     => "::ffff:172.16.10.1/128"
  
 making it a mapped IPv6 compatible address.
+
+= Acknowledges
+ 
+Thanks to Luca Russo (vargolo) for all the support and technical
+review.
   
 = Copyright
 
