@@ -1,13 +1,32 @@
 = IPAddress
 
-IPAddress is a Ruby library designed to work with IPv4 and
-IPv6 addresses. The library provides a complete set of methods to
-handle IP addresses for any need, from simple scripting to full
-network design.
+IPAddress is a Ruby library designed to make the use of IPv4 and IPv6
+addresses easy, powerful and enjoyable. It provides a complete set of
+methods to handle IP addresses for any need, from simple scripting to
+full network design.
 
 IPAddress is written with a full OO interface, and its code is easy to
-read, maintain and extend at one's will. This document provides a
-brief introduction to the library and examples of typical usage.
+read, maintain and extend. The documentation is full of examples, to
+let you start being productive immediately.
+
+This document provides a brief introduction to the library and
+examples of typical usage. 
+
+=== Why not using IPAddr?
+
+IPAddr is the IP addresses library that comes with Ruby standard
+lib. We found this library, although very well written, not very
+suitable for all our needs, and not very flexible. 
+
+Some quick examples of things you can't do with IPAddr:
+
+* store both the address and the prefix information
+* quickly find the broadcast address of a network
+* iterate over hosts 
+* perform subnetting or network aggregation
+
+We hope that IPAddress will address all these issues and meet all your
+needs in network programming.
 
 = Installation
 
@@ -552,7 +571,7 @@ methods:
 A compressed version of the IPv6 address can be obtained with the
 IPv6#compressed method:
 
-  ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+  ip6 = IPAddress "2001:0db8:0000:0000:0008:200c:417a:00ab/64"
 
   ip6.compressed
     #=> "2001:db8::8:800:200c:417a"
@@ -648,7 +667,7 @@ like in the following example:
 
   data = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
 
-  ip6 = IPAddress::IPv4::parse_data data 
+  ip6 = IPAddress::IPv6::parse_data data 
   ip6.prefix = 64
 
   ip6.to_s
@@ -821,6 +840,18 @@ group will be automatically added at the beginning
     => "::ffff:172.16.10.1/128"
  
 making it a mapped IPv6 compatible address.
+
+= Future versions:
+
+Some new features we'd like to add in the future versions:
+
+* support for wildmasks
+* network design methods for IPv6
+* parameter to IPv4#subnet to select where to fill the space
+  (beginning or ending)
+* method to check if a network is private
+
+Stay tuned!
 
 = Thanks to
  
