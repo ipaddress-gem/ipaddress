@@ -107,6 +107,7 @@ module IPAddress;
     # Returns the IPv6 address in uncompressed form:
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.address
     #     #=> "2001:0db8:0000:0000:0008:0800:200c:417a"
     #
@@ -119,6 +120,7 @@ module IPAddress;
     # format:
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.groups
     #     #=> [8193, 3512, 0, 0, 8, 2048, 8204, 16762]
     #
@@ -130,6 +132,7 @@ module IPAddress;
     # Returns an instance of the prefix object
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.prefix
     #     #=> 64
     #
@@ -162,6 +165,7 @@ module IPAddress;
     # returns the whole IPv6 address and prefix in an uncompressed form
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.to_string
     #     #=> "2001:0db8:0000:0000:0008:0800:200c:417a/64"
     #
@@ -174,6 +178,7 @@ module IPAddress;
     # using the compressed address.
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.to_string
     #     #=> "2001:db8::8:800:200c:417a/64"
     #
@@ -186,6 +191,7 @@ module IPAddress;
     # IPv6 address
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.to_i
     #     #=> 42540766411282592856906245548098208122
     #
@@ -232,6 +238,7 @@ module IPAddress;
     # address
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.to_hex
     #     #=> "20010db80000000000080800200c417a"
     #
@@ -265,6 +272,7 @@ module IPAddress;
     # format:
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.hexs
     #     #=> ["2001", "0db8", "0000", "0000", "0008", "0800", "200c", "417a"]
     #
@@ -278,6 +286,7 @@ module IPAddress;
     # Compressed form of the IPv6 address
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.compressed
     #     #=> "2001:db8::8:800:200c:417a"
     #
@@ -317,6 +326,7 @@ module IPAddress;
     # as a string containing a sequence of 0 and 1
     #
     #   ip = IPAddress("2001:db8::8:800:200c:417a")
+    #
     #   ip.bits
     #     #=> "01111111000000000000000000000001"
     #
@@ -348,6 +358,7 @@ module IPAddress;
     # Literal version of the IPv6 address
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.literal
     #     #=> "2001-0db8-0000-0000-0008-0800-200c-417a.ipv6-literal.net"
     # 

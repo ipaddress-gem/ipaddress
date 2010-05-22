@@ -72,6 +72,8 @@ module IPAddress
     return true if /\A::([\dA-Fa-f]{1,4}(:[\dA-Fa-f]{1,4})*:)?/ =~ addr && valid_ipv4?($')
     false
     end
+
+  class IPBase; end
   
 end # module IPAddress
 
