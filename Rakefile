@@ -1,14 +1,12 @@
 require 'rubygems'
 require 'rake'
 require 'rake/clean'
-require 'rcov/rcovtask'
-
 
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "ipaddress"
-    gem.summary = %Q{TODO}
+    gem.summary = %Q{IPv4/IPv6 addresses manipulation library}
     gem.email = "ceresa@gmail.com"
     gem.homepage = "http://github.com/bluemonk/ipaddress"
     gem.authors = ["Marco Ceresa"]
@@ -78,4 +76,14 @@ task :todo do
     end
   end
   egrep /(FIXME|TODO|TBD)/
+end
+
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gemspec|
+    # omitted for brevity
+  end
+  Jeweler::GemcutterTasks.new
+rescue LoadError
+  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
