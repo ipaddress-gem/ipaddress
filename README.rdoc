@@ -415,6 +415,7 @@ of the supernet. So the two rules are:
 
 1) The aggregate network must contain +all+ the IP addresses of the
 original networks;   
+
 2) The aggregate network must contain +only+ the IP addresses of the
 original networks; 
 
