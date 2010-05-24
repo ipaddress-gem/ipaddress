@@ -168,6 +168,7 @@ You can set a new prefix (netmask) after creating an IPv4
 object. For example:
 
   ip.prefix = 25
+
   ip.to_s
     #=> "172.16.10.l/25"
     
@@ -175,6 +176,7 @@ If you need to use a netmask in IPv4 format, you can achive so by
 using the IPv4#netmask= method
 
   ip.netmask = "255.255.255.252"
+
   ip.to_s
     #=> "172.16.10.1/30"
 
@@ -203,6 +205,7 @@ With IPAddress it's very easy to calculate the network for an IP
 address:
 
   ip = IPAddress "172.16.10.1/24"
+
   net = ip.network
     #=> #<IPAddress::IPv4:0xb7a5ab24 @octets=[172, 16, 10, 0], 
                                      @prefix=24,
@@ -237,6 +240,7 @@ counterpart: it creates a new IPv4 object to handle the broadcast
 address:
  
   ip = IPAddress "172.16.10.1/24"
+
   bcast = ip.broadcast
     #=> #<IPAddress::IPv4:0xb7a406fc @octets=[172, 16, 10, 255],
                                      @prefix=24, 
@@ -289,6 +293,7 @@ data and hexadecimal.
 Let's take the following IPv4 as an example:
 
   ip = IPAddress "172.16.10.1/24"
+
   ip.address
     #=> "172.16.10.1"
 
@@ -378,6 +383,7 @@ fill out the space.
 As an example, let's divide network 172.16.10.0/24 into 3 different subnets:
 
   network = IPAddress("172.16.10.0/24")
+
   network.subnet(3).map{|i| i.to_s}
     #=> ["172.16.10.0/26",
          "172.16.10.64/26",
@@ -386,6 +392,7 @@ As an example, let's divide network 172.16.10.0/24 into 3 different subnets:
 We can go even further and divide into 11 subnets:
 
   network = IPAddress("172.16.10.0/24")
+
   network.subnet(11).map{|i| i.to_s}
     #=> ["172.16.10.0/28", "172.16.10.16/28", "172.16.10.32/28",
          "172.16.10.48/28", "172.16.10.64/28", "172.16.10.80/28",
@@ -406,10 +413,10 @@ occur if there are no holes in the aggregated network, or, in
 other words, if the given networks fill completely the address space
 of the supernet. So the two rules are:
 
-  1) The aggregate network must contain +all+ the IP addresses of the
-  original networks;  
-  2) The aggregate network must contain +only+ the IP addresses of the
-  original networks; 
+1) The aggregate network must contain +all+ the IP addresses of the
+   original networks;  
+2) The aggregate network must contain +only+ the IP addresses of the
+   original networks; 
 
 A few examples will help clarify the above. Let's consider for
 instance the following two networks:
@@ -457,6 +464,7 @@ network:
   ip2 = IPAddress("10.0.2.1/24")
   ip3 = IPAddress("10.0.3.1/24")
   ip4 = IPAddress("10.0.4.1/24")
+
   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_s}
     #=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
 
