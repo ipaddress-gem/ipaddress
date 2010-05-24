@@ -414,9 +414,9 @@ other words, if the given networks fill completely the address space
 of the supernet. So the two rules are:
 
 1) The aggregate network must contain +all+ the IP addresses of the
-   original networks;  
+original networks;   
 2) The aggregate network must contain +only+ the IP addresses of the
-   original networks; 
+original networks; 
 
 A few examples will help clarify the above. Let's consider for
 instance the following two networks:
