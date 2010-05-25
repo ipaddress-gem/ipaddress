@@ -41,7 +41,7 @@ You can then use it in your programs:
 
 Another way would be to clone the git repository
 
-  $ git clone git://github.com/bluemonk/net-dns.git
+  $ git clone git://github.com/bluemonk/ipaddress.git
 
 And then install the library
  
