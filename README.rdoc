@@ -1,7 +1,7 @@
 = IPAddress
 
 IPAddress is a Ruby library designed to make the use of IPv4 and IPv6
-addresses easy, powerful and enjoyable. It provides a complete set of
+addresses simple, powerful and enjoyable. It provides a complete set of
 methods to handle IP addresses for any need, from simple scripting to
 full network design.
 
@@ -12,7 +12,16 @@ let you start being productive immediately.
 This document provides a brief introduction to the library and
 examples of typical usage. 
 
-=== Why not using IPAddr?
+== Requirements
+
+* Ruby >= 1.8.7 (not tested with previous versions)
+
+IPAddress works perfectly with Ruby 1.8.7 and Ruby 1.9.1. It hasn't yet 
+been tested on any other platform, so if you want to collaborate feel 
+free to send a small report to my email address, or 
+{join the discussion}[http://groups.google.com/group/ruby-ipaddress]. 
+
+== Why not using IPAddr?
 
 IPAddr is the IP addresses library that comes with Ruby standard
 lib. We found this library, although very well written, not very
@@ -28,7 +37,7 @@ Some quick examples of things you can't do with IPAddr:
 We hope that IPAddress will address all these issues and meet all your
 needs in network programming.
 
-= Installation
+== Installation
 
 Install the library using rubygems
 
@@ -48,29 +57,28 @@ And then install the library
   $ cd ipaddress
   ipaddress$ rake install
 
-= Documentation
+== Documentation
 
 The code is fully documented with RDoc. You can generate the
 documentation with Rake:
 
   ipaddress$ rake rdoc
 
-The latest documentation can be found online at the following address
+The latest documentation can be found online at 
+{this address}[http://marcoceresa.com/ipaddress]
 
-http://marcoceresa.com/ipaddress
-
-= Usage
+== Usage
 
 In this section I will illustrate how to use the IPAddress library
 through some examples of common tasks.
 
-== IPv4
+=== IPv4
 
 Class IPAddress::IPv4 is used to handle IPv4 type addresses. IPAddress
 is similar to other IP Addresses libraries, like Ruby's own
 IPAddr. However it works slightly different, as we will see.
 
-=== Create a new IPv4 address
+==== Create a new IPv4 address
 
 The usual way to express an IP Address is using its dotted decimal
 form, such as 172.16.10.1, and a prefix, such as 24, separated by a
@@ -94,7 +102,7 @@ You can specify an IPv4 address in any of two ways:
 In this example, prefix /24 and netmask 255.255.255.0 are the same and
 you have the flexibility to use either one of them.
 
-=== Classful networks
+==== Classful networks
 
 If you don't specify a prefix (or a subnet mask), then the library
 will create an object base on the CLASSFUL network from the given
@@ -124,10 +132,10 @@ You can easily check which CLASSFUL network the IP belongs:
 These methods are only checking the address portion of an IP, and are
 indipendent from its prefix.
 
-For more information on CLASSFUL networks visit the following
-Wikipedia page: http://en.wikipedia.org/wiki/Classful_network
+For more information on CLASSFUL networks visit the 
+{Wikipedia page}[http://en.wikipedia.org/wiki/Classful_network]
 
-=== Handling the IPv4 address
+==== Handling the IPv4 address
 
 Once created, you can obtain the attributes for an IPv4 object:
 
@@ -157,19 +165,19 @@ range:
     #=> 16
 
 If you need to print out the IPv4 address in a canonical form, you can
-use IPv4#to_s
+use IPv4#to_string
 
-  ip.to_s
+  ip.to_string
     #=> "172.16.10.l/24"
 
-=== Changing netmask
+==== Changing netmask
     
 You can set a new prefix (netmask) after creating an IPv4 
 object. For example:
 
   ip.prefix = 25
 
-  ip.to_s
+  ip.to_string
     #=> "172.16.10.l/25"
     
 If you need to use a netmask in IPv4 format, you can achive so by
@@ -177,10 +185,10 @@ using the IPv4#netmask= method
 
   ip.netmask = "255.255.255.252"
 
-  ip.to_s
+  ip.to_string
     #=> "172.16.10.1/30"
 
-=== Working with networks, broadcasts and addresses
+==== Working with networks, broadcasts and addresses
 
 Some very important topics in dealing with IP addresses are the
 concepts of +network+ and +broadcast+, as well as the addresses
@@ -201,6 +209,8 @@ This is very important because, for instance, IP "172.16.10.1/16" is
 very different to the previous one, belonging to the very different
 network "172.16.0.0/16".
 
+===== Networks
+
 With IPAddress it's very easy to calculate the network for an IP
 address:
 
@@ -210,7 +220,7 @@ address:
     #=> #<IPAddress::IPv4:0xb7a5ab24 @octets=[172, 16, 10, 0], 
                                      @prefix=24,
                                      @address="172.16.10.0">
-  net.to_s
+  net.to_string
     #=> "172.16.10.0/24"
 
 The IPv4#network method creates a new IPv4 object from the network
@@ -228,6 +238,8 @@ network or not:
     #=> false
   ip2.network?
     #=> true
+
+===== Broadcast
 
 The broadcast address is the contrary than the network number: where
 the network number has all zeroes in the host portion, the broadcast
@@ -247,6 +259,8 @@ address:
                                      @address="172.16.10.255">
   bcast.to_s
     #=> "172.16.10.255/24"
+
+===== Addresses, ranges and iterators
 
 So we see that the netmask essentially specifies a range for IP
 addresses that are included in a network: all the addresses between
@@ -278,13 +292,13 @@ respectively the first and the last host address in the range
 
   ip = IPAddress "172.16.10.100/24"
 
-  ip.first.to_s
+  ip.first.to_string
     #=> "172.16.10.1/24"
 
-  ip.last.to_s
+  ip.last.to_string
     #=> "172.16.10.254/24"
 
-=== IP special formats    
+==== IP special formats    
 
 The IPAddress library provides a complete set of methods to access an
 IPv4 address in special formats, such as binary, 32 bits unsigned int,
@@ -327,12 +341,12 @@ suitable to use in IPv4-IPv6 mapped addresses:
     #=> "ac10:0a01"
 
 
-== Network design with IPAddress
+=== Network design with IPAddress
 
 IPAddress includes a lot of useful methods to manipulate IPv4 and IPv6
 networks and do some basic network design. 
 
-=== Subnetting
+==== Subnetting
 
 The process of subnetting is the division of a network into smaller
 (in terms of hosts capacity) networks, called subnets, so that they
@@ -352,7 +366,7 @@ Subnetting is easy with IPAddress. Let's work out the last example:
          #<IPAddress::IPv4:0xb7b0e5ac @octets=[172,16,10,128] [...]  
          #<IPAddress::IPv4:0xb7b0e0c0 @octets=[172,16,10,192] [...]]
 
-  subnets.map{|i| i.to_s}
+  subnets.map{|i| i.to_string}
     #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
          "172.16.10.192/26"]
 
@@ -364,7 +378,7 @@ example:
 
   ip = IPAddress("172.16.10.58/24")
  
-  ip.subnet(4).map{|i| i.to_s}
+  ip.subnet(4).map{|i| i.to_string}
     #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26",
          "172.16.10.192/26"]
 
@@ -373,7 +387,7 @@ which is a power of two: in this way, you can be sure that the network
 will be divived evenly, and all the subnets will have the same number
 of hosts. 
 
-=== Uneven subnetting
+==== Uneven subnetting
 
 IPAddress also handles un-even subnetting: if you specify any number
 (up to the prefix limit), the network will be divided so that the
@@ -384,7 +398,7 @@ As an example, let's divide network 172.16.10.0/24 into 3 different subnets:
 
   network = IPAddress("172.16.10.0/24")
 
-  network.subnet(3).map{|i| i.to_s}
+  network.subnet(3).map{|i| i.to_string}
     #=> ["172.16.10.0/26",
          "172.16.10.64/26",
          "172.16.10.128/25"]
@@ -393,7 +407,7 @@ We can go even further and divide into 11 subnets:
 
   network = IPAddress("172.16.10.0/24")
 
-  network.subnet(11).map{|i| i.to_s}
+  network.subnet(11).map{|i| i.to_string}
     #=> ["172.16.10.0/28", "172.16.10.16/28", "172.16.10.32/28",
          "172.16.10.48/28", "172.16.10.64/28", "172.16.10.80/28",
          "172.16.10.96/28", "172.16.10.112/28", "172.16.10.128/27",
@@ -402,7 +416,7 @@ We can go even further and divide into 11 subnets:
 As you can see, most of the networks are /28, with a few /27 and one
 /26 to fill up the remaning space.
 
-=== Summarization
+==== Summarization
 
 Summarization (or aggregation) is the process when two or more
 networks are taken together to check if a supernet, including
@@ -455,8 +469,8 @@ aggregated in a single /22:
   ip3 = IPAddress("10.0.2.1/24")
   ip4 = IPAddress("10.0.3.1/24")
 
-  IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_s
-    #=> "10.0.0.0/22",
+  IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    #=> ["10.0.0.0/22"]
 
 But the following networks can't be summarized in a single
 network:
@@ -466,13 +480,13 @@ network:
   ip3 = IPAddress("10.0.3.1/24")
   ip4 = IPAddress("10.0.4.1/24")
 
-  IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_s}
+  IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
     #=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
 
 In this case, the two summarizables networks have been aggregated into
 a single /23, while the other two networks have been left untouched.
 
-=== Supernetting
+==== Supernetting
 
 Supernetting is a different operation than aggregation, as it only
 works on a single network and returns a new single IPv4 object,
@@ -498,14 +512,13 @@ change:
 This is because "172.16.10.0/22" is not a network anymore, but an host
 address.
 
-
-=IPv6
+== IPv6
 
 IPAddress is not only fantastic for IPv4 addresses, it's also great to
 handle IPv6 addresses family! Let's discover together how to use it in
 our projects.
 
-== IPv6 addresses
+=== IPv6 addresses
 
 IPv6 addresses are 128 bits long, in contrast with IPv4 addresses
 which are only 32 bits long. An IPv6 address is generally written as
@@ -519,7 +532,7 @@ Letters in an IPv6 address are usually written downcase, as per
 RFC. You can create a new IPv6 object using uppercase letters, but
 they will be converted.
 
-=== Compression
+==== Compression
 
 Since IPv6 addresses are very long to write, there are some
 semplifications and compressions that you can use to shorten them. 
@@ -537,7 +550,7 @@ the following, equivalent, address
 
 This short version is often used in human representation.
 
-=== Network Mask
+==== Network Mask
 
 As we used to do with IPv4 addresses, an IPv6 address can be written
 using the prefix notation to specify the subnet mask:
@@ -548,7 +561,7 @@ The /64 part means that the first 64 bits of the address are
 representing the network portion, and the last 64 bits are the host
 portion. 
 
-== Using IPAddress with IPv6 addresses
+=== Using IPAddress with IPv6 addresses
 
 All the IPv6 representations we've just seen are perfectly fine when
 you want to create a new IPv6 address:
@@ -585,7 +598,7 @@ IPv6#compressed method:
   ip6.compressed
     #=> "2001:db8::8:800:200c:417a"
 
-== Handling the IPv6 address
+=== Handling the IPv6 address
 
 Accessing the groups that form an IPv6 address is very easy with the
 IPv6#groups method:
@@ -630,16 +643,16 @@ and IPv6#to_string methods
 
   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
  
-  ip6.to_s
+  ip6.to_string
     #=> "2001:db8::8:800:200c:417a/96"
 
-  ip6.to_string
+  ip6.to_string_uncompressed
     #=> "2001:0db8:0000:0000:0008:0800:200c:417a/96"
 
-As you can see, IPv6.to_s prints out the compressed form, while
-IPv6.to_string uses the expanded version.
+As you can see, IPv6.to_string prints out the compressed form, while
+IPv6.to_string_uncompressed uses the expanded version.
 
-=== Compressing and uncompressing
+==== Compressing and uncompressing
 
 If you have a string representing an IPv6 address, you can easily
 compress it and uncompress it using the two class methods IPv6::expand
@@ -666,7 +679,7 @@ These methods can be used when you don't want to create a new object
 just for expanding or compressing an address (although a new object is
 actually created internally).
  
-== New IPv6 address from other formats
+=== New IPv6 address from other formats
 
 You can create a new IPv6 address from different formats than just a
 string representing the colon-hex groups.
@@ -679,7 +692,7 @@ like in the following example:
   ip6 = IPAddress::IPv6::parse_data data 
   ip6.prefix = 64
 
-  ip6.to_s
+  ip6.to_string
     #=> "2001:db8::8:800:200c:417a/64"
 
 A new IPv6 address can also be created from an unsigned 128 bits
@@ -690,7 +703,7 @@ integer:
   ip6 = IPAddress::IPv6::parse_u128 u128
   ip6.prefix = 64
 
-  ip6.to_s
+  ip6.to_string
     #=> "1080::8:800:200c:417a/64"
 
 Finally, a new IPv6 address can be created from an hex string:
@@ -700,16 +713,16 @@ Finally, a new IPv6 address can be created from an hex string:
   ip6 = IPAddress::IPv6::parse_hex hex
   ip6.prefix = 64
 
-  ip6.to_s
+  ip6.to_string
     #=> "2001:db8::8:800:200c:417a/64"
 
-== Special IPv6 addresses
+=== Special IPv6 addresses
 
 Some IPv6 have a special meaning and are expressed in a special form,
 quite different than an usual IPv6 address. IPAddress has builtin
 support for unspecified, loopback and mapped IPv6 addresses.
 
-=== Unspecified address
+==== Unspecified address
 
 The address with all zero bits is called the +unspecified+ address
 (corresponding to 0.0.0.0 in IPv4). It should be something like this:
@@ -730,7 +743,7 @@ subclass:
 
   ip = IPAddress::IPv6::Unspecified.new
 
-  ip.to_s
+  ip.to_string
     #=> => "::/128"
 
 You can easily check if an IPv6 object is an unspecified address by
@@ -752,7 +765,7 @@ only in software before the application has learned its host's source
 address appropriate for a pending connection. Routers must not forward
 packets with the unspecified address.
 
-=== Loopback address
+==== Loopback address
 
 The loopback  address is a unicast localhost address. If an
 application in a host sends packets to this address, the IPv6 stack
@@ -771,14 +784,14 @@ IPAddress calling their own class:
 
   ip = IPAddress::IPv6::Loopback.new
 
-  ip.to_s
+  ip.to_string
     #=> "::1/128"
 
 or by using the wrapper:
 
   ip = IPAddress "::1"
 
-  ip.to_s
+  ip.to_string
     #=> "::1/128"
 
 Checking if an address is loopback is easy with the IPv6#loopback?
@@ -789,7 +802,7 @@ method:
   
 The IPv6 loopback address corresponds to 127.0.0.1 in IPv4.
 
-=== Mapped address
+==== Mapped address
 
 It is usually identified as a IPv4 mapped IPv6 address, a particular
 IPv6 address which aids the transition from IPv4 to IPv6. The
@@ -818,8 +831,8 @@ Let's check it's really a mapped address:
   ip6.mapped?
     #=> true
 
-  ip6.to_s
-    #=> "::FFFF:172.16.10.1/128"
+  ip6.to_string
+    #=> "::ffff:172.16.10.1/128"
 
 Now with the +ipv4+ attribute, we can easily access the IPv4 portion
 of the mapped IPv6 address:
@@ -845,29 +858,29 @@ following format:
 That is, two colons and the IPv4 address. However, as by RFC, the ffff 
 group will be automatically added at the beginning
 
-  ip6.to_s
+  ip6.to_string
     => "::ffff:172.16.10.1/128"
  
 making it a mapped IPv6 compatible address.
 
-= Future versions:
+== Community
 
-Some new features we'd like to add in the future versions:
+Want to join the community? 
 
-* support for wildmasks
-* network design methods for IPv6
-* parameter to IPv4#subnet to select where to fill the space
-  (beginning or ending)
-* method to check if a network is private
+* {IPAddress google group}[http://groups.google.com/group/ruby-ipaddress]
 
-Stay tuned!
+We've created a group to discuss about 
+IPAddress future development, features and provide some kind of support.
+Feel free to join us and tell us what you think!
 
-= Thanks to
+== Thanks to
  
-Thanks to Luca Russo (vargolo) for all the support and technical
-review.
+Thanks to Luca Russo (vargolo) and Simone Carletti (weppos) for all 
+the support and technical review. Thanks to Marco Beri, Bryan T. Richardson,
+Nicolas Fevrier, jdpace and Steve Rawlinson for their support, feedback
+and bug reports.
   
-= Copyright
+== Copyright
 
 Copyright (c) 2009-2010 Marco Ceresa. See LICENSE for details.
 

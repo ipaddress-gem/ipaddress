@@ -33,6 +33,23 @@ class IPAddressTest < Test::Unit::TestCase
 
   end
 
+  def test_module_method_valid?
+    assert_equal true, IPAddress::valid?("10.0.0.1")
+    assert_equal true, IPAddress::valid?("10.0.0.0")
+    assert_equal true, IPAddress::valid?("2002::1")
+    assert_equal true, IPAddress::valid?("dead:beef:cafe:babe::f0ad")
+    assert_equal false, IPAddress::valid?("10.0.0.256")
+    assert_equal false, IPAddress::valid?("10.0.0.0.0")
+    assert_equal false, IPAddress::valid?("10.0.0")
+    assert_equal false, IPAddress::valid?("10.0")
+    assert_equal false, IPAddress::valid?("2002:::1")
+  end
+
+  def test_module_method_valid_ipv4_netmark?
+    assert_equal true, IPAddress::valid_ipv4_netmask?("255.255.255.0")
+    assert_equal false, IPAddress::valid_ipv4_netmask?("10.0.0.1")
+  end
+
 end
 
 

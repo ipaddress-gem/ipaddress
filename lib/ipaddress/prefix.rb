@@ -11,7 +11,7 @@ module IPAddress
   #
   # =DESCRIPTION
   #
-  # IPAddresS::Prefix is the parent class for IPAddress::Prefix32 
+  # IPAddress::Prefix is the parent class for IPAddress::Prefix32 
   # and IPAddress::Prefix128, defining some modules in common for
   # both the subclasses.
   #
@@ -24,23 +24,60 @@ module IPAddress
 
     attr_reader :prefix
 
+    #
+    # Creates a new general prefix
+    #
     def initialize(num)
       @prefix = num.to_i
     end
 
+    #
+    # Returns a string with the prefix 
+    #
     def to_s
       "#@prefix"
     end
     alias_method :inspect, :to_s
 
+    # 
+    # Returns the prefix
+    #
     def to_i
       @prefix
     end
 
+    # 
+    # Compare the prefix
+    #
     def <=>(oth)
       @prefix <=> oth.to_i
     end
 
+    #
+    # Sums two prefixes or a prefix to a 
+    # number, returns a Fixnum
+    #
+    def +(oth)
+      if oth.is_a? Fixnum
+        self.prefix + oth
+      else
+        self.prefix + oth.prefix
+      end
+    end
+
+    #
+    # Returns the difference between two
+    # prefixes, or a prefix and a number,
+    # as a Fixnum
+    #
+    def -(oth)
+      if oth.is_a? Fixnum
+        self.prefix - oth
+      else
+        (self.prefix - oth.prefix).abs
+      end
+    end
+    
    end # class Prefix
 
 

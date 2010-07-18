@@ -1,0 +1,75 @@
+
+ipaddress 0.6.0
+---------------
+
+API changes
+* IPv4#to_s now returns the address portion only, 
+  to retain compatibility with IPAddr. Example:
+  
+    IPAddress("172.16.10.1/24").to_s
+      #=> "172.16.10.1"     # ipaddress 0.6.0
+
+    IPAddress("172.16.10.1/24").to_s
+      #=> "172.16.10.1/24"  # ipaddress 0.5.0
+   
+* IPv6#to_s now returns the address portion only,
+  to retain compatibility with IPAddr. Example:
+
+    IPAddress "2001:db8::8:800:200c:417a/64".to_s	
+      #=> "2001:db8::8:800:200c:417a"    # ipaddress 0.6.0
+
+    IPAddress "2001:db8::8:800:200c:417a/64".to_s	
+      #=> "2001:db8::8:800:200c:417a/64" # ipaddress 0.6.0
+
+* IPv6::Unspecified#to_s, IPv6::Loopback and 
+  IPv6::Mapped#to_s now return the address portion only,
+  to retain compatibility with IPAddr. 
+
+* IPv4::summarize now returns an array even if the 
+  result is a single subnet, to keep consistency 
+  and avoid confusion
+
+New methods
+* IPv4#to_string and IPv6#to_string: print the address 
+  with the prefix portion, like the #to_s method in 
+  ipaddress 0.5.0
+* IPAddress::parse, for those who don't like the wrapper 
+  method IPAddress()
+* IPv6#to_string_uncompressed, returns a string with the
+  uncompressed IPv6 and the prefix
+* IPv6::Mapped#to_string, returns the IPv6 Mapped address 
+  with IPv4 notation and the prefix
+* IPv6#reverse, returns the ip6.arpa DNS reverse lookup 
+  string
+* IPv4#arpa and IPv6#arpa, alias of the respective #reverse
+  methods
+* Prefix#+, Prefix#-
+
+Library structure
+* Moved all the IPAddress module methods from 
+  lib/ipaddress/ipbase.rb to lib/ipaddress.rb
+* Removed IPBase superclass
+* IPv4 and IPv6 classes no longer inherit from IPBase
+* Removed lib/ipaddress/ipbase.rb
+* Removed test/ipaddress/ipbase_test.rb
+
+Minor fixes
+* Replaced Ruby 1.9 deprecated Hash#index with Hash#key 
+* Removed require ruby-prof from tests which was causing 
+  users to install ruby-prof or manually remove the line
+* Removed "must" method from tests, replaced by normal 
+  Test::Unit methods
+* Removed duplicate Jeweler entry in Rakefile
+* Made Integer#closest_power_of_2 more general by adding
+  an optional limit parameter
+* Fixed summarization algorithm (thanks to nicolas fevrier)
+* Fixed bug in prefix_from_ip (thanks to jdpace)
+
+Documentation
+* Normalized README rdoc headers
+* Added documentation for IPAddress::Prefix
+* Added documentation for IPAddress::IPv4 and 
+  IPAddress::IPv6
+* Fixed formatting
+* Fixed lots of typos
+

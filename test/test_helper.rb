@@ -1,14 +1,9 @@
 require 'rubygems'
 require 'test/unit'
-require 'ruby-prof'
-
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'ipaddress'
-
-class Test::Unit::TestCase
-end
 
 module Test::Unit
   

@@ -1,4 +1,3 @@
-require 'ipaddress/ipbase'
 require 'ipaddress/prefix'
 
 module IPAddress; 
@@ -59,7 +58,7 @@ module IPAddress;
   # portion.
   #
   #
-  class IPv6 < IPBase
+  class IPv6 
     
     include IPAddress
     include Enumerable  
@@ -148,29 +147,43 @@ module IPAddress;
     # if the object was created using the default prefix
     # of 128 bits.
     #
-    #   ip = IPAddress("2001:db8::8:800:200c:417a")
-    #   puts ip
-    #     #=> 2001:db8::8:800:200c:417a/128
+    #   ip6 = IPAddress("2001:db8::8:800:200c:417a")
     #
-    #   ip.prefix = 64
-    #   puts ip
-    #     #=> 2001:db8::8:800:200c:417a/64
+    #   puts ip6.to_string
+    #     #=> "2001:db8::8:800:200c:417a/128"
+    #
+    #   ip6.prefix = 64
+    #   puts ip6.to_string
+    #     #=> "2001:db8::8:800:200c:417a/64"
     #
     def prefix=(num)
       @prefix = Prefix128.new(num)
     end
 
     # 
-    # Unlike its counterpart IPv6#to_s method, IPv6#to_string 
+    # Unlike its counterpart IPv6#to_string method, IPv6#to_string_uncompressed 
     # returns the whole IPv6 address and prefix in an uncompressed form
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     #
-    #   ip6.to_string
+    #   ip6.to_string_uncompressed
     #     #=> "2001:0db8:0000:0000:0008:0800:200c:417a/64"
     #
-    def to_string
+    def to_string_uncompressed
       "#@address/#@prefix"
+    end
+
+    #
+    # Returns the IPv6 address in a human readable form,
+    # using the compressed address.
+    #
+    #   ip6 = IPAddress "2001:0db8:0000:0000:0008:0800:200c:417a/64"
+    #
+    #   ip6.to_string
+    #     #=> "2001:db8::8:800:200c:417a/64"
+    #
+    def to_string
+      "#@compressed/#@prefix"
     end
 
     #
@@ -179,11 +192,11 @@ module IPAddress;
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     #
-    #   ip6.to_string
-    #     #=> "2001:db8::8:800:200c:417a/64"
+    #   ip6.to_s
+    #     #=> "2001:db8::8:800:200c:417a"
     #
     def to_s
-      "#{compressed}/#@prefix"
+      @compressed
     end
 
     #
@@ -204,10 +217,12 @@ module IPAddress;
     # True if the IPv6 address is a network
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.network?
     #     #=> false
     #
     #   ip6 = IPAddress "2001:db8:8:800::/64"
+    #
     #   ip6.network?
     #     #=> true
     #
@@ -219,6 +234,7 @@ module IPAddress;
     # Returns the 16-bits value specified by index
     #
     #   ip = IPAddress("2001:db8::8:800:200c:417a/64")
+    #
     #   ip[0]
     #     #=> 8193
     #   ip[1]
@@ -250,6 +266,7 @@ module IPAddress;
     # in a network byte order format.
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
     #   ip6.data
     #     #=> " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
     #
@@ -281,6 +298,21 @@ module IPAddress;
     def hexs
       @address.split(":")
     end
+
+    #
+    # Returns the IPv6 address in a DNS reverse lookup
+    # string, as per RFC3172 and RFC2874.
+    #   
+    #   ip6 = IPAddress "3ffe:505:2::f")
+    #   
+    #   ip6.reverse
+    #     #=> "f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
+    #
+    def reverse
+      to_hex.reverse.gsub(/./){|c| c+"."} + "ip6.arpa"
+    end
+    alias_method :arpa, :reverse
+    
 
     #
     # Compressed form of the IPv6 address
@@ -325,10 +357,10 @@ module IPAddress;
     # Returns the address portion of an IP in binary format,
     # as a string containing a sequence of 0 and 1
     #
-    #   ip = IPAddress("2001:db8::8:800:200c:417a")
+    #   ip6 = IPAddress("2001:db8::8:800:200c:417a")
     #
-    #   ip.bits
-    #     #=> "01111111000000000000000000000001"
+    #   ip6.bits 
+    #     #=> "0010000000000001000011011011100000 [...] "
     #
     def bits
       data.unpack("B*").first
@@ -392,7 +424,7 @@ module IPAddress;
     #
     # With that data you can create a new IPv6 object:
     #
-    #   ip6 = IPAddress::IPv4::parse_data " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
+    #   ip6 = IPAddress::IPv6::parse_data " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
     #   ip6.prefix = 64
     #
     #   ip6.to_s
@@ -660,9 +692,23 @@ module IPAddress;
     #   ip6 = IPAddress "::ffff:172.16.10.1/128"
     #
     #   ip6.to_s
-    #     #=> "::FFFF:172.16.10.1/128"
+    #     #=> "::FFFF:172.16.10.1"
     #
     def to_s
+      "::ffff:#{@ipv4.address}"
+    end
+
+    # 
+    # Similar to IPv6#to_string, but prints out the IPv4 address 
+    # in dotted decimal format
+    #
+    #
+    #   ip6 = IPAddress "::ffff:172.16.10.1/128"
+    #
+    #   ip6.to_s
+    #     #=> "::FFFF:172.16.10.1/128"
+    #
+    def to_string
       "::ffff:#{@ipv4.address}/#@prefix"
     end
 

@@ -7,8 +7,8 @@ class Integer
     Math::log2(self).to_i == Math::log2(self)
   end
 
-  def closest_power_of_2
-    self.upto(32) do |i|
+  def closest_power_of_2(limit=32)
+    self.upto(limit) do |i|
       return i if i.power_of_2?
     end
   end

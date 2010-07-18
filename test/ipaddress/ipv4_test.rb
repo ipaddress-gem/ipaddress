@@ -74,6 +74,14 @@ class IPv4Test < Test::Unit::TestCase
     assert_raise (ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
+  def test_initialize_without_prefix
+    assert_nothing_raised do
+      @klass.new("10.10.0.0")
+    end
+    ip = @klass.new("10.10.0.0")
+    assert_instance_of IPAddress::Prefix32, ip.prefix
+  end
+
   def test_attributes
     @valid_ipv4.each do |arg,attr|
       ip = @klass.new(arg)
@@ -95,13 +103,20 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal "\254\020\n\001", @ip.data
   end
   
+  def test_method_to_string
+    @valid_ipv4.each do |arg,attr|
+      ip = @klass.new(arg)
+      assert_equal attr.join("/"), ip.to_string
+    end
+  end
+
   def test_method_to_s
     @valid_ipv4.each do |arg,attr|
       ip = @klass.new(arg)
-      assert_equal attr.join("/"), ip.to_s
+      assert_equal attr.first, ip.to_s
     end
   end
-  
+
   def test_netmask
     @netmask_values.each do |addr,mask|
       ip = @klass.new(addr)
@@ -125,7 +140,7 @@ class IPv4Test < Test::Unit::TestCase
     @broadcast.each do |addr,bcast|
       ip = @klass.new(addr)
       assert_instance_of @klass, ip.broadcast
-      assert_equal bcast, ip.broadcast.to_s
+      assert_equal bcast, ip.broadcast.to_string
     end
   end
   
@@ -133,7 +148,7 @@ class IPv4Test < Test::Unit::TestCase
     @networks.each do |addr,net|
       ip = @klass.new addr
       assert_instance_of @klass, ip.network
-      assert_equal net, ip.network.to_s
+      assert_equal net, ip.network.to_string
     end
   end
 
@@ -145,27 +160,27 @@ class IPv4Test < Test::Unit::TestCase
   def test_method_first
     ip = @klass.new("192.168.100.0/24")
     assert_instance_of @klass, ip.first
-    assert_equal "192.168.100.1/24", ip.first.to_s
+    assert_equal "192.168.100.1", ip.first.to_s
     ip = @klass.new("192.168.100.50/24")
     assert_instance_of @klass, ip.first
-    assert_equal "192.168.100.1/24", ip.first.to_s
+    assert_equal "192.168.100.1", ip.first.to_s
   end
 
   def test_method_last
     ip = @klass.new("192.168.100.0/24")
     assert_instance_of @klass, ip.last
-    assert_equal  "192.168.100.254/24", ip.last.to_s
+    assert_equal  "192.168.100.254", ip.last.to_s
     ip = @klass.new("192.168.100.50/24")
     assert_instance_of @klass, ip.last
-    assert_equal  "192.168.100.254/24", ip.last.to_s
+    assert_equal  "192.168.100.254", ip.last.to_s
   end
   
   def test_method_each_host
     ip = @klass.new("10.0.0.1/29")
     arr = []
     ip.each_host {|i| arr << i.to_s}
-    expected = ["10.0.0.1/29","10.0.0.2/29","10.0.0.3/29",
-                "10.0.0.4/29","10.0.0.5/29","10.0.0.6/29"]
+    expected = ["10.0.0.1","10.0.0.2","10.0.0.3",
+                "10.0.0.4","10.0.0.5","10.0.0.6"]
     assert_equal expected, arr
   end
 
@@ -173,9 +188,9 @@ class IPv4Test < Test::Unit::TestCase
     ip = @klass.new("10.0.0.1/29")
     arr = []
     ip.each {|i| arr << i.to_s}
-    expected = ["10.0.0.0/29","10.0.0.1/29","10.0.0.2/29",
-                "10.0.0.3/29","10.0.0.4/29","10.0.0.5/29",
-                "10.0.0.6/29","10.0.0.7/29"]
+    expected = ["10.0.0.0","10.0.0.1","10.0.0.2",
+                "10.0.0.3","10.0.0.4","10.0.0.5",
+                "10.0.0.6","10.0.0.7"]
     assert_equal expected, arr
   end
 
@@ -186,8 +201,8 @@ class IPv4Test < Test::Unit::TestCase
 
   def test_method_hosts
     ip = @klass.new("10.0.0.1/29")
-    expected = ["10.0.0.1/29","10.0.0.2/29","10.0.0.3/29",
-                "10.0.0.4/29","10.0.0.5/29","10.0.0.6/29"]
+    expected = ["10.0.0.1","10.0.0.2","10.0.0.3",
+                "10.0.0.4","10.0.0.5","10.0.0.6"]
     assert_equal expected, ip.hosts.map {|i| i.to_s}
   end
 
@@ -272,7 +287,7 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal true, ip1 == ip4
     # test sorting
     arr = ["10.1.1.1/16","10.1.1.1/8","172.16.1.1/14"]
-    assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_s}
+    assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_string}
   end
 
   def test_method_minus
@@ -285,11 +300,29 @@ class IPv4Test < Test::Unit::TestCase
   def test_method_plus
     ip1 = @klass.new("172.16.10.1/24")
     ip2 = @klass.new("172.16.11.2/24")
-    assert_equal "172.16.10.0/23", (ip1 + ip2).to_s
+    assert_equal ["172.16.10.0/23"], (ip1+ip2).map{|i| i.to_string}
+
     ip2 = @klass.new("172.16.12.2/24")
-    assert_equal [ip1.network.to_s,ip2.network.to_s], (ip1 + ip2).map{|i| i.to_s}
+    assert_equal [ip1.network.to_string, ip2.network.to_string], 
+    (ip1 + ip2).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/23")
+    ip2 = @klass.new("10.0.2.0/24")
+    assert_equal ["10.0.0.0/23","10.0.2.0/24"], (ip1+ip2).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/23")
+    ip2 = @klass.new("10.0.2.0/24")
+    assert_equal ["10.0.0.0/23","10.0.2.0/24"], (ip2+ip1).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/16")
+    ip2 = @klass.new("10.0.2.0/24")
+    assert_equal ["10.0.0.0/16"], (ip1+ip2).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/23")
+    ip2 = @klass.new("10.1.0.0/24")
+    assert_equal ["10.0.0.0/23","10.1.0.0/24"], (ip1+ip2).map{|i| i.to_string}
+
   end
-  
   
   def test_method_netmask_equal
     ip = @klass.new("10.1.1.1/16")
@@ -305,78 +338,99 @@ class IPv4Test < Test::Unit::TestCase
      arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
             "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
             "172.16.10.192/27", "172.16.10.224/27"]
-     assert_equal arr, @network.subnet(8).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(8).map {|s| s.to_string}
      arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
             "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
             "172.16.10.192/26"]
-     assert_equal arr, @network.subnet(7).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(7).map {|s| s.to_string}
      arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
             "172.16.10.96/27", "172.16.10.128/26", "172.16.10.192/26"]
-     assert_equal arr, @network.subnet(6).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(6).map {|s| s.to_string}
      arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
             "172.16.10.96/27", "172.16.10.128/25"]
-     assert_equal arr, @network.subnet(5).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(5).map {|s| s.to_string}
      arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
             "172.16.10.192/26"]
-     assert_equal arr, @network.subnet(4).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(4).map {|s| s.to_string}
      arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/25"]
-     assert_equal arr, @network.subnet(3).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(3).map {|s| s.to_string}
      arr = ["172.16.10.0/25", "172.16.10.128/25"]
-     assert_equal arr, @network.subnet(2).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(2).map {|s| s.to_string}
      arr = ["172.16.10.0/24"]
-     assert_equal arr, @network.subnet(1).map {|s| s.to_s}
+     assert_equal arr, @network.subnet(1).map {|s| s.to_string}
    end
 
    def test_method_supernet
      assert_raise(ArgumentError) {@ip.supernet(0)}
      assert_raise(ArgumentError) {@ip.supernet(24)}     
-     assert_equal "172.16.10.0/23", @ip.supernet(23).to_s
-     assert_equal "172.16.8.0/22", @ip.supernet(22).to_s
+     assert_equal "172.16.10.0/23", @ip.supernet(23).to_string
+     assert_equal "172.16.8.0/22", @ip.supernet(22).to_string
    end
 
   def test_classmethod_parse_u32
     @decimal_values.each do  |addr,int|
       ip = @klass.parse_u32(int)
       ip.prefix = addr.split("/").last.to_i
-      assert_equal ip.to_s, addr
+      assert_equal ip.to_string, addr
     end
   end
 
   def test_classhmethod_extract
     str = "foobar172.16.10.1barbaz"
-    assert_equal "172.16.10.1/16", @klass.extract(str).to_s
+    assert_equal "172.16.10.1", @klass.extract(str).to_s
   end
 
   def test_classmethod_summarize
     
     # Should return self if only one network given
-    assert_equal @ip, @klass.summarize(@ip)
+    assert_equal [@ip.network], @klass.summarize(@ip)
 
     # Summarize homogeneous networks
     ip1 = @klass.new("172.16.10.1/24")
     ip2 = @klass.new("172.16.11.2/24")
-    assert_equal "172.16.10.0/23", @klass.summarize(ip1,ip2).to_s
+    assert_equal ["172.16.10.0/23"], @klass.summarize(ip1,ip2).map{|i| i.to_string}
 
     ip1 = @klass.new("10.0.0.1/24")
     ip2 = @klass.new("10.0.1.1/24")
     ip3 = @klass.new("10.0.2.1/24")
     ip4 = @klass.new("10.0.3.1/24")
-    assert_equal "10.0.0.0/22", @klass.summarize(ip1,ip2,ip3,ip4).to_s
-    
+    assert_equal ["10.0.0.0/22"], @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    assert_equal ["10.0.0.0/22"], @klass.summarize(ip4,ip3,ip2,ip1).map{|i| i.to_string}
+
     # Summarize non homogeneous networks
+    ip1 = @klass.new("10.0.0.0/23")
+    ip2 = @klass.new("10.0.2.0/24")
+    assert_equal ["10.0.0.0/23","10.0.2.0/24"], @klass.summarize(ip1,ip2).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/16")
+    ip2 = @klass.new("10.0.2.0/24")
+    assert_equal ["10.0.0.0/16"], @klass.summarize(ip1,ip2).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/23")
+    ip2 = @klass.new("10.1.0.0/24")
+    assert_equal ["10.0.0.0/23","10.1.0.0/24"], @klass.summarize(ip1,ip2).map{|i| i.to_string}
+
+    ip1 = @klass.new("10.0.0.0/23")
+    ip2 = @klass.new("10.0.2.0/23")
+    ip3 = @klass.new("10.0.4.0/24")
+    ip4 = @klass.new("10.0.6.0/24")
+    assert_equal ["10.0.0.0/22","10.0.4.0/24","10.0.6.0/24"], 
+              @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+
     ip1 = @klass.new("10.0.1.1/24")
     ip2 = @klass.new("10.0.2.1/24")
     ip3 = @klass.new("10.0.3.1/24")
     ip4 = @klass.new("10.0.4.1/24")
     result = ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
-    assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_s}
+    assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    assert_equal result, @klass.summarize(ip4,ip3,ip2,ip1).map{|i| i.to_string}
 
     ip1 = @klass.new("10.0.1.1/24")
     ip2 = @klass.new("10.10.2.1/24")
     ip3 = @klass.new("172.16.0.1/24")
     ip4 = @klass.new("172.16.1.1/24")
     result = ["10.0.1.0/24","10.10.2.0/24","172.16.0.0/23"]
-    assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_s}
+    assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
 
   end
 
@@ -384,7 +438,7 @@ class IPv4Test < Test::Unit::TestCase
     ip = @klass.parse_data "\254\020\n\001"
     assert_instance_of @klass, ip
     assert_equal "172.16.10.1", ip.address
-    assert_equal "172.16.10.1/16", ip.to_s
+    assert_equal "172.16.10.1/16", ip.to_string
   end
   
 end # class IPv4Test

@@ -10,9 +10,13 @@ begin
     gem.email = "ceresa@gmail.com"
     gem.homepage = "http://github.com/bluemonk/ipaddress"
     gem.authors = ["Marco Ceresa"]
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.description   = <<-EOD
+      IPAddress is a Ruby library designed to make manipulation 
+      of IPv4 and IPv6 addresses both powerful and simple. It mantains
+      a layer of compatibility with Ruby's own IPAddr, while 
+      addressing many of its issues.
+    EOD
   end
-
 rescue LoadError
   puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
 end
@@ -57,7 +61,7 @@ end
 
 desc "Open an irb session preloaded with this library"
 task :console do
-  sh "irb -rubygems -I lib -r ipaddress.rb"
+  sh "irb1.9 -rubygems -I lib -r ipaddress.rb"
 end
 
 desc "Look for TODO and FIXME tags in the code"
@@ -76,14 +80,4 @@ task :todo do
     end
   end
   egrep /(FIXME|TODO|TBD)/
-end
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gemspec|
-    # omitted for brevity
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
 end
