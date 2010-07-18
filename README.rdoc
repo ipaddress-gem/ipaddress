@@ -23,6 +23,7 @@ IPAddress works perfectly on:
 * Ruby 1.9.1 
 * Ruby 1.9.2dev (2010-06-08 revision 28230)
 * Ruby 1.9.2dev (2010-07-15 revision 28653)
+* Rubinius 1.0.1 (1.8.7 release 2010-06-03 JI)
 * Ironruby >= 1.0
 
 It hasn't yet been tested on any other platform, so if you want to collaborate feel 
