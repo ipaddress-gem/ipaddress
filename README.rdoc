@@ -14,10 +14,18 @@ examples of typical usage.
 
 == Requirements
 
-* Ruby >= 1.8.7 (not tested with previous versions)
+* Ruby >= 1.8.6 (not tested with previous versions)
 
-IPAddress works perfectly with Ruby 1.8.7 and Ruby 1.9.1. It hasn't yet 
-been tested on any other platform, so if you want to collaborate feel 
+IPAddress works perfectly on:
+
+* Ruby 1.8.6 (2007-03-13 patchlevel 0) 
+* Ruby 1.8.7 
+* Ruby 1.9.1 
+* Ruby 1.9.2dev (2010-06-08 revision 28230)
+* Ruby 1.9.2dev (2010-07-15 revision 28653)
+* Ironruby >= 1.0
+
+It hasn't yet been tested on any other platform, so if you want to collaborate feel 
 free to send a small report to my email address, or 
 {join the discussion}[http://groups.google.com/group/ruby-ipaddress]. 
 
@@ -880,8 +888,8 @@ Feel free to join us and tell us what you think!
  
 Thanks to Luca Russo (vargolo) and Simone Carletti (weppos) for all 
 the support and technical review. Thanks to Marco Beri, Bryan T. Richardson,
-Nicolas Fevrier, jdpace and Steve Rawlinson for their support, feedback
-and bug reports.
+Nicolas Fevrier, jdpace, Daniele Alessandri and Steve Rawlinson for 
+their support, feedback and bug reports.
   
 == Copyright
 
