@@ -34,6 +34,9 @@ Some quick examples of things you can't do with IPAddr:
 * iterate over hosts 
 * perform subnetting or network aggregation
 
+Moreover, many methods and procedures are so old that they have been 
+declared deprecated by the IETF.
+
 We hope that IPAddress will address all these issues and meet all your
 needs in network programming.
 
@@ -257,7 +260,7 @@ address:
     #=> #<IPAddress::IPv4:0xb7a406fc @octets=[172, 16, 10, 255],
                                      @prefix=24, 
                                      @address="172.16.10.255">
-  bcast.to_s
+  bcast.to_string
     #=> "172.16.10.255/24"
 
 ===== Addresses, ranges and iterators
@@ -442,7 +445,7 @@ instance the following two networks:
 These two networks can be expressed using only one IP address
 network if we change the prefix. Let Ruby do the work:
 
-  IPAddress::IPv4::summarize(ip1,ip2).to_s
+  IPAddress::IPv4::summarize(ip1,ip2).to_string
     #=> "172.16.10.0/23"
 
 We note how the network "172.16.10.0/23" includes all the
@@ -500,13 +503,13 @@ example, given the network
 
 you can supernet it with a new /23 prefix
 
-  ip.supernet(23).to_s
+  ip.supernet(23).to_string
     #=> "172.16.10.0/23"
 
 However if you supernet it with a /22 prefix, the network address will
 change: 
 
-  ip.supernet(22).to_s
+  ip.supernet(22).to_string
     #=> "172.16.8.0/22"
 
 This is because "172.16.10.0/22" is not a network anymore, but an host
@@ -638,8 +641,8 @@ or to hexadecimal representation
   ip6.to_hex
     #=> "20010db80000000000080800200c417a"
 
-To print out an IPv6 address in human readable form, use the IPv6#to_s
-and IPv6#to_string methods
+To print out an IPv6 address in human readable form, use the IPv6#to_s, IPv6#to_string
+and IPv6#to_string_uncompressed methods
 
   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
  
@@ -744,7 +747,7 @@ subclass:
   ip = IPAddress::IPv6::Unspecified.new
 
   ip.to_string
-    #=> => "::/128"
+    #=> "::/128"
 
 You can easily check if an IPv6 object is an unspecified address by
 using the IPv6#unspecified? method

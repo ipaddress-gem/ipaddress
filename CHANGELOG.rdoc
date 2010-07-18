@@ -1,8 +1,7 @@
 
-ipaddress 0.6.0
----------------
+== ipaddress 0.6.0
 
-API changes
+=== API changes
 * IPv4#to_s now returns the address portion only, 
   to retain compatibility with IPAddr. Example:
   
@@ -24,12 +23,11 @@ API changes
 * IPv6::Unspecified#to_s, IPv6::Loopback and 
   IPv6::Mapped#to_s now return the address portion only,
   to retain compatibility with IPAddr. 
-
 * IPv4::summarize now returns an array even if the 
   result is a single subnet, to keep consistency 
   and avoid confusion
 
-New methods
+=== New methods
 * IPv4#to_string and IPv6#to_string: print the address 
   with the prefix portion, like the #to_s method in 
   ipaddress 0.5.0
@@ -45,7 +43,7 @@ New methods
   methods
 * Prefix#+, Prefix#-
 
-Library structure
+=== Library structure
 * Moved all the IPAddress module methods from 
   lib/ipaddress/ipbase.rb to lib/ipaddress.rb
 * Removed IPBase superclass
@@ -53,7 +51,7 @@ Library structure
 * Removed lib/ipaddress/ipbase.rb
 * Removed test/ipaddress/ipbase_test.rb
 
-Minor fixes
+=== Minor fixes
 * Replaced Ruby 1.9 deprecated Hash#index with Hash#key 
 * Removed require ruby-prof from tests which was causing 
   users to install ruby-prof or manually remove the line
@@ -65,7 +63,7 @@ Minor fixes
 * Fixed summarization algorithm (thanks to nicolas fevrier)
 * Fixed bug in prefix_from_ip (thanks to jdpace)
 
-Documentation
+=== Documentation
 * Normalized README rdoc headers
 * Added documentation for IPAddress::Prefix
 * Added documentation for IPAddress::IPv4 and 
