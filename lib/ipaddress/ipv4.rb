@@ -855,7 +855,7 @@ module IPAddress;
       return [args.first.network] if args.size == 1
       
       i = 0
-      result = args.dup.sort.map{|i| i.network}
+      result = args.dup.sort.map{|ip| ip.network}
       while i < result.size-1
         sum = result[i] + result[i+1]
         result[i..i+1] = sum.first if sum.size == 1
