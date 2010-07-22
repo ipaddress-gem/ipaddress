@@ -61,7 +61,7 @@ end
 
 desc "Open an irb session preloaded with this library"
 task :console do
-  sh "irb1.9 -rubygems -I lib -r ipaddress.rb"
+  sh "irb -rubygems -I lib -r ipaddress.rb"
 end
 
 desc "Look for TODO and FIXME tags in the code"
