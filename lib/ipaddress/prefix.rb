@@ -185,7 +185,7 @@ module IPAddress
     def self.parse_netmask(netmask)
       octets = netmask.split(".").map{|i| i.to_i}
       num = octets.pack("C"*octets.size).unpack("B*").first.count "1"
-      return IPAddress::Prefix.new(num)
+      return self.new(num)
     end
     
   end # class Prefix32 < Prefix

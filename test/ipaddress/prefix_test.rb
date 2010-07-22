@@ -41,6 +41,7 @@ class Prefix32Test < Test::Unit::TestCase
     @prefix_hash.each do |netmask, num|
       prefix = @klass.parse_netmask(netmask)
       assert_equal num, prefix.prefix
+      assert_instance_of @klass, prefix
     end
   end
 
