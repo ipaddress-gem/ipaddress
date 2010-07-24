@@ -1,3 +1,7 @@
+== master
+
+NEW:: IPAddress::IPv6#include?
+NEW:: IPAddress::IPv6#network_u128
 
 == ipaddress 0.6.0
 

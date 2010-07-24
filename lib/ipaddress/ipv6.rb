@@ -303,7 +303,7 @@ module IPAddress;
     # Returns the IPv6 address in a DNS reverse lookup
     # string, as per RFC3172 and RFC2874.
     #   
-    #   ip6 = IPAddress "3ffe:505:2::f")
+    #   ip6 = IPAddress "3ffe:505:2::f"
     #   
     #   ip6.reverse
     #     #=> "f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
@@ -312,7 +312,38 @@ module IPAddress;
       to_hex.reverse.gsub(/./){|c| c+"."} + "ip6.arpa"
     end
     alias_method :arpa, :reverse
-    
+
+    #
+    # Returns the network number in Unsigned 128bits format
+    #
+    #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
+    #   ip6.network_u128
+    #     #=> 42540766411282592856903984951653826560
+    #
+    def network_u128
+      to_u128 & @prefix.to_u128
+    end
+
+    #
+    # Checks whether a subnet includes the given IP address.
+    #
+    # Example:
+    #
+    #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
+    #   addr = IPAddress "2001:db8::8:800:200c:1/128"
+    #
+    #
+    #   ip6.include? addr
+    #     #=> true
+    #
+    #   ip.include? IPAddress("2001:db8:1::8:800:200c:417a/76")
+    #     #=> false
+    #
+    def include?(oth)
+      @prefix <= oth.prefix and network_u128 == self.class.new(oth.address+"/#@prefix").network_u128
+    end
 
     #
     # Compressed form of the IPv6 address

@@ -39,7 +39,6 @@ class IPv6Test < Test::Unit::TestCase
     @hex = "20010db80000000000080800200c417a"
   end
   
-  
   def test_attribute_address
     addr = "2001:0db8:0000:0000:0008:0800:200c:417a"
     assert_equal addr, @ip.address
@@ -106,6 +105,29 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal false, @ip.network?
   end
 
+  def test_method_network_u128
+    assert_equal 42540766411282592856903984951653826560, @ip.network_u128
+  end
+  
+  def test_method_include?
+    assert_equal true, @ip.include?(@ip)
+    # test prefix on same address
+    included = @klass.new "2001:db8::8:800:200c:417a/128"
+    not_included = @klass.new "2001:db8::8:800:200c:417a/46"
+    assert_equal true, @ip.include?(included)
+    assert_equal false, @ip.include?(not_included)
+    # test address on same prefix 
+    included = @klass.new "2001:db8::8:800:200c:0/64"
+    not_included = @klass.new "2001:db8:1::8:800:200c:417a/64"
+    assert_equal true, @ip.include?(included)
+    assert_equal false, @ip.include?(not_included)
+    # general test
+    included = @klass.new "2001:db8::8:800:200c:1/128"
+    not_included = @klass.new "2001:db8:1::8:800:200c:417a/76"
+    assert_equal true, @ip.include?(included)
+    assert_equal false, @ip.include?(not_included)
+  end
+  
   def test_method_to_hex
     assert_equal @hex, @ip.to_hex
   end
