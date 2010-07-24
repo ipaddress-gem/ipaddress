@@ -331,14 +331,12 @@ module IPAddress;
     # Example:
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
-    #
     #   addr = IPAddress "2001:db8::8:800:200c:1/128"
-    #
     #
     #   ip6.include? addr
     #     #=> true
     #
-    #   ip.include? IPAddress("2001:db8:1::8:800:200c:417a/76")
+    #   ip6.include? IPAddress("2001:db8:1::8:800:200c:417a/76")
     #     #=> false
     #
     def include?(oth)
