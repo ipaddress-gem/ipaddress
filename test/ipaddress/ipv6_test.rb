@@ -53,6 +53,10 @@ class IPv6Test < Test::Unit::TestCase
       assert_raise(ArgumentError) {@klass.new ip}
     end
     assert_equal 64, @ip.prefix
+
+    assert_raise(ArgumentError) {
+      @klass.new "::10.1.1.1"
+    }
   end
   
   def test_attribute_groups
@@ -87,6 +91,8 @@ class IPv6Test < Test::Unit::TestCase
 
   def test_method_mapped?
     assert_equal false, @ip.mapped?
+    ip6 = @klass.new "::ffff:1234:5678"
+    assert_equal true, ip6.mapped?
   end
 
   def test_method_literal
@@ -150,20 +156,11 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal str, @ip.data
   end
 
-
   def test_method_reverse
     str = "f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
     assert_equal str, @klass.new("3ffe:505:2::f").reverse
   end
 
-#   def test_ip6_int
-#     assert_equal("f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.0.5.0.5.0.e.f.f.3.ip6.int", IPAddress("3ffe:505:2::f").ip6_int)
-  #     assert_raises(ArgumentError) {
-#       IPAddress("192.168.2.1").ip6_int
-  #     }
-#   end
-
-  
   def test_method_compressed
     assert_equal "1:1:1::1", @klass.new("1:1:1:0:0:0:0:1").compressed
     assert_equal "1:0:1::1", @klass.new("1:0:1:0:0:0:0:1").compressed
@@ -309,6 +306,15 @@ class IPv6MappedTest < Test::Unit::TestCase
     @valid_mapped = {'::13.1.68.3' => 281470899930115,
       '0:0:0:0:0:ffff:129.144.52.38' => 281472855454758,
       '::ffff:129.144.52.38' => 281472855454758}
+
+    @valid_mapped_ipv6 = {'::0d01:4403' => 281470899930115,
+      '0:0:0:0:0:ffff:8190:3426' => 281472855454758,
+      '::ffff:8190:3426' => 281472855454758}
+
+    @valid_mapped_ipv6_conversion = {'::0d01:4403' => "13.1.68.3",
+      '0:0:0:0:0:ffff:8190:3426' => "129.144.52.38",
+      '::ffff:8190:3426' => "129.144.52.38"}
+
   end
 
   def test_initialize
@@ -317,6 +323,16 @@ class IPv6MappedTest < Test::Unit::TestCase
     @valid_mapped.each do |ip, u128|
       assert_nothing_raised {@klass.new ip}
       assert_equal u128, @klass.new(ip).to_u128
+    end
+    @valid_mapped_ipv6.each do |ip, u128|
+      assert_nothing_raised {@klass.new ip}
+      assert_equal u128, @klass.new(ip).to_u128
+    end
+  end
+
+  def test_mapped_from_ipv6_conversion
+    @valid_mapped_ipv6_conversion.each do |ip6,ip4|
+      assert_equal ip4, @klass.new(ip6).ipv4.to_s
     end
   end
 

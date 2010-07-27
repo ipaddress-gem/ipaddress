@@ -2,6 +2,7 @@
 
 NEW:: IPAddress::IPv6#include?
 NEW:: IPAddress::IPv6#network_u128
+NEW:: Modified IPAddress::IPv6::Mapped to accept IPv4 mapped addresses in IPv6 format
 
 == ipaddress 0.6.0
 
