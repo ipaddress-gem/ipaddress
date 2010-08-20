@@ -88,7 +88,7 @@ module IPAddress;
           raise ArgumentError, "Invalid netmask #{netmask}"
         end
       else  # netmask is nil, reverting to defaul classful mask
-        @prefix = prefix_from_ip(@address)
+        @prefix = Prefix32.new(32)
       end
 
       # Array formed with the IP octets
@@ -870,6 +870,16 @@ module IPAddress;
         # keep on summarizing
         return self.summarize(*result)
       end
+    end
+
+    def self.parse_classful(ip)
+      if IPAddress.valid_ipv4?(ip)
+        address = ip.strip
+      else
+        raise ArgumentError, "Invalid IP #{ip.inspect}"
+      end
+      prefix = CLASSFUL.find{|h,k| h === ("%.8b" % address.to_i)}.last
+      self.new "#{address}/#{prefix}"
     end
 
     #

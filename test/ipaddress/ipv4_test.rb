@@ -6,8 +6,8 @@ class IPv4Test < Test::Unit::TestCase
     @klass = IPAddress::IPv4
 
     @valid_ipv4 = {
-      "10.0.0.0" => ["10.0.0.0", 8],
-      "10.0.0.1" => ["10.0.0.1", 8],
+      "10.0.0.0" => ["10.0.0.0", 32],
+      "10.0.0.1" => ["10.0.0.1", 32],
       "10.0.0.1/24" => ["10.0.0.1", 24],
       "10.0.0.1/255.255.255.0" => ["10.0.0.1", 24]}
     
@@ -50,6 +50,11 @@ class IPv4Test < Test::Unit::TestCase
     @class_a = @klass.new("10.0.0.1/8")
     @class_b = @klass.new("172.16.0.1/16")
     @class_c = @klass.new("192.168.0.1/24")
+
+    @classful = {
+      "10.1.1.1"  => 8,
+      "150.1.1.1" => 16,
+      "200.1.1.1" => 24 }
     
   end
 
@@ -80,6 +85,7 @@ class IPv4Test < Test::Unit::TestCase
     end
     ip = @klass.new("10.10.0.0")
     assert_instance_of IPAddress::Prefix32, ip.prefix
+    assert_equal 32, ip.prefix.to_i
   end
 
   def test_attributes
@@ -438,7 +444,15 @@ class IPv4Test < Test::Unit::TestCase
     ip = @klass.parse_data "\254\020\n\001"
     assert_instance_of @klass, ip
     assert_equal "172.16.10.1", ip.address
-    assert_equal "172.16.10.1/16", ip.to_string
+    assert_equal "172.16.10.1/32", ip.to_string
+  end
+
+  def test_classmethod_parse_classful
+    @classful.each do |ip,prefix|
+      res = @klass.parse_classful(ip)
+      assert_equal prefix, res.prefix
+      assert_equal "#{ip}/#{prefix}", res.to_string
+    end
   end
   
 end # class IPv4Test
