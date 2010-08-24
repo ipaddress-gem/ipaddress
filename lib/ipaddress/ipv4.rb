@@ -93,7 +93,8 @@ module IPAddress;
 
       # Array formed with the IP octets
       @octets = @address.split(".").map{|i| i.to_i}
-
+      @u32 = (@octets[0]<< 24) + (@octets[1]<< 16) + (@octets[2]<< 8) + (@octets[3])
+      
     end # def initialize
 
     #
@@ -231,7 +232,8 @@ module IPAddress;
     #     #=> 167772160
     #
     def to_u32
-      data.unpack("N").first
+      #data.unpack("N").first
+      @u32
     end
     alias_method :to_i, :to_u32
 
@@ -255,7 +257,7 @@ module IPAddress;
     #   a.puts binary_data
     #
     def data
-      @octets.pack("C4")
+      [@u32].pack("N")
     end
 
     #
@@ -316,7 +318,7 @@ module IPAddress;
     #     #=> true
     #
     def network?
-      to_u32 | @prefix.to_u32 == @prefix.to_u32
+      @u32 | @prefix.to_u32 == @prefix.to_u32
     end
 
     #
@@ -507,7 +509,7 @@ module IPAddress;
     #     #=> 167772160
     #
     def network_u32
-      to_u32 & @prefix.to_u32
+      @u32 & @prefix.to_u32
     end
 
     #
@@ -519,7 +521,7 @@ module IPAddress;
     #     #=> 167772167
     #
     def broadcast_u32
-      [to_u32 | ~@prefix.to_u32].pack("N").unpack("N").first
+      network_u32 + 2**@prefix.host_prefix - 1
     end
 
     #
@@ -539,7 +541,7 @@ module IPAddress;
     #     #=> false
     #
     def include?(oth)
-      @prefix <= oth.prefix and network_u32 == self.class.new(oth.address+"/#@prefix").network_u32
+      @prefix <= oth.prefix and network_u32 == (oth.to_u32 & @prefix.to_u32)
     end
 
     #
@@ -746,13 +748,9 @@ module IPAddress;
     #   ip.to_string
     #     #=> "10.0.0.0/8"
     #
-    def self.parse_u32(u32, prefix=nil)
+    def self.parse_u32(u32, prefix=32)
       ip = [u32].pack("N").unpack("C4").join(".")
-      if prefix
-        self.new(ip+"/#{prefix}")
-      else
-        self.new(ip)
-      end
+      self.new(ip+"/#{prefix}")
     end
 
     #

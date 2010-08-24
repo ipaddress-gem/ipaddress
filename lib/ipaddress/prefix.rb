@@ -83,6 +83,8 @@ module IPAddress
 
   class Prefix32 < Prefix
 
+    IN4MASK = 0xffffffff
+    
     #
     # Creates a new prefix object for 32 bits IPv4 addresses
     #
@@ -91,11 +93,24 @@ module IPAddress
     #
     def initialize(num)
       unless (1..32).include? num
-        raise ArgumentError, "Prefix must be in range 1..128, got: #{num}"
+        raise ArgumentError, "Prefix must be in range 1..32, got: #{num}"
       end
       super(num)
     end
 
+    #
+    # Returns the length of the host portion
+    # of a netmask. 
+    #
+    #   prefix = Prefix32.new 24
+    #
+    #   prefix.host_prefix
+    #     #=> 8
+    #
+    def host_prefix
+      32 - @prefix
+    end
+    
     #
     # Transforms the prefix into a string of bits
     # representing the netmask
@@ -106,7 +121,7 @@ module IPAddress
     #     #=> "11111111111111111111111100000000"
     #
     def bits
-      "1" * @prefix + "0" * (32 - @prefix)
+      to_u32.to_s(2)
     end
 
     #
@@ -145,7 +160,7 @@ module IPAddress
     #     #=> 4294967040
     #
     def to_u32
-      [bits].pack("B*").unpack("N").first
+      (IN4MASK >> host_prefix) << host_prefix
     end
     
     #
