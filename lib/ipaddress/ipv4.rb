@@ -42,30 +42,23 @@ module IPAddress;
     #
     # An IPv4 address can be expressed in any of the following forms:
     # 
-    # * "10.1.1.1/24": ip address and prefix. This is the common and
-    #     suggested way to create an object                  .
-    # * "10.1.1.1/255.255.255.0": ip address and netmask. Although
-    #     convenient sometimes, this format is less clear than the previous
-    #     one.             
-    # * "10.1.1.1": if the address alone is specified, the prefix will be 
-    #     assigned using the classful boundaries. In this case, the 
-    #     prefix would be /8, a 255.0.0.0 netmask.
-    # 
-    # It is advisable to use the syntactic shortcut provided with the
-    # IPAddress() method, as in all the examples below.
-    # 
+    # * "10.1.1.1/24": ip +address+ and +prefix+. This is the common and
+    # suggested way to create an object                  .
+    # * "10.1.1.1/255.255.255.0": ip +address+ and +netmask+. Although
+    # convenient sometimes, this format is less clear than the previous
+    # one.             
+    # * "10.1.1.1": if the address alone is specified, the prefix will be
+    # set as default 32, also known as the host prefix    
+    #
     # Examples:
     #
-    #   # These two methods return the same object
+    #   # These two are the same
     #   ip = IPAddress::IPv4.new("10.0.0.1/24")
     #   ip = IPAddress("10.0.0.1/24")
     #   
-    #   # These three are the same
-    #   IPAddress("10.0.0.1/8")
-    #   IPAddress("10.0.0.1/255.0.0.0")
-    #   IPAddress("10.0.0.1")
-    #   #=> #<IPAddress::IPv4:0xb7b1a438 
-    #         @octets=[10, 0, 0, 1], @address="10.0.0.1", @prefix=8>
+    #   # These two are the same
+    #   IPAddress::IPv4.new "10.0.0.1/8"
+    #   IPAddress::IPv4.new "10.0.0.1/255.0.0.0"
     #
     def initialize(str)
       ip, netmask = str.split("/")
@@ -93,6 +86,7 @@ module IPAddress;
 
       # Array formed with the IP octets
       @octets = @address.split(".").map{|i| i.to_i}
+      # 32 bits interger containing the address
       @u32 = (@octets[0]<< 24) + (@octets[1]<< 16) + (@octets[2]<< 8) + (@octets[3])
       
     end # def initialize
@@ -228,15 +222,15 @@ module IPAddress;
     #
     #   ip = IPAddress("10.0.0.0/8")
     #
-    #   ip.to_u32
+    #   ip.to_i
     #     #=> 167772160
     #
-    def to_u32
-      #data.unpack("N").first
+    def u32
       @u32
     end
-    alias_method :to_i, :to_u32
-
+    alias_method :to_i, :u32
+    alias_method :to_u32, :u32
+    
     #
     # Returns the address portion of an IPv4 object
     # in a network byte order format.
@@ -479,7 +473,7 @@ module IPAddress;
     #     #=> 8
     #
     def size
-      broadcast_u32 - network_u32 + 1
+      2 ** @prefix.host_prefix
     end
 
     #
@@ -521,7 +515,7 @@ module IPAddress;
     #     #=> 167772167
     #
     def broadcast_u32
-      network_u32 + 2**@prefix.host_prefix - 1
+      network_u32 + size - 1
     end
 
     #
@@ -749,8 +743,7 @@ module IPAddress;
     #     #=> "10.0.0.0/8"
     #
     def self.parse_u32(u32, prefix=32)
-      ip = [u32].pack("N").unpack("C4").join(".")
-      self.new(ip+"/#{prefix}")
+      self.new([u32].pack("N").unpack("C4").join(".")+"/#{prefix}")
     end
 
     #
@@ -766,12 +759,12 @@ module IPAddress;
     #   ip.to_string
     #     #=> "172.16.10.1/24"
     #
-    def self.parse_data(str)
-      self.new str.unpack("C4").join(".")
+    def self.parse_data(str, prefix=32)
+      self.new(str.unpack("C4").join(".")+"/#{prefix}")
     end
 
     #
-    # Exctract an IPv4 address from a string and 
+    # Extract an IPv4 address from a string and 
     # returns a new object
     #
     # Example:
@@ -870,6 +863,29 @@ module IPAddress;
       end
     end
 
+    #
+    # Creates a new IPv4 address object by parsing the 
+    # address in a classful way.
+    #
+    # Classful addresses have a fixed netmask based on the 
+    # class they belong to:
+    #
+    # * Class A, from 0.0.0.0 to 127.255.255.255
+    # * Class B, from 128.0.0.0 to 191.255.255.255
+    # * Class C, D and E, from 192.0.0.0 to 255.255.255.254
+    #
+    # Note that classes C, D and E will all have a default
+    # prefix of /24 or 255.255.255.0
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.parse_classful "10.0.0.1"
+    #
+    #   ip.netmask 
+    #     #=> "255.0.0.0"
+    #   ip.a?
+    #     #=> true
+    #
     def self.parse_classful(ip)
       if IPAddress.valid_ipv4?(ip)
         address = ip.strip
@@ -885,15 +901,6 @@ module IPAddress;
     #
     private
     
-    def bits_from_address(ip)
-      ip.split(".").map{|i| i.to_i}.pack("C4").unpack("B*").first
-    end
-    
-    def prefix_from_ip(ip)
-      bits = bits_from_address(ip)
-      CLASSFUL.each {|reg,prefix| return Prefix32.new(prefix) if bits =~ reg}
-    end
-
     def calculate_subnets(subnets)
       po2 = subnets.closest_power_of_2
       new_prefix = @prefix + Math::log2(po2).to_i
