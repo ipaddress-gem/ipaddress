@@ -539,6 +539,22 @@ module IPAddress;
     end
 
     #
+    # Checks if an IPv4 address objects belongs
+    # to a private network RFC1918
+    #
+    # Example:
+    #
+    #   ip = IPAddress "10.1.1.1/24"
+    #   ip.private?
+    #     #=> true
+    #
+    def private?
+      [self.class.new("10.0.0.0/8"),
+       self.class.new("172.16.0.0/12"),
+       self.class.new("192.168.0.0/16")].any? {|i| i.include? self}
+    end
+
+    #
     # Returns the IP address in in-addr.arpa format
     # for DNS lookups
     #

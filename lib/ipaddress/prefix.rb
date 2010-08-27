@@ -244,7 +244,7 @@ module IPAddress
     #     #=> 340282366920938463444927863358058659840
     #
     def to_u128
-      eval "0b#{bits}.to_i"
+      bits.to_i(2)
     end
 
   end # class Prefix123 < Prefix

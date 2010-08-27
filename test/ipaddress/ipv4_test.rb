@@ -237,6 +237,21 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal false, ip.include?(@klass.new("13.16.0.0/32"))    
   end
 
+  def test_method_private?
+    assert_equal true, @klass.new("192.168.10.50/24").private?
+    assert_equal true, @klass.new("192.168.10.50/16").private?
+    assert_equal true, @klass.new("172.16.77.40/24").private?
+    assert_equal true, @klass.new("172.16.10.50/14").private?
+    assert_equal true, @klass.new("10.10.10.10/10").private?
+    assert_equal true, @klass.new("10.0.0.0/8").private?
+    assert_equal false, @klass.new("192.168.10.50/12").private?
+    assert_equal false, @klass.new("3.3.3.3").private?
+    assert_equal false, @klass.new("10.0.0.0/7").private?
+    assert_equal false, @klass.new("172.32.0.0/12").private?
+    assert_equal false, @klass.new("172.16.0.0/11").private?
+    assert_equal false, @klass.new("192.0.0.2/24").private?
+  end
+
   def test_method_octet
     assert_equal 172, @ip[0]
     assert_equal 16, @ip[1]
