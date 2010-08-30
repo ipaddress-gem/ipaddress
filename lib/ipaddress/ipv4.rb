@@ -180,7 +180,6 @@ module IPAddress;
       "#@address/#@prefix"
     end
 
-
     # 
     # Returns the prefix as a string in IP format
     #
@@ -601,7 +600,7 @@ module IPAddress;
     # Returns an array of IPAddress objects
     #
     def subnet(subnets=2)
-      unless (1..(2**(32-prefix.to_i))).include? subnets
+      unless (1..(2**@prefix.host_prefix)).include? subnets
         raise ArgumentError, "Value #{subnets} out of range" 
       end
       calculate_subnets(subnets)

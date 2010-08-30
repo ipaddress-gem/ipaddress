@@ -44,7 +44,8 @@ Some quick examples of things you can't do with IPAddr:
 * perform subnetting or network aggregation
 
 Moreover, many methods and procedures are so old that they have been 
-declared deprecated by the IETF.
+declared deprecated by the IETF, and some others have bugs in their 
+implementation.  
 
 We hope that IPAddress will address all these issues and meet all your
 needs in network programming.
@@ -78,7 +79,7 @@ documentation with Rake:
 
 The latest documentation can be found online at 
 {this address}[http://marcoceresa.com/ipaddress]
-
+ 
 == Usage
 
 In this section I will illustrate how to use the IPAddress library
@@ -102,7 +103,15 @@ To create a new IPv4 object, you can use IPv4 own class
 
   ip = IPAddress::IPv4.new "172.16.10.1/24"
 
-or, in a easier way, using the IPAddress wrapper method
+or, in a easier way, using the IPAddress parse method
+
+  ip = IPAddress.parse "172.16.10.1/24"
+
+which accepts and parses any kind of IP (IPv4, IPV6 and 
+IPv4 IPv6 Mapped addresses).
+
+If you like sintactic sugar, you can use the wrapper method
+IPAddress(), which is built around IPAddress::parse:
 
   ip = IPAddress "172.16.10.1/24"
 
@@ -114,39 +123,19 @@ You can specify an IPv4 address in any of two ways:
 In this example, prefix /24 and netmask 255.255.255.0 are the same and
 you have the flexibility to use either one of them.
 
-==== Classful networks
+If you don't explicitly specify the prefix (or the subnet mask), 
+IPAddress thinks you're dealing with host addresses and not with 
+networks. Therefore, the default prefix will be /32, or
+255.255.255.255. For example:
 
-If you don't specify a prefix (or a subnet mask), then the library
-will create an object base on the CLASSFUL network from the given
-IP. Remember the CLASSFUL network are the following (RFC 791)
-
-* Class A, from 0.0.0.0 to 127.255.255.255
-* Class B, from 128.0.0.0 to 191.255.255.255
-* Class C, from 192.0.0.0 to 255.255.255.255
-
-Since classful networks here are only considered to calculate the default
-prefix number, classes D and E are not considered. 
-
-You can easily check which CLASSFUL network the IP belongs:
-
-  ip = IPAddress("10.0.0.1/24")
-  ip.a?
-    #=> true
+  # let's declare an host address
+  host = IPAddress::IPv4.new "10.1.1.1."
   
-  ip = IPAddress("172.16.10.1/24")
-  ip.b?
-    #=> true
+The new created object will have prefix /32, which is the same 
+as we created the following:
+
+  host = IPAddress::IPv4.new "10.1.1.1/32"
   
-  ip = IPAddress("192.168.1.1/30")
-  ip.c?
-    #=> true
-
-These methods are only checking the address portion of an IP, and are
-indipendent from its prefix.
-
-For more information on CLASSFUL networks visit the 
-{Wikipedia page}[http://en.wikipedia.org/wiki/Classful_network]
-
 ==== Handling the IPv4 address
 
 Once created, you can obtain the attributes for an IPv4 object:
@@ -352,6 +341,53 @@ suitable to use in IPv4-IPv6 mapped addresses:
   ip.to_ipv6
     #=> "ac10:0a01"
 
+=== Classful networks
+
+IPAddress allows you to create and manipulate objects using the old 
+and deprecated (but apparently still popular) classful networks concept.
+
+Classful networks and addresses don't have a prefix: their subnet mask
+is univocally identified by their address, and therefore diveded in classes.
+As per RFC 791, these classes are:
+
+* Class A, from 0.0.0.0 to 127.255.255.255
+* Class B, from 128.0.0.0 to 191.255.255.255
+* Class C, from 192.0.0.0 to 255.255.255.255
+
+Since classful networks here are only considered to calculate the default
+prefix number, classes D and E are not considered. 
+
+To create a classful IP and prefix from an IP address, use the 
+IPv4::parse_classful method:
+
+  # classful ip 
+  ip = IPAddress::IPv4::parse_classful "10.1.1.1"
+
+  ip.prefix
+    #=> 8
+
+The method automatically created a new IPv4 object and assigned it
+the correct prefix.
+
+You can easily check which CLASSFUL network an IPv4 object belongs:
+
+  ip = IPAddress("10.0.0.1/24")
+  ip.a?
+    #=> true
+  
+  ip = IPAddress("172.16.10.1/24")
+  ip.b?
+    #=> true
+  
+  ip = IPAddress("192.168.1.1/30")
+  ip.c?
+    #=> true
+
+Remember that these methods are only checking the address portion of an IP, and are
+indipendent from its prefix, as classful networks have no concept of prefix.
+
+For more information on CLASSFUL networks visit the 
+{Wikipedia page}[http://en.wikipedia.org/wiki/Classful_network]
 
 === Network design with IPAddress
 
