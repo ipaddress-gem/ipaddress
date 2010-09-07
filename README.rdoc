@@ -78,7 +78,7 @@ documentation with Rake:
   ipaddress$ rake rdoc
 
 The latest documentation can be found online at 
-{this address}[http://marcoceresa.com/ipaddress]
+{this address}[http://rubydoc.info/github/bluemonk/ipaddress/master/frames]
  
 == Usage
 
