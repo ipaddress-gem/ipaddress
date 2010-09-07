@@ -46,11 +46,7 @@ module IPAddress
     when /:.+\./
       IPAddress::IPv6::Mapped.new(str)
     else
-      begin
-        IPAddress::IPv4.new(str)
-      rescue ArgumentError
-        IPAddress::IPv6.new(str)
-      end
+      IPAddress::IPv4.new(str) rescue IPAddress::IPv6.new(str)
     end
   end
 

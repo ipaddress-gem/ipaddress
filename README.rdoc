@@ -43,9 +43,12 @@ Some quick examples of things you can't do with IPAddr:
 * iterate over hosts 
 * perform subnetting or network aggregation
 
-Moreover, many methods and procedures are so old that they have been 
+Many methods and procedures are so old that they have been 
 declared deprecated by the IETF, and some others have bugs in their 
 implementation.  
+
+Moreover, IPAddress is more robust and is already around 50% faster than IPAddr,
+in addition to provide an organic API with logical separation and OO structure.
 
 We hope that IPAddress will address all these issues and meet all your
 needs in network programming.
@@ -80,18 +83,13 @@ documentation with Rake:
 The latest documentation can be found online at 
 {this address}[http://rubydoc.info/github/bluemonk/ipaddress/master/frames]
  
-== Usage
-
-In this section I will illustrate how to use the IPAddress library
-through some examples of common tasks.
-
-=== IPv4
+== IPv4
 
 Class IPAddress::IPv4 is used to handle IPv4 type addresses. IPAddress
 is similar to other IP Addresses libraries, like Ruby's own
 IPAddr. However it works slightly different, as we will see.
 
-==== Create a new IPv4 address
+=== Create a new IPv4 address
 
 The usual way to express an IP Address is using its dotted decimal
 form, such as 172.16.10.1, and a prefix, such as 24, separated by a
@@ -136,7 +134,7 @@ as we created the following:
 
   host = IPAddress::IPv4.new "10.1.1.1/32"
   
-==== Handling the IPv4 address
+=== Handling the IPv4 address
 
 Once created, you can obtain the attributes for an IPv4 object:
 
@@ -171,7 +169,7 @@ use IPv4#to_string
   ip.to_string
     #=> "172.16.10.l/24"
 
-==== Changing netmask
+=== Changing netmask
     
 You can set a new prefix (netmask) after creating an IPv4 
 object. For example:
@@ -189,7 +187,7 @@ using the IPv4#netmask= method
   ip.to_string
     #=> "172.16.10.1/30"
 
-==== Working with networks, broadcasts and addresses
+=== Working with networks, broadcasts and addresses
 
 Some very important topics in dealing with IP addresses are the
 concepts of +network+ and +broadcast+, as well as the addresses
@@ -210,7 +208,7 @@ This is very important because, for instance, IP "172.16.10.1/16" is
 very different to the previous one, belonging to the very different
 network "172.16.0.0/16".
 
-===== Networks
+==== Networks
 
 With IPAddress it's very easy to calculate the network for an IP
 address:
@@ -240,7 +238,7 @@ network or not:
   ip2.network?
     #=> true
 
-===== Broadcast
+==== Broadcast
 
 The broadcast address is the contrary than the network number: where
 the network number has all zeroes in the host portion, the broadcast
@@ -261,7 +259,7 @@ address:
   bcast.to_string
     #=> "172.16.10.255/24"
 
-===== Addresses, ranges and iterators
+==== Addresses, ranges and iterators
 
 So we see that the netmask essentially specifies a range for IP
 addresses that are included in a network: all the addresses between
@@ -299,7 +297,7 @@ respectively the first and the last host address in the range
   ip.last.to_string
     #=> "172.16.10.254/24"
 
-==== IP special formats    
+=== IP special formats    
 
 The IPAddress library provides a complete set of methods to access an
 IPv4 address in special formats, such as binary, 32 bits unsigned int,

@@ -468,6 +468,7 @@ class IPv4Test < Test::Unit::TestCase
       assert_equal prefix, res.prefix
       assert_equal "#{ip}/#{prefix}", res.to_string
     end
+    assert_raise(ArgumentError){ @klass.parse_classful("192.168.256.257") }
   end
   
 end # class IPv4Test
