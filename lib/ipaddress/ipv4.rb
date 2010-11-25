@@ -536,6 +536,26 @@ module IPAddress;
     def include?(oth)
       @prefix <= oth.prefix and network_u32 == (oth.to_u32 & @prefix.to_u32)
     end
+    
+    #
+    # Checks whether a subnet includes another subnet.
+    #
+    # ip = IPAddress("10.0.0.0/8")
+    #
+    # subnet = IPAddress("10.20.30.0/24")
+    #
+    # ip.include_network? subnet
+    #   #=> true
+    #
+    # ip.include_network? IPAddress("10.20.30.40/24")
+    #   #=> false
+    #
+    # ip.include_network? IPAddress("192.168.1.0/24")
+    #   #=> false
+    #
+    def include_network?(oth)
+      oth.network? && include?(oth)
+    end
 
     #
     # Checks if an IPv4 address objects belongs
