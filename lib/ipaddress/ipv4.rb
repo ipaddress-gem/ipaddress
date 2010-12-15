@@ -947,16 +947,13 @@ module IPAddress;
         return [ip1]
       else
         snet = ip1.supernet(ip1.prefix-1)
-        arr1 = ip1.subnet(2**(ip2.prefix-ip1.prefix)).map{|i| i.to_string}
-        arr2 = snet.subnet(2**(ip2.prefix-snet.prefix)).map{|i| i.to_string} 
-        if (arr2 - [ip2.to_string] - arr1).empty?
-          return [snet]
+        if snet.include?(ip1) && snet.include?(ip2)
+          return ((ip1.size + ip2.size) == snet.size) ? [snet] : [ip1, ip2]
         else
           return [ip1, ip2]
         end
       end
-    end
-    
+    end 
   end # class IPv4
 end # module IPAddress
 
