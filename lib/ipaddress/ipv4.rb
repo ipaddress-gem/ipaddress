@@ -950,17 +950,15 @@ module IPAddress;
     end
 
     def aggregate(ip1,ip2)
-      if ip1.include? ip2
-        return [ip1]
+      return [ip1] if ip1.include? ip2
+
+      snet = ip1.supernet(ip1.prefix-1)
+      if snet.include_all?(ip1, ip2) && ((ip1.size + ip2.size) == snet.size)
+        return [snet]
       else
-        snet = ip1.supernet(ip1.prefix-1)
-        if snet.include_all?(ip1, ip2) && ((ip1.size + ip2.size) == snet.size)
-          return [snet]
-        else
-          return [ip1, ip2]
-        end
+        return [ip1, ip2]
       end
-    end 
+    end
   end # class IPv4
 end # module IPAddress
 
