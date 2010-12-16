@@ -538,6 +538,13 @@ module IPAddress;
     end
 
     #
+    # Checks that all other IPAddress::IPv4 is included in this object
+    #
+    def include_all?(*others)
+      others.find_all{|oth| include?(oth)}.length == others.length
+    end
+
+    #
     # Checks if an IPv4 address objects belongs
     # to a private network RFC1918
     #
@@ -947,8 +954,8 @@ module IPAddress;
         return [ip1]
       else
         snet = ip1.supernet(ip1.prefix-1)
-        if snet.include?(ip1) && snet.include?(ip2)
-          return ((ip1.size + ip2.size) == snet.size) ? [snet] : [ip1, ip2]
+        if snet.include_all?(ip1, ip2) && ((ip1.size + ip2.size) == snet.size)
+          return [snet]
         else
           return [ip1, ip2]
         end
