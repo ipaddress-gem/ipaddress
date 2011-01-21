@@ -92,7 +92,7 @@ module IPAddress
     #     #=> 24
     #
     def initialize(num)
-      unless (1..32).include? num
+      unless (0..32).include? num
         raise ArgumentError, "Prefix must be in range 1..32, got: #{num}"
       end
       super(num)
@@ -121,7 +121,7 @@ module IPAddress
     #     #=> "11111111111111111111111100000000"
     #
     def bits
-      to_u32.to_s(2)
+      "%.32b" % to_u32
     end
 
     #
