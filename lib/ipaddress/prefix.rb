@@ -93,7 +93,7 @@ module IPAddress
     #
     def initialize(num)
       unless (0..32).include? num
-        raise ArgumentError, "Prefix must be in range 1..32, got: #{num}"
+        raise ArgumentError, "Prefix must be in range 0..32, got: #{num}"
       end
       super(num)
     end
