@@ -3,25 +3,29 @@ require 'test_helper'
 class Prefix32Test < Test::Unit::TestCase
 
   def setup
+    @netmask0  = "0.0.0.0"
     @netmask8  = "255.0.0.0"
     @netmask16 = "255.255.0.0"
     @netmask24 = "255.255.255.0"
     @netmask30 = "255.255.255.252"
-    @netmasks = [@netmask8,@netmask16,@netmask24,@netmask30]
+    @netmasks  = [@netmask0,@netmask8,@netmask16,@netmask24,@netmask30]
     
     @prefix_hash = {
+      "0.0.0.0"         => 0,
       "255.0.0.0"       => 8,
       "255.255.0.0"     => 16,
       "255.255.255.0"   => 24,
       "255.255.255.252" => 30}
 
     @octets_hash = {
+      [0,0,0,0]         => 0,
       [255,0,0,0]       => 8,
       [255,255,0,0]     => 16,
       [255,255,255,0]   => 24,
       [255,255,255,252] => 30}
 
     @u32_hash = {
+      0  => 0,
       8  => 4278190080,
       16 => 4294901760,
       24 => 4294967040,
