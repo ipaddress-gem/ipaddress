@@ -520,8 +520,7 @@ module IPAddress;
     #
     # Checks whether a subnet includes the given IP address.
     #
-    # Accepts either string with the IP or and IPAddress::IPv4
-    # object.
+    # Accepts an IPAddress::IPv4 object.
     #
     #   ip = IPAddress("192.168.10.100/24")
     #
