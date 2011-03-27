@@ -108,7 +108,7 @@ or, in a easier way, using the IPAddress parse method
 which accepts and parses any kind of IP (IPv4, IPV6 and 
 IPv4 IPv6 Mapped addresses).
 
-If you like sintactic sugar, you can use the wrapper method
+If you like syntactic sugar, you can use the wrapper method
 IPAddress(), which is built around IPAddress::parse:
 
   ip = IPAddress "172.16.10.1/24"
@@ -246,7 +246,7 @@ address has all one's. For example, ip "172.16.10.1/24" has broadcast
 "172.16.10.255/24", where ip "172.16.10.1/16" has broadcast
 "172.16.255.255/16".
 
-Method IPv4#broadcast has the same behaviour as is #network
+Method IPv4#broadcast has the same behavior as is #network
 counterpart: it creates a new IPv4 object to handle the broadcast
 address:
  
@@ -277,7 +277,7 @@ It is important to note that it doesn't matter if the original IP is a
 host IP or a network number (or a broadcast address): the #each method
 only considers the range that the original IP specifies. 
 
-If you only want to iterate over hosts IP, use the Ipv4#each_host
+If you only want to iterate over hosts IP, use the IPv4#each_host
 method:
 
   ip = IPAddress "172.16.10.1/24"
@@ -327,7 +327,7 @@ the IPv4#to_u32 method
 
 This method is the equivalent of the Unix call pton(), expressing an
 IP address in the so called +network byte order+ notation. However, if
-you want to trasmit your IP over a network socket, you might need to
+you want to transmit your IP over a network socket, you might need to
 transform it in data format using the IPv4#data method:
 
   ip.data
@@ -382,7 +382,7 @@ You can easily check which CLASSFUL network an IPv4 object belongs:
     #=> true
 
 Remember that these methods are only checking the address portion of an IP, and are
-indipendent from its prefix, as classful networks have no concept of prefix.
+independent from its prefix, as classful networks have no concept of prefix.
 
 For more information on CLASSFUL networks visit the 
 {Wikipedia page}[http://en.wikipedia.org/wiki/Classful_network]
@@ -430,7 +430,7 @@ example:
 
 Usually, subnetting implies dividing a network to a number of subnets
 which is a power of two: in this way, you can be sure that the network
-will be divived evenly, and all the subnets will have the same number
+will be divided evenly, and all the subnets will have the same number
 of hosts. 
 
 ==== Uneven subnetting
@@ -460,7 +460,7 @@ We can go even further and divide into 11 subnets:
          "172.16.10.160/27", "172.16.10.192/26"]
 	 
 As you can see, most of the networks are /28, with a few /27 and one
-/26 to fill up the remaning space.
+/26 to fill up the remaining space.
 
 ==== Summarization
 
@@ -569,7 +569,7 @@ our projects.
 IPv6 addresses are 128 bits long, in contrast with IPv4 addresses
 which are only 32 bits long. An IPv6 address is generally written as
 eight groups of four hexadecimal digits, each group representing 16
-bits or two octect. For example, the following is a valid IPv6
+bits or two octet. For example, the following is a valid IPv6
 address: 
 
   1080:0000:0000:0000:0008:0800:200c:417a
@@ -581,7 +581,7 @@ they will be converted.
 ==== Compression
 
 Since IPv6 addresses are very long to write, there are some
-semplifications and compressions that you can use to shorten them. 
+simplifications and compressions that you can use to shorten them. 
 
 * Leading zeroes: all the leading zeroes within a group can be
   omitted: "0008" would become "8"
@@ -765,7 +765,7 @@ Finally, a new IPv6 address can be created from an hex string:
 === Special IPv6 addresses
 
 Some IPv6 have a special meaning and are expressed in a special form,
-quite different than an usual IPv6 address. IPAddress has builtin
+quite different than an usual IPv6 address. IPAddress has built-in
 support for unspecified, loopback and mapped IPv6 addresses.
 
 ==== Unspecified address
