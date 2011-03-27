@@ -382,7 +382,7 @@ module IPAddress;
     #
     #   ip = IPAddress("10.0.0.1/29")
     #
-    #   ip.each do |i|
+    #   ip.each_host do |i|
     #     p i.to_s
     #   end
     #     #=> "10.0.0.1"
