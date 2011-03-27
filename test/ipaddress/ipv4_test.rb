@@ -240,6 +240,14 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal false, ip.include?(@klass.new("13.16.0.0/32"))    
   end
 
+  def test_method_include_all?
+    ip = @klass.new("192.168.10.100/24")
+    addr1 = @klass.new("192.168.10.102/24")
+    addr2 = @klass.new("192.168.10.103/24")    
+    assert_equal true, ip.include_all?(addr1,addr2)
+    assert_equal false, ip.include_all?(addr1, @klass.new("13.16.0.0/32"))
+  end
+
   def test_method_private?
     assert_equal true, @klass.new("192.168.10.50/24").private?
     assert_equal true, @klass.new("192.168.10.50/16").private?

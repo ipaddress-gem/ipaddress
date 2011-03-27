@@ -537,10 +537,19 @@ module IPAddress;
     end
 
     #
-    # Checks that all other IPAddress::IPv4 is included in this object
+    # Checks whether a subnet includes all the 
+    # given IPv4 objects.
+    #
+    #   ip = IPAddress("192.168.10.100/24")
+    #
+    #   addr1 = IPAddress("192.168.10.102/24")
+    #   addr2 = IPAddress("192.168.10.103/24")
+    #
+    #   ip.include_all?(addr1,addr2)
+    #     #=> true
     #
     def include_all?(*others)
-      others.find_all{|oth| include?(oth)}.length == others.length
+      others.all? {|oth| include?(oth)}
     end
 
     #
