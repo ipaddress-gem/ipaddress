@@ -1,5 +1,9 @@
 == master
 
+CHANGED:: IPAddress::IPv4#each_host to improve speed
+
+== ipaddress 0.7.0
+
 NEW:: IPAddress::IPv6#include?
 NEW:: IPAddress::IPv6#network_u128
 NEW:: Modified IPAddress::IPv6::Mapped to accept IPv4 mapped addresses in IPv6 format

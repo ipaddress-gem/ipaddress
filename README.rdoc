@@ -923,8 +923,8 @@ Feel free to join us and tell us what you think!
  
 Thanks to Luca Russo (vargolo) and Simone Carletti (weppos) for all 
 the support and technical review. Thanks to Marco Beri, Bryan T. Richardson,
-Nicolas Fevrier, jdpace, Daniele Alessandri and Steve Rawlinson for 
-their support, feedback and bug reports.
+Nicolas Fevrier, jdpace, Daniele Alessandri, jrdioko, Ghislain Charrier and 
+Steve Rawlinson for their support, feedback and bug reports.
   
 == Copyright
 
