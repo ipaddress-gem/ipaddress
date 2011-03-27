@@ -106,6 +106,14 @@ class IPv6Test < Test::Unit::TestCase
     end
   end
 
+  def test_method_ipv4?
+    assert_equal false, @ip.ipv4?
+  end
+  
+  def test_method_ipv6?
+    assert_equal true, @ip.ipv6?
+  end
+
   def test_method_network?
     assert_equal true, @network.network?
     assert_equal false, @ip.network?
@@ -197,22 +205,6 @@ class IPv6Test < Test::Unit::TestCase
     assert_not_equal compressed, @klass.compress("2001:0db8::cd3")
   end
 
-#   def test_classmethod_create_unpecified
-#     unspec = @klass.create_unspecified
-#     assert_equal "::", unspec.address
-#     assert_equal 128, unspec.prefix
-#     assert_equal true, unspec.unspecified?
-#     assert_instance_of @klass, unspec.class
-#   end
-  
-#   def test_classmethod_create_loopback
-#     loopb = @klass.create_loopback
-#     assert_equal "::1", loopb.address
-#     assert_equal 128, loopb.prefix
-#     assert_equal true, loopb.loopback?
-#     assert_instance_of @klass, loopb.class
-#   end
-
   def test_classmethod_parse_data
     str = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
     ip = @klass.parse_data str
@@ -231,7 +223,7 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal @ip.to_s, @klass.parse_hex(@hex,64).to_s
   end
 
-end # class IPv4Test
+end # class IPv6Test
 
 class IPv6UnspecifiedTest < Test::Unit::TestCase
   
@@ -258,6 +250,10 @@ class IPv6UnspecifiedTest < Test::Unit::TestCase
     assert_equal @str, @ip.to_string
     assert_equal @string, @ip.to_string_uncompressed
     assert_equal @u128, @ip.to_u128
+  end
+
+  def test_method_ipv6?
+    assert_equal true, @ip.ipv6?
   end
   
 end # class IPv6UnspecifiedTest
@@ -288,6 +284,10 @@ class IPv6LoopbackTest < Test::Unit::TestCase
     assert_equal @str, @ip.to_string
     assert_equal @string, @ip.to_string_uncompressed
     assert_equal @u128, @ip.to_u128
+  end
+
+  def test_method_ipv6?
+    assert_equal true, @ip.ipv6?
   end
   
 end # class IPv6LoopbackTest
@@ -343,6 +343,10 @@ class IPv6MappedTest < Test::Unit::TestCase
     assert_equal @str, @ip.to_string
     assert_equal @string, @ip.to_string_uncompressed
     assert_equal @u128, @ip.to_u128
+  end
+
+  def test_method_ipv6?
+    assert_equal true, @ip.ipv6?
   end
 
   def test_mapped?

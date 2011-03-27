@@ -22,7 +22,7 @@ module IPAddress
   NAME            = "IPAddress"
   GEM             = "ipaddress"
   AUTHORS         = ["Marco Ceresa <ceresa@ieee.org>"]
-  
+
   #
   # Parse the argument string to create a new
   # IPv4, IPv6 or Mapped IP object
@@ -48,6 +48,30 @@ module IPAddress
     else
       IPAddress::IPv4.new(str) rescue IPAddress::IPv6.new(str)
     end
+  end
+
+  #
+  # True if the object is an IPv4 address
+  #
+  #   ip = IPAddress("192.168.10.100/24")
+  #
+  #   ip.ipv4?
+  #     #-> true
+  #
+  def ipv4?
+    self.kind_of? IPAddress::IPv4
+  end
+  
+  #
+  # True if the object is an IPv6 address
+  #
+  #   ip = IPAddress("192.168.10.100/24")
+  #
+  #   ip.ipv6?
+  #     #-> false
+  #
+  def ipv6?
+    self.kind_of? IPAddress::IPv6
   end
 
   # 
