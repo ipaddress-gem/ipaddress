@@ -393,8 +393,8 @@ module IPAddress;
     #     #=> "10.0.0.6"
     #
     def each_host
-      hosts.each do |i|
-        yield i
+      (network_u32+1..broadcast_u32-1).each do |i|
+        yield self.class.parse_u32(i, @prefix)
       end
     end
 
