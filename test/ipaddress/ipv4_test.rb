@@ -472,12 +472,21 @@ class IPv4Test < Test::Unit::TestCase
     result = ["10.0.1.0/24","10.10.2.0/24","172.16.0.0/23"]
     assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
 
-    ips = [
-      @klass.new("10.0.0.12/30"),
-      @klass.new("10.0.100.0/24")
-    ]
+    ips = [@klass.new("10.0.0.12/30"),
+           @klass.new("10.0.100.0/24")]
     result = ["10.0.0.12/30", "10.0.100.0/24"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}
+
+    ips = [@klass.new("172.16.0.0/31"),
+           @klass.new("10.10.2.1/32")]
+    result = ["10.10.2.1/32", "172.16.0.0/31"]
+    assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}    
+           
+    ips = [@klass.new("172.16.0.0/32"),
+           @klass.new("10.10.2.1/32")]
+    result = ["10.10.2.1/32", "172.16.0.0/32"]
+    assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}    
+
   end
 
   def test_classmethod_parse_data

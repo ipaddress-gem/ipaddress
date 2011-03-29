@@ -3,7 +3,7 @@
 CHANGED:: IPAddress::IPv4#each_host to improve speed
 FIXED::   IPAddress::IPv4::summarize bug (summarization should now work properly)
 NEW::     IPAddress::IPv4#include_all?
-
+NEW::     #ipv4? and #ipv6?
 
 == ipaddress 0.7.0
 

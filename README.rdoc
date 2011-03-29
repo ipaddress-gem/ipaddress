@@ -921,15 +921,15 @@ Feel free to join us and tell us what you think!
 
 == Thanks to
  
-Thanks to Luca Russo (vargolo), Erik Ahlström (eahlstrom) and Simone Carletti 
+Thanks to Luca Russo (vargolo) and Simone Carletti 
 (weppos) for all the support and technical review. Thanks to Marco Beri, 
 Bryan T. Richardson, Nicolas Fevrier, jdpace, Daniele Alessandri, jrdioko, 
-Ghislain Charrier and Steve Rawlinson for their support, feedback and 
-bug reports.
+Ghislain Charrier, Pawel Krzesniak, Mark Sullivan, Erik Ahlström and 
+Steve Rawlinson for their support, feedback and bug reports.
   
 == Copyright
 
-Copyright (c) 2009-2010 Marco Ceresa. See LICENSE for details.
+Copyright (c) 2009-2011 Marco Ceresa. See LICENSE for details.
 
 
  
