@@ -1,4 +1,4 @@
-== master
+== ipaddress 0.7.5
 
 CHANGED:: IPAddress::IPv4#each_host to improve speed
 FIXED::   IPAddress::IPv4::summarize bug (summarization should now work properly)
