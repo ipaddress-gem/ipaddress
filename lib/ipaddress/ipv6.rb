@@ -233,6 +233,20 @@ module IPAddress;
       to_u128 | @prefix.to_u128 == @prefix.to_u128
     end
 
+
+    #
+    # Returns a new IPv46object with the network number 
+    # for the given IP.
+    #
+    #   ip = IPAddress("fe80:0000:0000:0000:0000:0000:0000:282f/10""
+    #
+    #   ip.network.to_s
+    #     #=> "fe80::"
+    #
+    def network
+      self.class.parse_u128(network_u128, @prefix)
+    end
+
     #
     # Returns the 16-bits value specified by index
     #

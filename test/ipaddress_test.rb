@@ -49,6 +49,16 @@ class IPAddressTest < Test::Unit::TestCase
     assert_equal true, IPAddress::valid_ipv4_netmask?("255.255.255.0")
     assert_equal false, IPAddress::valid_ipv4_netmask?("10.0.0.1")
   end
+  
+  def test_module_method_network?
+    assert_equal "199.59.148.80", IPAddress::IPv4.new("199.59.148.83/29").network.to_s
+    assert_equal "192.168.1.0", IPAddress::IPv4.new("192.168.1.99/24").network.to_s
+    
+    assert_equal "fe80::", IPAddress::IPv6.new("fe80:0000:0000:0000:0000:0000:0000:282f/10").network.to_s
+    assert_equal "fe80::", IPAddress::IPv6.new("fe80::282f/10").network.to_s
+  
+  
+  end
 
 end
 
