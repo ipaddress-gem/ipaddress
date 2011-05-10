@@ -1,7 +1,9 @@
 == ipaddress 0.8.0
 
 NEW::     IPv6#network
-
+NEW::     Prefix128#host_prefix
+NEW::     IPv6#broadcast_u128
+NEW::     IPv6#each
 
 == ipaddress 0.7.5
 

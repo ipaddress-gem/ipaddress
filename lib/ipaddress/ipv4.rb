@@ -553,30 +553,6 @@ module IPAddress;
     end
     
     #
-    # True if the object is an IPv4 address
-    #
-    #   ip = IPAddress("192.168.10.100/24")
-    #
-    #   ip.ipv4?
-    #     #-> true
-    #
-#    def ipv4?
-#      true
-#    end
-
-    #
-    # True if the object is an IPv6 address
-    #
-    #   ip = IPAddress("192.168.10.100/24")
-    #
-    #   ip.ipv6?
-    #     #-> false
-    #
-#    def ipv6?
-#      false
-#    end
-
-    #
     # Checks if an IPv4 address objects belongs
     # to a private network RFC1918
     #

@@ -127,7 +127,22 @@ class IPv6Test < Test::Unit::TestCase
   def test_method_network_u128
     assert_equal 42540766411282592856903984951653826560, @ip.network_u128
   end
-  
+
+  def test_method_broadcast_u128
+    assert_equal 42540766411282592875350729025363378175, @ip.broadcast_u128
+  end
+
+  def test_method_size
+    ip = @klass.new("2001:db8::8:800:200c:417a/64")
+    assert_equal 2**64, ip.size
+    ip = @klass.new("2001:db8::8:800:200c:417a/32")
+    assert_equal 2**96, ip.size
+    ip = @klass.new("2001:db8::8:800:200c:417a/120")
+    assert_equal 2**8, ip.size
+    ip = @klass.new("2001:db8::8:800:200c:417a/124")
+    assert_equal 2**4, ip.size
+  end
+
   def test_method_include?
     assert_equal true, @ip.include?(@ip)
     # test prefix on same address
@@ -198,6 +213,16 @@ class IPv6Test < Test::Unit::TestCase
       assert_instance_of @klass, ip.network
       assert_equal net, ip.network.to_string
     end
+  end
+
+  def test_method_each
+    ip = @klass.new("2001:db8::4/125")
+    arr = []
+    ip.each {|i| arr << i.compressed}
+    expected = ["2001:db8::","2001:db8::1","2001:db8::2",
+                "2001:db8::3","2001:db8::4","2001:db8::5",
+                "2001:db8::6","2001:db8::7"]
+    assert_equal expected, arr
   end
   
   def test_classmethod_expand

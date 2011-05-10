@@ -329,6 +329,36 @@ module IPAddress;
     end
 
     #
+    # Returns the broadcast address in Unsigned 128bits format
+    #
+    #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    #
+    #   ip6.broadcast_u128
+    #     #=> 42540766411282592875350729025363378175
+    #
+    # Please note that there is no Broadcast concept in IPv6
+    # addresses as in IPv4 addresses, and this method is just 
+    # an helper to other functions.
+    #
+    def broadcast_u128
+      network_u128 + size - 1
+    end
+
+    #
+    # Returns the number of IP addresses included
+    # in the network. It also counts the network
+    # address and the broadcast address.
+    #
+    #   ip6 = IPAddress("2001:db8::8:800:200c:417a/64")
+    #
+    #   ip6.size
+    #     #=> 18446744073709551616
+    #
+    def size
+      2 ** @prefix.host_prefix
+    end
+
+    #
     # Checks whether a subnet includes the given IP address.
     #
     # Example:
@@ -384,7 +414,37 @@ module IPAddress;
     def mapped?
       to_u128 >> 32 == 0xffff
     end
-    
+
+    #
+    # Iterates over all the IP addresses for the given
+    # network (or IP address).
+    #
+    # The object yielded is a new IPv6 object created
+    # from the iteration.
+    #
+    #   ip6 = IPAddress("2001:db8::4/125")
+    #
+    #   ip6.each do |i|
+    #     p i.compressed
+    #   end
+    #     #=> "2001:db8::"
+    #     #=> "2001:db8::1"
+    #     #=> "2001:db8::2"
+    #     #=> "2001:db8::3"
+    #     #=> "2001:db8::4"
+    #     #=> "2001:db8::5"
+    #     #=> "2001:db8::6"
+    #     #=> "2001:db8::7"
+    #
+    # WARNING: if the host portion is very large, this method 
+    # can be very slow and possibly hang your system!
+    #
+    def each
+      (network_u128..broadcast_u128).each do |i|
+        yield self.class.parse_u128(i, @prefix)
+      end
+    end
+
     #
     # Returns the address portion of an IP in binary format,
     # as a string containing a sequence of 0 and 1

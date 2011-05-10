@@ -247,6 +247,19 @@ module IPAddress
       bits.to_i(2)
     end
 
+    #
+    # Returns the length of the host portion
+    # of a netmask. 
+    #
+    #   prefix = Prefix128.new 96
+    #
+    #   prefix.host_prefix
+    #     #=> 32
+    #
+    def host_prefix
+      128 - @prefix
+    end
+
   end # class Prefix123 < Prefix
 
 end # module IPAddress
