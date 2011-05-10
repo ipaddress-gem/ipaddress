@@ -1,3 +1,8 @@
+== ipaddress 0.8.0
+
+NEW::     IPv6#network
+
+
 == ipaddress 0.7.5
 
 CHANGED:: IPAddress::IPv4#each_host to improve speed

@@ -32,6 +32,11 @@ class IPv6Test < Test::Unit::TestCase
       
     @invalid_ipv6 = [":1:2:3:4:5:6:7",
                      ":1:2:3:4:5:6:7"]
+
+    @networks = {
+      "2001:db8:1:1:1:1:1:1/32" => "2001:db8::/32",
+      "2001:db8:1:1:1:1:1::/32" => "2001:db8::/32",
+      "2001:db8::1/64" => "2001:db8::/64"}
     
     @ip = @klass.new "2001:db8::8:800:200c:417a/64"
     @network = @klass.new "2001:db8:8:800::/64"
@@ -185,6 +190,14 @@ class IPv6Test < Test::Unit::TestCase
   def test_method_loopback?
     assert_equal true, @klass.new("::1").loopback?
     assert_equal false, @ip.loopback?        
+  end
+
+  def test_method_network
+    @networks.each do |addr,net|
+      ip = @klass.new addr
+      assert_instance_of @klass, ip.network
+      assert_equal net, ip.network.to_string
+    end
   end
   
   def test_classmethod_expand

@@ -431,6 +431,19 @@ module IPAddress;
     end
 
     #
+    # Returns a new IPv6 object with the network number 
+    # for the given IP.
+    #
+    #   ip = IPAddress "2001:db8:1:1:1:1:1:1/32" 
+    #
+    #   ip.network.to_string
+    #     #=> "2001:db8::/32"
+    #
+    def network
+      self.class.parse_u128(network_u128, @prefix)
+    end
+
+    #
     # Extract 16 bits groups from a string
     #
     def self.groups(str)
