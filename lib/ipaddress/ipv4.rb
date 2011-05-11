@@ -904,9 +904,6 @@ module IPAddress;
     # * Class B, from 128.0.0.0 to 191.255.255.255
     # * Class C, D and E, from 192.0.0.0 to 255.255.255.254
     #
-    # Note that classes C, D and E will all have a default
-    # prefix of /24 or 255.255.255.0
-    #
     # Example:
     #
     #   ip = IPAddress::IPv4.parse_classful "10.0.0.1"
@@ -915,6 +912,9 @@ module IPAddress;
     #     #=> "255.0.0.0"
     #   ip.a?
     #     #=> true
+    #
+    # Note that classes C, D and E will all have a default
+    # prefix of /24 or 255.255.255.0
     #
     def self.parse_classful(ip)
       if IPAddress.valid_ipv4?(ip)
@@ -930,14 +930,24 @@ module IPAddress;
     # private methods
     #
     private
+
+    def power_of_2?(int)
+      Math::log2(int).to_i == Math::log2(int)
+    end
+    
+    def closest_power_of_2(num, limit=32)
+      num.upto(limit) do |i|
+        return i if power_of_2?(i)
+      end
+    end
     
     def calculate_subnets(subnets)
-      po2 = subnets.closest_power_of_2
+      po2 = closest_power_of_2(subnets)
       new_prefix = @prefix + Math::log2(po2).to_i
       networks = Array.new
       (0..po2-1).each do |i|
         mul = i * (2**(32-new_prefix))
-        networks << IPAddress::IPv4.parse_u32(network_u32+mul, new_prefix)
+        networks << self.class.parse_u32(network_u32+mul, new_prefix)
       end
       until networks.size == subnets
         networks = sum_first_found(networks)
@@ -948,7 +958,7 @@ module IPAddress;
     def sum_first_found(arr)
       dup = arr.dup.reverse
       dup.each_with_index do |obj,i|
-        a = [IPAddress::IPv4.summarize(obj,dup[i+1])].flatten
+        a = [self.class.summarize(obj,dup[i+1])].flatten
         if a.size == 1
           dup[i..i+1] = a
           return dup.reverse

@@ -1,5 +1,6 @@
 == ipaddress 0.8.0
 
+CHANGED:: Removed extension methods and extension directory to easy integration with the stdlib
 NEW::     IPv6#network
 NEW::     Prefix128#host_prefix
 NEW::     IPv6#broadcast_u128
