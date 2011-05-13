@@ -224,7 +224,35 @@ class IPv6Test < Test::Unit::TestCase
                 "2001:db8::6","2001:db8::7"]
     assert_equal expected, arr
   end
-  
+
+  def test_method_compare
+    ip1 = @klass.new("2001:db8:1::1/64")
+    ip2 = @klass.new("2001:db8:2::1/64")
+    ip3 = @klass.new("2001:db8:1::2/64")
+    ip4 = @klass.new("2001:db8:1::1/65")
+
+    # ip2 should be greater than ip1
+    assert_equal true, ip2 > ip1
+    assert_equal false, ip1 > ip2
+    assert_equal false, ip2 < ip1        
+    # ip3 should be less than ip2
+    assert_equal true, ip2 > ip3
+    assert_equal false, ip2 < ip3
+    # ip1 should be less than ip3
+    assert_equal true, ip1 < ip3
+    assert_equal false, ip1 > ip3
+    assert_equal false, ip3 < ip1
+    # ip1 should be equal to itself
+    assert_equal true, ip1 == ip1
+    # ip4 should be greater than ip1
+    assert_equal true, ip1 < ip4
+    assert_equal false, ip1 > ip4
+    # test sorting
+    arr = ["2001:db8:1::1/64","2001:db8:1::1/65",
+           "2001:db8:1::2/64","2001:db8:2::1/64"]
+    assert_equal arr, [ip1,ip2,ip3,ip4].sort.map{|s| s.to_string}
+  end
+
   def test_classmethod_expand
     compressed = "2001:db8:0:cd30::"
     expanded = "2001:0db8:0000:cd30:0000:0000:0000:0000"

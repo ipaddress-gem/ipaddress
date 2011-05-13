@@ -426,14 +426,22 @@ module IPAddress;
     end
 
     #
-    # Spaceship operator to compare IP addresses
+    # Spaceship operator to compare IPv4 objects
     #
-    # An IP address is considered to be minor if it 
-    # has a greater prefix (thus smaller hosts
-    # portion) and a smaller u32 value.
+    # Comparing IPv4 addresses is useful to ordinate
+    # them into lists that match our intuitive 
+    # perception of ordered IP addresses.
+    # 
+    # The first comparison criteria is the u32 value.
+    # For example, 10.100.100.1 will be considered 
+    # to be less than 172.16.0.1, because, in a ordered list,
+    # we expect 10.100.100.1 to come before 172.16.0.1.
     #
-    # For example, "10.100.100.1/8" is smaller than
-    # "172.16.0.1/16", but it's bigger than "10.100.100.1/16".
+    # The second criteria, in case two IPv4 objects 
+    # have identical addresses, is the prefix. An higher
+    # prefix will be considered greater than a lower
+    # prefix. This is because we expect to see
+    # 10.100.100.0/24 come before 10.100.100.0/25.
     #
     # Example:
     #
@@ -443,22 +451,15 @@ module IPAddress;
     #
     #   ip1 < ip2
     #     #=> true
-    #   ip1 < ip3
+    #   ip1 > ip3
     #     #=> false
     #
+    #   [ip1,ip2,ip3].sort.map{|i| i.to_string}
+    #     #=> ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
+    #
     def <=>(oth)
-      if to_u32 > oth.to_u32
-        return 1
-      elsif to_u32 < oth.to_u32
-        return -1
-      else
-        if prefix < oth.prefix
-          return 1
-        elsif prefix > oth.prefix
-          return -1
-        end
-      end
-      return 0
+      return prefix <=> oth.prefix if to_u32 == oth.to_u32  
+      to_u32 <=> oth.to_u32
     end
     
     #
@@ -643,11 +644,13 @@ module IPAddress;
     #
     #   ip.supernet(22).to_string
     #     #=> "172.16.8.0/22"
-    # 
+    #
+    # If +new_prefix+ is less than 1, returns 0.0.0.0/0
+    #
     def supernet(new_prefix)
-      raise ArgumentError, "Can't supernet a /1 network" if new_prefix < 1
       raise ArgumentError, "New prefix must be smaller than existing prefix" if new_prefix >= @prefix.to_i
-      self.class.new(@address+"/#{new_prefix}").network
+      return self.class.new("0.0.0.0/0") if new_prefix < 1
+      return self.class.new(@address+"/#{new_prefix}").network
     end
 
     #

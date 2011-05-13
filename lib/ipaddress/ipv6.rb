@@ -446,6 +446,43 @@ module IPAddress;
     end
 
     #
+    # Spaceship operator to compare IPv6 objects
+    #
+    # Comparing IPv6 addresses is useful to ordinate
+    # them into lists that match our intuitive 
+    # perception of ordered IP addresses.
+    # 
+    # The first comparison criteria is the u128 value.
+    # For example, 2001:db8:1::1 will be considered 
+    # to be less than 2001:db8:2::1, because, in a ordered list,
+    # we expect 2001:db8:1::1 to come before 2001:db8:2::1.
+    #
+    # The second criteria, in case two IPv6 objects 
+    # have identical addresses, is the prefix. An higher
+    # prefix will be considered greater than a lower
+    # prefix. This is because we expect to see
+    # 2001:db8:1::1/64 come before 2001:db8:1::1/65
+    #
+    # Example:
+    #
+    #   ip1 = IPAddress "2001:db8:1::1/64"
+    #   ip2 = IPAddress "2001:db8:2::1/64"
+    #   ip3 = IPAddress "2001:db8:1::1/65"
+    #
+    #   ip1 < ip2
+    #     #=> true
+    #   ip1 < ip3
+    #     #=> false
+    #
+    #   [ip1,ip2,ip3].sort.map{|i| i.to_string}
+    #     #=> ["2001:db8:1::1/64","2001:db8:1::1/65","2001:db8:2::1/64"]
+    #
+    def <=>(oth)
+      return prefix <=> oth.prefix if to_u128 == oth.to_u128  
+      to_u128 <=> oth.to_u128
+    end
+
+    #
     # Returns the address portion of an IP in binary format,
     # as a string containing a sequence of 0 and 1
     #

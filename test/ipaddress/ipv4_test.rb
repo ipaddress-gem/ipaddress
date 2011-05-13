@@ -304,20 +304,20 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal "1.10.16.172.in-addr.arpa", @ip.reverse
   end
   
-  def test_method_comparabble
+  def test_method_compare
     ip1 = @klass.new("10.1.1.1/8")
     ip2 = @klass.new("10.1.1.1/16")
     ip3 = @klass.new("172.16.1.1/14")
     ip4 = @klass.new("10.1.1.1/8")
 
-    # ip1 should be major than ip2
-    assert_equal true, ip1 > ip2
-    assert_equal false, ip1 < ip2
-    assert_equal false, ip2 > ip1        
-    # ip2 should be minor than ip3
+    # ip2 should be greater than ip1
+    assert_equal true, ip1 < ip2
+    assert_equal false, ip1 > ip2
+    assert_equal false, ip2 < ip1        
+    # ip2 should be less than ip3
     assert_equal true, ip2 < ip3
     assert_equal false, ip2 > ip3
-    # ip1 should be minor than ip3
+    # ip1 should be less than ip3
     assert_equal true, ip1 < ip3
     assert_equal false, ip1 > ip3
     assert_equal false, ip3 < ip1
@@ -326,7 +326,13 @@ class IPv4Test < Test::Unit::TestCase
     # ip1 should be equal to ip4
     assert_equal true, ip1 == ip4
     # test sorting
-    arr = ["10.1.1.1/16","10.1.1.1/8","172.16.1.1/14"]
+    arr = ["10.1.1.1/8","10.1.1.1/16","172.16.1.1/14"]
+    assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_string}
+    # test same prefix
+    ip1 = @klass.new("10.0.0.0/24")
+    ip2 = @klass.new("10.0.0.0/16")
+    ip3 = @klass.new("10.0.0.0/8")
+    arr = ["10.0.0.0/8","10.0.0.0/16","10.0.0.0/24"]
     assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_string}
   end
 
@@ -401,8 +407,9 @@ class IPv4Test < Test::Unit::TestCase
    end
 
    def test_method_supernet
-     assert_raise(ArgumentError) {@ip.supernet(0)}
      assert_raise(ArgumentError) {@ip.supernet(24)}     
+     assert_equal "0.0.0.0/0", @ip.supernet(0).to_string
+     assert_equal "0.0.0.0/0", @ip.supernet(-2).to_string
      assert_equal "172.16.10.0/23", @ip.supernet(23).to_string
      assert_equal "172.16.8.0/22", @ip.supernet(22).to_string
    end
