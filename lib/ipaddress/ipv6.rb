@@ -22,7 +22,7 @@ module IPAddress;
   # bits or two octect. For example, the following is a valid IPv6
   # address:
   #
-  #   1080:0000:0000:0000:0008:0800:200c:417a
+  #   2001:0db8:0000:0000:0008:0800:200c:417a
   #
   # Letters in an IPv6 address are usually written downcase, as per
   # RFC. You can create a new IPv6 object using uppercase letters, but
@@ -42,7 +42,7 @@ module IPAddress;
   # Using compression, the IPv6 address written above can be shorten into
   # the following, equivalent, address
   #
-  #   1080::8:800:200c:417a
+  #   2001:db8::8:800:200c:417a
   #
   # This short version is often used in human representation.
   #
@@ -51,7 +51,7 @@ module IPAddress;
   # As we used to do with IPv4 addresses, an IPv6 address can be written
   # using the prefix notation to specify the subnet mask:
   #
-  #   1080::8:800:200c:417a/64
+  #   2001:db8::8:800:200c:417a/64
   #
   # The /64 part means that the first 64 bits of the address are
   # representing the network portion, and the last 64 bits are the host
@@ -75,9 +75,9 @@ module IPAddress;
     #
     # An IPv6 address can be expressed in any of the following forms:
     # 
-    # * "1080:0000:0000:0000:0008:0800:200C:417A": IPv6 address with no compression
-    # * "1080:0:0:0:8:800:200C:417A": IPv6 address with leading zeros compression 
-    # * "1080::8:800:200C:417A": IPv6 address with full compression
+    # * "2001:0db8:0000:0000:0008:0800:200C:417A": IPv6 address with no compression
+    # * "2001:db8:0:0:8:800:200C:417A": IPv6 address with leading zeros compression 
+    # * "2001:db8::8:800:200C:417A": IPv6 address with full compression
     #
     # In all these 3 cases, a new IPv6 address object will be created, using the default
     # subnet mask /128
@@ -580,18 +580,18 @@ module IPAddress;
     # Creates a new IPv6 object from an
     # unsigned 128 bits integer.
     #
-    #   ip6 = IPAddress::IPv6::parse_u128(21932261930451111902915077091070067066)
+    #   ip6 = IPAddress::IPv6::parse_u128(42540766411282592856906245548098208122)
     #   ip6.prefix = 64
     #
-    #   ip6.to_s
-    #     #=> "1080::8:800:200c:417a/64"
+    #   ip6.to_string
+    #     #=> "2001:db8::8:800:200c:417a/64"
     #
     # The +prefix+ parameter is optional:
     #
-    #   ip6 = IPAddress::IPv6::parse_u128(21932261930451111902915077091070067066, 64)
+    #   ip6 = IPAddress::IPv6::parse_u128(42540766411282592856906245548098208122, 64)
     #
-    #   ip6.to_s
-    #     #=> "1080::8:800:200c:417a/64"
+    #   ip6.to_string
+    #     #=> "2001:db8::8:800:200c:417a/64"
     #
     def self.parse_u128(u128, prefix=128)
       str = IN6FORMAT % (0..7).map{|i| (u128>>(112-16*i))&0xffff}
@@ -605,15 +605,15 @@ module IPAddress;
     #   ip6 = IPAddress::IPv6::parse_hex("20010db80000000000080800200c417a")
     #   ip6.prefix = 64
     #
-    #   ip6.to_s
+    #   ip6.to_string
     #     #=> "2001:db8::8:800:200c:417a/64"
     #
     # The +prefix+ parameter is optional:
     #
     #   ip6 = IPAddress::IPv6::parse_hex("20010db80000000000080800200c417a", 64)
     #
-    #   ip6.to_s
-    #     #=> "1080::8:800:200c:417a/64"
+    #   ip6.to_string
+    #     #=> "2001:db8::8:800:200c:417a/64"
     #
     def self.parse_hex(hex, prefix=128)
       self.parse_u128(hex.hex, prefix)
@@ -715,14 +715,14 @@ module IPAddress;
   #
   #   ip = IPAddress::IPv6::Loopback.new
   #
-  #   ip.to_s
+  #   ip.to_string
   #     #=> "::1/128"
   #
   # or by using the wrapper:
   #
   #   ip = IPAddress "::1"
   #
-  #   ip.to_s
+  #   ip.to_string
   #     #=> "::1/128"
   #
   # Checking if an address is loopback is easy with the IPv6#loopback?
@@ -739,7 +739,7 @@ module IPAddress;
     #
     #   ip = IPAddress::IPv6::Loopback.new
     #
-    #   ip.to_s
+    #   ip.to_string
     #     #=> "::1/128"
     #
     def initialize
@@ -778,7 +778,7 @@ module IPAddress;
   #   ip6.mapped?
   #     #=> true
   #
-  #   ip6.to_s
+  #   ip6.to_string
   #     #=> "::FFFF:172.16.10.1/128"
   #
   # Now with the +ipv4+ attribute, we can easily access the IPv4 portion
@@ -805,7 +805,7 @@ module IPAddress;
   # That is, two colons and the IPv4 address. However, as by RFC, the ffff
   # group will be automatically added at the beginning
   #
-  #   ip6.to_s
+  #   ip6.to_string
   #     => "::ffff:172.16.10.1/128"
   #
   # making it a mapped IPv6 compatible address.
@@ -828,7 +828,7 @@ module IPAddress;
     #
     #   ip6 = IPAddress::IPv6::Mapped.new "::0d01:4403"
     #
-    #   ip6.to_s
+    #   ip6.to_string
     #     #=> "::ffff:13.1.68.3"
     #
     def initialize(str)

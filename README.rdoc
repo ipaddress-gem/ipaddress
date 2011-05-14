@@ -572,7 +572,7 @@ eight groups of four hexadecimal digits, each group representing 16
 bits or two octet. For example, the following is a valid IPv6
 address: 
 
-  1080:0000:0000:0000:0008:0800:200c:417a
+  2001:0db8:0000:0000:0008:0800:200c:417a
 
 Letters in an IPv6 address are usually written downcase, as per
 RFC. You can create a new IPv6 object using uppercase letters, but
@@ -592,7 +592,7 @@ simplifications and compressions that you can use to shorten them.
 Using compression, the IPv6 address written above can be shorten into
 the following, equivalent, address
 
-  1080::8:800:200c:417a
+  2001:db8::8:800:200c:417a
 
 This short version is often used in human representation.
 
@@ -601,7 +601,7 @@ This short version is often used in human representation.
 As we used to do with IPv4 addresses, an IPv6 address can be written
 using the prefix notation to specify the subnet mask:
 
-  1080::8:800:200c:417a/64
+  2001:db8::8:800:200c:417a/64
 
 The /64 part means that the first 64 bits of the address are
 representing the network portion, and the last 64 bits are the host
@@ -612,11 +612,11 @@ portion.
 All the IPv6 representations we've just seen are perfectly fine when
 you want to create a new IPv6 address:
 
-  ip6 = IPAddress "1080:0000:0000:0000:0008:0800:200C:417A"
+  ip6 = IPAddress "2001:0db8:0000:0000:0008:0800:200C:417A"
   
-  ip6 = IPAddress "1080:0:0:0:8:800:200C:417A"
+  ip6 = IPAddress "2001:db8:0:0:8:800:200C:417A"
  
-  ip6 = IPAddress "1080::8:800:200C:417A"
+  ip6 = IPAddress "2001:db8:8:800:200C:417A"
 
 All three are giving out the same IPv6 object. The default subnet mask
 for an IPv6 is 128, as IPv6 addresses don't have classes like IPv4
@@ -744,13 +744,13 @@ like in the following example:
 A new IPv6 address can also be created from an unsigned 128 bits
 integer:
 
-  u128 = 21932261930451111902915077091070067066
+  u128 = 42540766411282592856906245548098208122
 
   ip6 = IPAddress::IPv6::parse_u128 u128
   ip6.prefix = 64
 
   ip6.to_string
-    #=> "1080::8:800:200c:417a/64"
+    #=>"2001:db8::8:800:200c:417a/64"	
 
 Finally, a new IPv6 address can be created from an hex string:
 
