@@ -584,10 +584,10 @@ module IPAddress;
     alias_method :arpa, :reverse
     
     #
-    # Subnetting a network
+    # Splits a network into different subnets
     #
     # If the IP Address is a network, it can be divided into
-    # multiple networks. If +self+ is not a network, the
+    # multiple networks. If +self+ is not a network, this
     # method will calculate the network from the IP and then
     # subnet it.
     #
@@ -613,15 +613,19 @@ module IPAddress;
     #          "172.16.10.64/26",
     #          "172.16.10.128/25"]
     #
-    # Returns an array of IPAddress objects
+    # Returns an array of IPv4 objects
     #
-    def subnet(subnets=2)
+    def split(subnets=2)
       unless (1..(2**@prefix.host_prefix)).include? subnets
         raise ArgumentError, "Value #{subnets} out of range" 
       end
-      calculate_subnets(subnets)
+      networks = subnet(newprefix(subnets))
+      until networks.size == subnets
+        networks = sum_first_found(networks)
+      end
+      return networks
     end
-    alias_method :/, :subnet
+    alias_method :/, :split
 
     #
     # Returns a new IPv4 object from the supernetting
@@ -651,6 +655,37 @@ module IPAddress;
       raise ArgumentError, "New prefix must be smaller than existing prefix" if new_prefix >= @prefix.to_i
       return self.class.new("0.0.0.0/0") if new_prefix < 1
       return self.class.new(@address+"/#{new_prefix}").network
+    end
+
+    #
+    # This method implements the subnetting function 
+    # similar to the one described in RFC3531.
+    #
+    # By specifying a new prefix, the method calculates
+    # the network number for the given IPv4 object
+    # and calculates the subnets associated to the new
+    # prefix.
+    #
+    # For example, given the following network:
+    #
+    #   ip = IPAddress "172.16.10.0/24"
+    #
+    # we can calculate the subnets with a /26 prefix
+    #
+    #   ip.subnets(26).map{&:to_string)
+    #     #=> ["172.16.10.0/26", "172.16.10.64/26", 
+    #          "172.16.10.128/26", "172.16.10.192/26"]
+    #
+    # The resulting number of subnets will of course always be
+    # a power of two.
+    #
+    def subnet(subprefix)
+      unless ((@prefix.to_i)..32).include? subprefix
+        raise ArgumentError, "New prefix must be between #@prefix and 32"
+      end
+      Array.new(2**(subprefix-@prefix.to_i)) do |i|
+        self.class.parse_u32(network_u32+(i*(2**(32-subprefix))), subprefix)
+      end
     end
 
     #
@@ -934,28 +969,12 @@ module IPAddress;
     #
     private
 
-    def power_of_2?(int)
-      Math::log2(int).to_i == Math::log2(int)
-    end
-    
-    def closest_power_of_2(num, limit=32)
-      num.upto(limit) do |i|
-        return i if power_of_2?(i)
+    def newprefix(num)
+      num.upto(32) do |i|
+        if (a = Math::log2(i).to_i) == Math::log2(i)
+          return @prefix + a 
+        end
       end
-    end
-    
-    def calculate_subnets(subnets)
-      po2 = closest_power_of_2(subnets)
-      new_prefix = @prefix + Math::log2(po2).to_i
-      networks = Array.new
-      (0..po2-1).each do |i|
-        mul = i * (2**(32-new_prefix))
-        networks << self.class.parse_u32(network_u32+mul, new_prefix)
-      end
-      until networks.size == subnets
-        networks = sum_first_found(networks)
-      end
-      return networks
     end
     
     def sum_first_found(arr)

@@ -143,6 +143,9 @@ module IPAddress
     false
   end
 
+  # 
+  # Deprecate method
+  #
   def self.deprecate(message = nil) # :nodoc:
     message ||= "You are using deprecated behavior which will be removed from the next major or minor release."
     warn("DEPRECATION WARNING: #{message}")

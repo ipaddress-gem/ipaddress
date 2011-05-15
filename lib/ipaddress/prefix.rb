@@ -18,7 +18,7 @@ module IPAddress
   # IPAddress::Prefix shouldn't be accesses directly, unless
   # for particular needs.
   #
-  class Prefix
+  class Prefix 
 
     include Comparable
 
