@@ -14,44 +14,22 @@ examples of typical usage.
 
 == Requirements
 
-* Ruby >= 1.8.6 (not tested with previous versions)
+* Ruby >= 1.8.7 (not tested with previous versions)
+* Ruby 1.9.2 or later is strongly recommended 
 
-IPAddress works perfectly on:
+IPAddress 0.8.0 has been tested on:
 
-* Ruby 1.8.6 (2007-03-13 patchlevel 0) 
-* Ruby 1.8.7 
-* Ruby 1.9.1 
-* Ruby 1.9.2dev (2010-06-08 revision 28230)
-* Ruby 1.9.2dev (2010-07-15 revision 28653)
-* Rubinius 1.0.1 (1.8.7 release 2010-06-03 JI)
-* Ironruby >= 1.0
+* ruby-1.8.7-p334 [ i386 ]
+* ree-1.8.7-2011.03 [ i386 ]
+* rbx-head [ ]
+* jruby-1.6.1 [ linux-i386-java ]
+* ruby-1.9.1-p431 [ i386 ]
+* ruby-1.9.2-p180 [ i386 ]
 
-It hasn't yet been tested on any other platform, so if you want to collaborate feel 
+If you want to collaborate feel 
 free to send a small report to my email address, or 
 {join the discussion}[http://groups.google.com/group/ruby-ipaddress]. 
 
-== Why not using IPAddr?
-
-IPAddr is the IP addresses library that comes with Ruby standard
-lib. We found this library, although very well written, not very
-suitable for all our needs, and not very flexible. 
-
-Some quick examples of things you can't do with IPAddr:
-
-* store both the address and the prefix information
-* quickly find the broadcast address of a network
-* iterate over hosts 
-* perform subnetting or network aggregation
-
-Many methods and procedures are so old that they have been 
-declared deprecated by the IETF, and some others have bugs in their 
-implementation.  
-
-Moreover, IPAddress is more robust and is already around 50% faster than IPAddr,
-in addition to provide an organic API with logical separation and OO structure.
-
-We hope that IPAddress will address all these issues and meet all your
-needs in network programming.
 
 == Installation
 
@@ -81,7 +59,7 @@ documentation with Rake:
   ipaddress$ rake rdoc
 
 The latest documentation can be found online at 
-{this address}[http://rubydoc.info/gems/ipaddress/0.7.0/frames]
+{this address}[http://rubydoc.info/gems/ipaddress/0.8.0/frames]
  
 == IPv4
 
@@ -127,9 +105,12 @@ networks. Therefore, the default prefix will be /32, or
 255.255.255.255. For example:
 
   # let's declare an host address
-  host = IPAddress::IPv4.new "10.1.1.1."
+  host = IPAddress::IPv4.new "10.1.1.1"
+
+  puts host.to_string
+    #=> "10.1.1.1/32"
   
-The new created object will have prefix /32, which is the same 
+The new created object has prefix /32, which is the same 
 as we created the following:
 
   host = IPAddress::IPv4.new "10.1.1.1/32"
@@ -222,7 +203,7 @@ address:
   net.to_string
     #=> "172.16.10.0/24"
 
-The IPv4#network method creates a new IPv4 object from the network
+Method IPv4#network creates a new IPv4 object from the network
 number, calculated after the original object. We want to outline here
 that the network address is a perfect legitimate IPv4 address, which
 just happen to have all zeroes in the host portion. 
@@ -402,63 +383,83 @@ For example, if you have network "172.16.10.0/24", we can subnet it
 into 4 smaller subnets. The new prefix will be /26, because 4 is 2^2
 and therefore we add 2 bits to the network prefix (24+2=26).
 
-Subnetting is easy with IPAddress. Let's work out the last example:
+Subnetting is easy with IPAddress. You actually have two options:
 
-  network = IPAddress("172.16.10.0/24")
+* IPv4#subnet: specify a new prefix
+* IPv4#split: tell IPAddress how many subnets you want to create.
 
-  subnets = network / 4
-    #=> [#<IPAddress::IPv4:0xb7b10e10 @octets=[172,16,10,0] [...]
-         #<IPAddress::IPv4:0xb7b0f1b4 @octets=[172,16,10,64] [...]
-         #<IPAddress::IPv4:0xb7b0e5ac @octets=[172,16,10,128] [...]  
-         #<IPAddress::IPv4:0xb7b0e0c0 @octets=[172,16,10,192] [...]]
+Let's examine IPv4#subnet first. Say you have network "172.16.10.0/24"
+and you want to subnet it into /26 networks. With IPAddress it's very 
+easy:
+
+  network = IPAddress "172.16.10.0/24"
+
+  subnets = network.subnet(26)
 
   subnets.map{|i| i.to_string}
-    #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
+    #=> ["172.16.10.0/26", 
+         "172.16.10.64/26", 
+         "172.16.10.128/26", 
          "172.16.10.192/26"]
 
-You can also use method IPv4#subnets, which is an alias for
-IPv4#/. Please note that you don't have to specify a network to
-calculate a subnet: if the IPv4 object is a host IPv4, the method will
-calculate the network number for that network and then subnet it. For
-example:
+As you can see, an Array has been created, containing 4 new IPv4 objects
+representing the new subnets. 
 
-  ip = IPAddress("172.16.10.58/24")
- 
-  ip.subnet(4).map{|i| i.to_string}
-    #=> ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26",
-         "172.16.10.192/26"]
+Another way to create subnets is to tell IPAddress how many subnets you'd 
+like to have, and letting the library calculate the new prefix for you.
 
-Usually, subnetting implies dividing a network to a number of subnets
-which is a power of two: in this way, you can be sure that the network
-will be divided evenly, and all the subnets will have the same number
-of hosts. 
-
-==== Uneven subnetting
-
-IPAddress also handles un-even subnetting: if you specify any number
-(up to the prefix limit), the network will be divided so that the
-first power-of-two networks will be even, and all the rest will just
-fill out the space. 
-
-As an example, let's divide network 172.16.10.0/24 into 3 different subnets:
+Let's see how it works, using IPv4#split method. Say you want 4 new subnets:
 
   network = IPAddress("172.16.10.0/24")
 
-  network.subnet(3).map{|i| i.to_string}
+  subnets = network.split(4)
+
+  subnets.map{|i| i.to_string}
+    #=> ["172.16.10.0/26", 
+         "172.16.10.64/26", 
+         "172.16.10.128/26", 
+         "172.16.10.192/26"]
+
+Hey, that's the same result as before! This actually makes sense, as the
+two operations are complementary. When you use IPv4#subnet with the new
+prefix, IPAddress will always create a number of subnets that is a power 
+of two. This is equivalent to use IPv4#split with a power of 2.
+
+Where IPv4#split really shines is with the so called "uneven subnetting".
+You are not limited to split a network into a power-of-two numbers of
+subnets: IPAddress lets you create any number of subnets, and it will
+try to organize the new created network in the best possible way, making
+an efficent allocation of the space.
+
+An example here is worth a thousand words. Let's use the same network
+as the previous examples:
+
+  network = IPAddress("172.16.10.0/24")
+
+How do we split this network into 3 subnets? Very easy:
+
+  subnets = network.split(3)
+
+  subnets.map{|i| i.to_string}
     #=> ["172.16.10.0/26",
          "172.16.10.64/26",
          "172.16.10.128/25"]
 
-We can go even further and divide into 11 subnets:
+As you can see, IPAddress tried to perform a good allocation by filling up
+all the address space from the original network. There is no point in splitting
+a network into 3 subnets like "172.16.10.0/26", "172.16.10.64/26" and 
+"172.16.10.128/26", as you would end up having "172.16.10.192/26" wasted (plus,
+I suppose I wouldn't need a Ruby library to perform un-efficient IP 
+allocation, as I do that myself very well ;) ).
 
-  network = IPAddress("172.16.10.0/24")
+We can go even further and split into 11 subnets:
 
-  network.subnet(11).map{|i| i.to_string}
+  network.split(11)
     #=> ["172.16.10.0/28", "172.16.10.16/28", "172.16.10.32/28",
          "172.16.10.48/28", "172.16.10.64/28", "172.16.10.80/28",
          "172.16.10.96/28", "172.16.10.112/28", "172.16.10.128/27",
          "172.16.10.160/27", "172.16.10.192/26"]
-	 
+
 As you can see, most of the networks are /28, with a few /27 and one
 /26 to fill up the remaining space.
 
@@ -908,6 +909,30 @@ group will be automatically added at the beginning
     => "::ffff:172.16.10.1/128"
  
 making it a mapped IPv6 compatible address.
+
+== Why not using IPAddr?
+
+IPAddr is the IP addresses library that comes with Ruby standard
+lib. We found this library, although very well written, not very
+suitable for all our needs, and not very flexible. 
+
+Some quick examples of things you can't do with IPAddr:
+
+* store both the address and the prefix information
+* quickly find the broadcast address of a network
+* iterate over hosts 
+* perform subnetting or network aggregation
+
+Many methods and procedures are so old that they have been 
+declared deprecated by the IETF, and some others have bugs in their 
+implementation.  
+
+Moreover, IPAddress is more robust and is already around 50% faster than IPAddr,
+in addition to provide an organic API with logical separation and OO structure.
+
+We hope that IPAddress will address all these issues and meet all your
+needs in network programming.
+
 
 == Community
 
