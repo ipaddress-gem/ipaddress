@@ -193,7 +193,7 @@ if RUBY_VERSION =~ /1\.8/
   class Hash # :nodoc:
     alias :key :index
   end
-  class Math # :nodoc:
+  module Math # :nodoc:
     def Math.log2(n) 
       log(n) / log(2) 
     end
