@@ -43,8 +43,12 @@ module IPAddress
     case str
     when /:.+\./
       IPAddress::IPv6::Mapped.new(str)
+    when /\./
+      IPAddress::IPv4.new(str) 
+    when /:/
+      IPAddress::IPv6.new(str)
     else
-      IPAddress::IPv4.new(str) rescue IPAddress::IPv6.new(str)
+      raise ArgumentError, "Unknown IP Address #{str}"
     end
   end
 
