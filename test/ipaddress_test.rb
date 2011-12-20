@@ -50,6 +50,11 @@ class IPAddressTest < Test::Unit::TestCase
     assert_equal false, IPAddress::valid_ipv4_netmask?("10.0.0.1")
   end
 
+  def test_module_medthod_is_open?
+    assert_equal true, IPAddress::open?('127.0.0.1', 3000)
+    assert_equal false, IPAddress::open?('127.0.0.1', 23)
+  end
+
 end
 
 

@@ -12,6 +12,7 @@
 #
 #++
 
+require 'socket'
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
 
@@ -154,6 +155,31 @@ module IPAddress
     message ||= "You are using deprecated behavior which will be removed from the next major or minor release."
     warn("DEPRECATION WARNING: #{message}")
   end
+
+ 
+  # Checks if the given string is an IP address,
+  # either IPv4 or IPv6 with the specified port opened
+  #
+  # Example:
+  #
+  #   IPAddress::open?('120.32.32.3', 80)
+  #     #=> true
+  #
+  #   IPAddress::open?('120.32.32.3', -4)
+  #     #=> false
+  #
+  def self.open?(addr, port)
+    begin
+      s = TCPSocket.new(addr, port)
+      s.close
+      true
+    rescue
+      
+      false
+    end
+
+  end
+
   
 end # module IPAddress
 
