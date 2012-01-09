@@ -13,6 +13,7 @@
 #++
 
 require 'socket'
+require 'timeout'
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
 
@@ -170,12 +171,17 @@ module IPAddress
   #
   def self.open?(addr, port)
     begin
-      s = TCPSocket.new(addr, port)
-      s.close
-      true
-    rescue
-      
-      false
+      Timeout::timeout(2) do
+        begin
+          s = TCPSocket.new(addr, port)
+          s.close
+          return true
+        rescue ErrNo::ECONNREFUSED, Errno::EHOSTUNREACH
+          return false
+        end
+      end
+    rescue Timeout::Error
+      return false
     end
 
   end
