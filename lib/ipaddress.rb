@@ -176,7 +176,7 @@ module IPAddress
           s = TCPSocket.new(addr, port)
           s.close
           return true
-        rescue ErrNo::ECONNREFUSED, Errno::EHOSTUNREACH
+        rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
           return false
         end
       end
