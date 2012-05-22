@@ -418,5 +418,12 @@ class IPv6MappedTest < Test::Unit::TestCase
   def test_mapped?
     assert_equal true, @ip.mapped?
   end
+
+  def test_hash_equality
+    ip1 = @klass.new("2001:db8::8:800:200c:417a/64")
+    ip2 = @klass.new("2001:db8::8:800:200c:417a/64")
+    assert_equal ip1.hash, ip2.hash
+    assert_equal ip1.eql?( ip2 ), true
+  end
   
 end # class IPv6MappedTest

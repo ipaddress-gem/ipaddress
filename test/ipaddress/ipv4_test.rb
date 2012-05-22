@@ -526,7 +526,14 @@ class IPv4Test < Test::Unit::TestCase
     end
     assert_raise(ArgumentError){ @klass.parse_classful("192.168.256.257") }
   end
-  
+
+  def test_hash_equality
+    ip1 = @klass.new("10.0.1.1/24")
+    ip2 = @klass.new("10.0.1.1/24")
+    assert_equal ip1.hash, ip2.hash
+    assert_equal ip1.eql?( ip2 ), true
+  end
+
 end # class IPv4Test
 
   
