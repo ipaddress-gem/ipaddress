@@ -563,6 +563,19 @@ class IPv4Test < Minitest::Test
     end
     assert_raises(ArgumentError){ @klass.parse_classful("192.168.256.257") }
   end
+
+  def test_ranges
+    from = @klass.new('192.168.10.10')
+    to = @klass.new('192.168.20.30')
+
+    in_range = @klass.new('192.168.10.20')
+    out_range = @klass.new('192.168.40.30')
+
+    range = (from..to)
+
+    assert_equal true, range.include?(in_range)
+    assert_equal false, range.include?(out_range)
+  end
   
   def test_network_split
     @classful.each do |ip,net|
