@@ -688,11 +688,13 @@ module IPAddress;
     # a power of two.
     #
     def subnet(subprefix)
-      unless ((@prefix.to_i)..32).include? subprefix
+      # convert to integer in case subprefix is an IPAddress::Prefix
+      subprefix_i = subprefix.to_i
+      unless ((@prefix.to_i)..32).include? subprefix_i
         raise ArgumentError, "New prefix must be between #@prefix and 32"
       end
-      Array.new(2**(subprefix-@prefix.to_i)) do |i|
-        self.class.parse_u32(network_u32+(i*(2**(32-subprefix))), subprefix)
+      Array.new(2**(subprefix_i-@prefix.to_i)) do |i|
+        self.class.parse_u32(network_u32+(i*(2**(32-subprefix_i))), subprefix_i)
       end
     end
 
