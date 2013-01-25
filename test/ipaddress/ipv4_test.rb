@@ -83,7 +83,7 @@ class IPv4Test < Minitest::Test
       assert_instance_of @klass, ip
     end
     assert_instance_of IPAddress::Prefix32, @ip.prefix
-    assert_raises (ArgumentError) do
+    assert_raises(ArgumentError) do
       @klass.new 
     end
   end
@@ -92,7 +92,7 @@ class IPv4Test < Minitest::Test
     @invalid_ipv4.each do |i|
       assert_raises(ArgumentError) {@klass.new(i)}
     end
-    assert_raises (ArgumentError) {@klass.new("10.0.0.0/asd")}
+    assert_raises(ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
   def test_initialize_without_prefix
