@@ -78,7 +78,7 @@ module IPAddress
       end
     end
     
-   end # class Prefix
+  end # class Prefix
 
 
   class Prefix32 < Prefix
