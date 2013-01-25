@@ -89,7 +89,7 @@ class Prefix32Test < Test::Unit::TestCase
   end
 
   def test_initialize
-    assert_raise (ArgumentError) do
+    assert_raise(ArgumentError) do
       @klass.new 33
     end
     assert_nothing_raised do
@@ -135,7 +135,7 @@ class Prefix128Test < Test::Unit::TestCase
   end
 
   def test_initialize
-    assert_raise (ArgumentError) do
+    assert_raise(ArgumentError) do
       @klass.new 129
     end
     assert_nothing_raised do

@@ -67,7 +67,7 @@ class IPv4Test < Test::Unit::TestCase
       assert_instance_of @klass, ip
     end
     assert_instance_of IPAddress::Prefix32, @ip.prefix
-    assert_raise (ArgumentError) do
+    assert_raise(ArgumentError) do
       @klass.new 
     end
     assert_nothing_raised do
@@ -79,7 +79,7 @@ class IPv4Test < Test::Unit::TestCase
     @invalid_ipv4.each do |i|
       assert_raise(ArgumentError) {@klass.new(i)}
     end
-    assert_raise (ArgumentError) {@klass.new("10.0.0.0/asd")}
+    assert_raise(ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
   def test_initialize_without_prefix
