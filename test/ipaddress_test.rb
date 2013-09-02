@@ -43,6 +43,8 @@ class IPAddressTest < Test::Unit::TestCase
     assert_equal false, IPAddress::valid?("10.0.0")
     assert_equal false, IPAddress::valid?("10.0")
     assert_equal false, IPAddress::valid?("2002:::1")
+    assert_equal false, IPAddress::valid?("2002:516:2:200")
+
   end
 
   def test_module_method_valid_ipv4_netmark?
