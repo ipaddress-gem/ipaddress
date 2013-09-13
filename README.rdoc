@@ -489,7 +489,7 @@ instance the following two networks:
 These two networks can be expressed using only one IP address
 network if we change the prefix. Let Ruby do the work:
 
-  IPAddress::IPv4::summarize(ip1,ip2).to_string
+  IPAddress::IPv4::summarize(ip1,ip2).map(&:to_string)
     #=> "172.16.10.0/23"
 
 We note how the network "172.16.10.0/23" includes all the
