@@ -109,7 +109,11 @@ class IPv4Test < Test::Unit::TestCase
   end
 
   def test_method_data
-    assert_equal "\254\020\n\001", @ip.data
+    if RUBY_VERSION < "2.0"
+      assert_equal "\254\020\n\001", @ip.data
+    else
+      assert_equal "\xAC\x10\n\x01".b, @ip.data
+    end
   end
   
   def test_method_to_string

@@ -180,7 +180,11 @@ class IPv6Test < Test::Unit::TestCase
   end
   
   def test_method_data
-    str = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
+    if RUBY_VERSION < "2.0"
+      str = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
+    else
+      str = " \x01\r\xB8\x00\x00\x00\x00\x00\b\b\x00 \fAz".b
+    end
     assert_equal str, @ip.data
   end
 
