@@ -31,7 +31,8 @@ class IPv6Test < Test::Unit::TestCase
       "1080::8:800:200C:417A" => 21932261930451111902915077091070067066}
       
     @invalid_ipv6 = [":1:2:3:4:5:6:7",
-                     ":1:2:3:4:5:6:7"]
+                     ":1:2:3:4:5:6:7",
+                     "2002:516:2:200"]
 
     @networks = {
       "2001:db8:1:1:1:1:1:1/32" => "2001:db8::/32",
@@ -261,7 +262,7 @@ class IPv6Test < Test::Unit::TestCase
     compressed = "2001:db8:0:cd30::"
     expanded = "2001:0db8:0000:cd30:0000:0000:0000:0000"
     assert_equal expanded, @klass.expand(compressed)
-    assert_not_equal expanded, @klass.expand("2001:0db8:0:cd3")
+    assert_not_equal expanded, @klass.expand("2001:0db8:0::cd3")
     assert_not_equal expanded, @klass.expand("2001:0db8::cd30")
     assert_not_equal expanded, @klass.expand("2001:0db8::cd3")
   end
@@ -270,7 +271,7 @@ class IPv6Test < Test::Unit::TestCase
     compressed = "2001:db8:0:cd30::"
     expanded = "2001:0db8:0000:cd30:0000:0000:0000:0000"
     assert_equal compressed, @klass.compress(expanded)
-    assert_not_equal compressed, @klass.compress("2001:0db8:0:cd3")
+    assert_not_equal compressed, @klass.compress("2001:0db8:0::cd3")
     assert_not_equal compressed, @klass.compress("2001:0db8::cd30")
     assert_not_equal compressed, @klass.compress("2001:0db8::cd3")
   end
