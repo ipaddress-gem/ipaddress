@@ -1,3 +1,8 @@
+== ipaddress 0.9.0
+
+CHANGED:: ipaddress now uses this[https://gist.github.com/cpetschnig/294476] regexp to validate IPv6 addresses. Thanks to Christoph Petschnig for his regexp and to Bronislav Robenek for fixing this.
+
+
 == ipaddress 0.8.0
 
 CHANGED:: Removed extension methods and extension directory to facilitate integration with the stdlib
