@@ -672,7 +672,7 @@ module IPAddress;
     #
     # we can calculate the subnets with a /26 prefix
     #
-    #   ip.subnets(26).map{&:to_string)
+    #   ip.subnet(26).map{&:to_string)
     #     #=> ["172.16.10.0/26", "172.16.10.64/26", 
     #          "172.16.10.128/26", "172.16.10.192/26"]
     #
