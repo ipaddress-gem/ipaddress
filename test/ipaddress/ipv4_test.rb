@@ -127,6 +127,7 @@ class IPv4Test < Test::Unit::TestCase
     @valid_ipv4.each do |arg,attr|
       ip = @klass.new(arg)
       assert_equal attr.first, ip.to_s
+
     end
   end
 
@@ -177,6 +178,9 @@ class IPv4Test < Test::Unit::TestCase
     ip = @klass.new("192.168.100.50/24")
     assert_instance_of @klass, ip.first
     assert_equal "192.168.100.1", ip.first.to_s
+    ip = @klass.new("192.168.100.50/32")
+    assert_instance_of @klass, ip.first
+    assert_equal "192.168.100.50", ip.first.to_s
   end
 
   def test_method_last
@@ -186,6 +190,9 @@ class IPv4Test < Test::Unit::TestCase
     ip = @klass.new("192.168.100.50/24")
     assert_instance_of @klass, ip.last
     assert_equal  "192.168.100.254", ip.last.to_s
+    ip = @klass.new("192.168.100.50/32")
+    assert_instance_of @klass, ip.last
+    assert_equal  "192.168.100.50", ip.last.to_s
   end
   
   def test_method_each_host
