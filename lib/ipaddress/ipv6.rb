@@ -1,9 +1,9 @@
 require 'ipaddress/prefix'
 
-module IPAddress; 
-  # 
+module IPAddress;
+  #
   # =Name
-  # 
+  #
   # IPAddress::IPv6 - IP version 6 address manipulation library
   #
   # =Synopsis
@@ -11,8 +11,8 @@ module IPAddress;
   #    require 'ipaddress'
   #
   # =Description
-  # 
-  # Class IPAddress::IPv6 is used to handle IPv6 type addresses. 
+  #
+  # Class IPAddress::IPv6 is used to handle IPv6 type addresses.
   #
   # == IPv6 addresses
   #
@@ -58,25 +58,25 @@ module IPAddress;
   # portion.
   #
   #
-  class IPv6 
-    
-    include IPAddress
-    include Enumerable  
-    include Comparable                  
+  class IPv6
 
-    
+    include IPAddress
+    include Enumerable
+    include Comparable
+
+
     #
     # Format string to pretty print IPv6 addresses
     #
     IN6FORMAT = ("%.4x:"*8).chop
-    
+
     #
     # Creates a new IPv6 address object.
     #
     # An IPv6 address can be expressed in any of the following forms:
-    # 
+    #
     # * "2001:0db8:0000:0000:0008:0800:200C:417A": IPv6 address with no compression
-    # * "2001:db8:0:0:8:800:200C:417A": IPv6 address with leading zeros compression 
+    # * "2001:db8:0:0:8:800:200C:417A": IPv6 address with leading zeros compression
     # * "2001:db8::8:800:200C:417A": IPv6 address with full compression
     #
     # In all these 3 cases, a new IPv6 address object will be created, using the default
@@ -87,12 +87,13 @@ module IPAddress;
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     #
     def initialize(str)
+      raise ArgumentError, "Nil IP" unless str
       ip, netmask = str.split("/")
 
       if str =~ /:.+\./
         raise ArgumentError, "Please use #{self.class}::Mapped for IPv4 mapped addresses"
       end
-      
+
       if IPAddress.valid_ipv6?(ip)
         @groups = self.class.groups(ip)
         @address = IN6FORMAT % @groups
@@ -118,7 +119,7 @@ module IPAddress;
     end
 
     #
-    # Returns an array with the 16 bits groups in decimal 
+    # Returns an array with the 16 bits groups in decimal
     # format:
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -130,7 +131,7 @@ module IPAddress;
       @groups
     end
 
-    # 
+    #
     # Returns an instance of the prefix object
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -163,8 +164,8 @@ module IPAddress;
       @prefix = Prefix128.new(num)
     end
 
-    # 
-    # Unlike its counterpart IPv6#to_string method, IPv6#to_string_uncompressed 
+    #
+    # Unlike its counterpart IPv6#to_string method, IPv6#to_string_uncompressed
     # returns the whole IPv6 address and prefix in an uncompressed form
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -252,8 +253,8 @@ module IPAddress;
     end
     alias_method :group, :[]
 
-    # 
-    # Returns a Base16 number representing the IPv6 
+    #
+    # Returns a Base16 number representing the IPv6
     # address
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -288,7 +289,7 @@ module IPAddress;
     end
 
     #
-    # Returns an array of the 16 bits groups in hexdecimal 
+    # Returns an array of the 16 bits groups in hexdecimal
     # format:
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -305,9 +306,9 @@ module IPAddress;
     #
     # Returns the IPv6 address in a DNS reverse lookup
     # string, as per RFC3172 and RFC2874.
-    #   
+    #
     #   ip6 = IPAddress "3ffe:505:2::f"
-    #   
+    #
     #   ip6.reverse
     #     #=> "f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
     #
@@ -337,7 +338,7 @@ module IPAddress;
     #     #=> 42540766411282592875350729025363378175
     #
     # Please note that there is no Broadcast concept in IPv6
-    # addresses as in IPv4 addresses, and this method is just 
+    # addresses as in IPv4 addresses, and this method is just
     # an helper to other functions.
     #
     def broadcast_u128
@@ -388,27 +389,27 @@ module IPAddress;
       @compressed
     end
 
-    # 
+    #
     # Returns true if the address is an unspecified address
-    # 
+    #
     # See IPAddress::IPv6::Unspecified for more information
     #
     def unspecified?
       @prefix == 128 and @compressed == "::"
     end
 
-    # 
+    #
     # Returns true if the address is a loopback address
-    # 
+    #
     # See IPAddress::IPv6::Loopback for more information
     #
     def loopback?
       @prefix == 128 and @compressed == "::1"
     end
 
-    # 
+    #
     # Returns true if the address is a mapped address
-    # 
+    #
     # See IPAddress::IPv6::Mapped for more information
     #
     def mapped?
@@ -436,7 +437,7 @@ module IPAddress;
     #     #=> "2001:db8::6"
     #     #=> "2001:db8::7"
     #
-    # WARNING: if the host portion is very large, this method 
+    # WARNING: if the host portion is very large, this method
     # can be very slow and possibly hang your system!
     #
     def each
@@ -449,15 +450,15 @@ module IPAddress;
     # Spaceship operator to compare IPv6 objects
     #
     # Comparing IPv6 addresses is useful to ordinate
-    # them into lists that match our intuitive 
+    # them into lists that match our intuitive
     # perception of ordered IP addresses.
-    # 
+    #
     # The first comparison criteria is the u128 value.
-    # For example, 2001:db8:1::1 will be considered 
+    # For example, 2001:db8:1::1 will be considered
     # to be less than 2001:db8:2::1, because, in a ordered list,
     # we expect 2001:db8:1::1 to come before 2001:db8:2::1.
     #
-    # The second criteria, in case two IPv6 objects 
+    # The second criteria, in case two IPv6 objects
     # have identical addresses, is the prefix. An higher
     # prefix will be considered greater than a lower
     # prefix. This is because we expect to see
@@ -478,7 +479,7 @@ module IPAddress;
     #     #=> ["2001:db8:1::1/64","2001:db8:1::1/65","2001:db8:2::1/64"]
     #
     def <=>(oth)
-      return prefix <=> oth.prefix if to_u128 == oth.to_u128  
+      return prefix <=> oth.prefix if to_u128 == oth.to_u128
       to_u128 <=> oth.to_u128
     end
 
@@ -488,13 +489,13 @@ module IPAddress;
     #
     #   ip6 = IPAddress("2001:db8::8:800:200c:417a")
     #
-    #   ip6.bits 
+    #   ip6.bits
     #     #=> "0010000000000001000011011011100000 [...] "
     #
     def bits
       data.unpack("B*").first
     end
-    
+
     #
     # Expands an IPv6 address in the canocical form
     #
@@ -515,23 +516,23 @@ module IPAddress;
       self.new(str).compressed
     end
 
-    # 
+    #
     # Literal version of the IPv6 address
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     #
     #   ip6.literal
     #     #=> "2001-0db8-0000-0000-0008-0800-200c-417a.ipv6-literal.net"
-    # 
+    #
     def literal
       @address.gsub(":","-") + ".ipv6-literal.net"
     end
 
     #
-    # Returns a new IPv6 object with the network number 
+    # Returns a new IPv6 object with the network number
     # for the given IP.
     #
-    #   ip = IPAddress "2001:db8:1:1:1:1:1:1/32" 
+    #   ip = IPAddress "2001:db8:1:1:1:1:1:1/32"
     #
     #   ip.network.to_string
     #     #=> "2001:db8::/32"
@@ -555,9 +556,9 @@ module IPAddress;
     #
     # Creates a new IPv6 object from binary data,
     # like the one you get from a network stream.
-    # 
-    # For example, on a network stream the IP 
-    # 
+    #
+    # For example, on a network stream the IP
+    #
     #  "2001:db8::8:800:200c:417a"
     #
     # is represented with the binary data
@@ -618,7 +619,7 @@ module IPAddress;
     def self.parse_hex(hex, prefix=128)
       self.parse_u128(hex.hex, prefix)
     end
-    
+
     private
 
     def compress_address
@@ -635,7 +636,7 @@ module IPAddress;
       end
       str.sub(/:{3,}/, '::')
     end
-    
+
   end # class IPv6
 
   #
@@ -694,7 +695,7 @@ module IPAddress;
       @groups = Array.new(8,0)
       @prefix = Prefix128.new(128)
       @compressed = compress_address
-    end 
+    end
   end # class IPv6::Unspecified
 
   #
@@ -744,7 +745,7 @@ module IPAddress;
     #
     def initialize
       @address = ("0000:"*7)+"0001"
-      @groups = Array.new(7,0).push(1) 
+      @groups = Array.new(7,0).push(1)
       @prefix = Prefix128.new(128)
       @compressed = compress_address
     end
@@ -823,7 +824,7 @@ module IPAddress;
     #   ipv6.ipv4.class
     #     #=> IPAddress::IPv4
     #
-    # An IPv6 IPv4-mapped address can also be created using the 
+    # An IPv6 IPv4-mapped address can also be created using the
     # IPv6 only format of the address:
     #
     #   ip6 = IPAddress::IPv6::Mapped.new "::0d01:4403"
@@ -842,8 +843,8 @@ module IPAddress;
       super("::ffff:#{@ipv4.to_ipv6}/#{netmask}")
     end
 
-    # 
-    # Similar to IPv6#to_s, but prints out the IPv4 address 
+    #
+    # Similar to IPv6#to_s, but prints out the IPv4 address
     # in dotted decimal format
     #
     #   ip6 = IPAddress "::ffff:172.16.10.1/128"
@@ -855,8 +856,8 @@ module IPAddress;
       "::ffff:#{@ipv4.address}"
     end
 
-    # 
-    # Similar to IPv6#to_string, but prints out the IPv4 address 
+    #
+    # Similar to IPv6#to_string, but prints out the IPv4 address
     # in dotted decimal format
     #
     #
