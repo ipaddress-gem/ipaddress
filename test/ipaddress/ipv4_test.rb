@@ -1,6 +1,6 @@
 require 'test_helper'
  
-class IPv4Test < Test::Unit::TestCase
+class IPv4Test < Minitest::Test
 
   def setup
     @klass = IPAddress::IPv4
@@ -67,25 +67,19 @@ class IPv4Test < Test::Unit::TestCase
       assert_instance_of @klass, ip
     end
     assert_instance_of IPAddress::Prefix32, @ip.prefix
-    assert_raise (ArgumentError) do
+    assert_raises (ArgumentError) do
       @klass.new 
-    end
-    assert_nothing_raised do
-      @klass.new "10.0.0.0/8"
     end
   end
 
   def test_initialize_format_error
     @invalid_ipv4.each do |i|
-      assert_raise(ArgumentError) {@klass.new(i)}
+      assert_raises(ArgumentError) {@klass.new(i)}
     end
-    assert_raise (ArgumentError) {@klass.new("10.0.0.0/asd")}
+    assert_raises (ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
   def test_initialize_without_prefix
-    assert_nothing_raised do
-      @klass.new("10.10.0.0")
-    end
     ip = @klass.new("10.10.0.0")
     assert_instance_of IPAddress::Prefix32, ip.prefix
     assert_equal 32, ip.prefix.to_i
@@ -105,7 +99,7 @@ class IPv4Test < Test::Unit::TestCase
   end
   
   def test_initialize_should_require_ip
-    assert_raise(ArgumentError) { @klass.new }
+    assert_raises(ArgumentError) { @klass.new }
   end
 
   def test_method_data
@@ -382,8 +376,8 @@ class IPv4Test < Test::Unit::TestCase
   end
 
   def test_method_split
-    assert_raise(ArgumentError) {@ip.split(0)}
-    assert_raise(ArgumentError) {@ip.split(257)}
+    assert_raises(ArgumentError) {@ip.split(0)}
+    assert_raises(ArgumentError) {@ip.split(257)}
     
     assert_equal @ip.network, @ip.split(1).first
     
@@ -413,9 +407,8 @@ class IPv4Test < Test::Unit::TestCase
   end
 
   def test_method_subnet
-    assert_raise(ArgumentError) {@network.subnet(23)}
-    assert_raise(ArgumentError) {@network.subnet(33)}
-    assert_nothing_raised {@ip.subnet(30)}
+    assert_raises(ArgumentError) {@network.subnet(23)}
+    assert_raises(ArgumentError) {@network.subnet(33)}
     arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
            "172.16.10.192/26"]
     assert_equal arr, @network.subnet(26).map {|s| s.to_string}
@@ -426,7 +419,7 @@ class IPv4Test < Test::Unit::TestCase
   end
   
   def test_method_supernet
-    assert_raise(ArgumentError) {@ip.supernet(24)}     
+    assert_raises(ArgumentError) {@ip.supernet(24)}     
     assert_equal "0.0.0.0/0", @ip.supernet(0).to_string
     assert_equal "0.0.0.0/0", @ip.supernet(-2).to_string
     assert_equal "172.16.10.0/23", @ip.supernet(23).to_string
@@ -528,7 +521,7 @@ class IPv4Test < Test::Unit::TestCase
       assert_equal prefix, res.prefix
       assert_equal "#{ip}/#{prefix}", res.to_string
     end
-    assert_raise(ArgumentError){ @klass.parse_classful("192.168.256.257") }
+    assert_raises(ArgumentError){ @klass.parse_classful("192.168.256.257") }
   end
   
 end # class IPv4Test
