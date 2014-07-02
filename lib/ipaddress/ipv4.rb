@@ -303,7 +303,7 @@ module IPAddress;
         return nil
       end
     end
-
+    
     #
     # Checks if the IP address is actually a network
     #
@@ -482,7 +482,7 @@ module IPAddress;
       return prefix <=> oth.prefix if to_u32 == oth.to_u32  
       to_u32 <=> oth.to_u32
     end
-
+    
     #
     # Returns the number of IP addresses included
     # in the network. It also counts the network
