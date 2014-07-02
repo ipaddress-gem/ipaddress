@@ -132,7 +132,6 @@ class IPv4Test < Test::Unit::TestCase
     @valid_ipv4.each do |arg,attr|
       ip = @klass.new(arg)
       assert_equal attr.first, ip.to_s
-
     end
   end
 
