@@ -214,8 +214,8 @@ module IPAddress
     #     #=> 64
     #
     def initialize(num=128)
-      unless (1..128).include? num.to_i
-        raise ArgumentError, "Prefix must be in range 1..128, got: #{num}"
+      unless (0..128).include? num.to_i
+        raise ArgumentError, "Prefix must be in range 0..128, got: #{num}"
       end
       super(num.to_i)
     end
