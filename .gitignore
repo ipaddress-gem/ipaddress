@@ -4,7 +4,7 @@
 /coverage/
 /doc/
 .DS_Store
-/Gemfile.lock
+Gemfile.lock
 ipaddr.html
 mkmf.log
 *.o
@@ -16,3 +16,4 @@ server.rb
 *.sw?
 /tmp/
 /_yardoc/
+.document
