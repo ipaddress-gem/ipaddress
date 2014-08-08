@@ -1,3 +1,7 @@
+== <b>IPAddress 1.0 is currently under development and will be released soon! Stay tuned!</b>
+
+---
+
 = IPAddress
 
 IPAddress is a Ruby library designed to make the use of IPv4 and IPv6
