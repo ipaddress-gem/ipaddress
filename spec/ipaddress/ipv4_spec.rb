@@ -99,6 +99,190 @@ module IPAddress
       end
     end
 
+    describe "#network?" do
+      it "checks if the IP address is actually a network" do
+        expect(ip.network?).to be_falsey
+        expect(IPAddress::IPv4.new("10.0.0.0/24").network?).to be_truthy
+      end
+    end
+
+    describe "#broadcast" do
+      it "returns the broadcast address for the given IP" do
+        expect(ip.broadcast).to be_instance_of(IPAddress::IPv4)
+        bcast = ip.broadcast.to_s
+        expect(bcast).to eq "10.255.255.255"
+        bcast = ip.broadcast.to_string
+        expect(bcast).to eq "10.255.255.255/8"
+      end
+    end
+
+    describe "#network" do
+      it "returns the network number" do
+        expect(ip.network.to_s).to eq "10.0.0.0"
+        expect(ip.network).to be_instance_of(IPAddress::IPv4)
+      end
+    end
+
+    describe "#bits" do
+      it "returns the IP in binary format" do
+        expect(ip.bits).to eq "00001010000000000000000000000001"
+      end
+    end
+
+    describe "#first" do
+      context "when the ip is a network" do
+        let(:ip) { IPAddress::IPv4.new("192.168.100.0/24") }
+        it "returns the first host IP address in the range" do
+          expect(ip).to be_instance_of(IPAddress::IPv4)
+          expect(ip.first.to_s).to eq "192.168.100.1"
+        end
+      end
+      context "when the ip is a simple ip" do
+        let(:ip) { IPAddress::IPv4.new("192.168.100.50/24") }
+        it "returns the first host IP address in the range" do
+          expect(ip).to be_instance_of(IPAddress::IPv4)
+          expect(ip.first.to_s).to eq "192.168.100.1"
+        end
+      end
+    end
+
+    describe "#last" do
+      context "when the ip is a network" do
+        let(:ip) { IPAddress::IPv4.new("192.168.100.0/24") }
+        it "returns the last host IP address in the range" do
+          expect(ip).to be_instance_of(IPAddress::IPv4)
+          expect(ip.last.to_s).to eq "192.168.100.254"
+        end
+      end
+      context "when the ip is a simple ip" do
+        let(:ip) { IPAddress::IPv4.new("192.168.100.50/24") }
+        it "returns the last host IP address in the range" do
+          expect(ip).to be_instance_of(IPAddress::IPv4)
+          expect(ip.last.to_s).to eq "192.168.100.254"
+        end
+      end
+    end
+
+    describe "#each_host" do
+      let(:pref) { 29 }
+      it "iterates over all the hosts IP addresses" do
+        arr = []
+        ip.each_host {|i| arr << i.to_s}
+        expected = ["10.0.0.1","10.0.0.2","10.0.0.3",
+                    "10.0.0.4","10.0.0.5","10.0.0.6"]
+        expect(arr).to eq expected
+      end
+    end
+
+    describe "#each" do
+      let(:pref) { 29 }
+      it "iterates over all the IP addresses" do
+        arr = []
+        ip.each {|i| arr << i.to_s}
+        expected = ["10.0.0.0","10.0.0.1","10.0.0.2",
+                    "10.0.0.3","10.0.0.4","10.0.0.5",
+                    "10.0.0.6","10.0.0.7"]
+        expect(arr).to eq expected
+      end
+    end
+
+    describe "#size" do
+      it "returns the number of IP addresses included in the network" do
+        expect(ip.size).to eq 16777216
+      end
+    end
+
+    describe "#hosts" do
+      let(:pref) { 29 }
+      it "returns all the hosts in the network" do
+        expected = ["10.0.0.1","10.0.0.2","10.0.0.3",
+                    "10.0.0.4","10.0.0.5","10.0.0.6"]
+        expect(ip.hosts.map{|i| i.to_s}).to eq expected
+      end
+    end
+
+    describe "#network_u32" do
+      it "returns the network number in Unsigned 32bits format" do
+        expect(ip.network_u32).to eq 167772160
+      end
+    end
+
+    describe "#broadcast_u32" do
+      it "returns the broadcast in Unsigned 32bits format" do
+        expect(ip.broadcast_u32).to eq 184549375
+      end
+    end
+
+    describe "#include" do
+      pending
+    end
+
+    describe "#ipv4?" do
+      it "checks if the object is an IPv4 address" do
+        expect(ip).to be_ipv4
+      end
+    end
+
+    describe "#ipv6?" do
+      it "checks if the object is an IPv6 address" do
+        expect(ip).not_to be_ipv6
+      end
+    end
+
+    describe "#private" do
+      shared_examples "private address" do |address|
+        let(:ip) { IPAddress::IPv4.new(address) }
+        it "is private" do
+          expect(ip).to be_private  
+        end
+      end
+      context "when the address is a private 192.168/16" do
+        it_behaves_like "private address", "192.168.10.50/24"
+        it_behaves_like "private address", "192.168.10.50/16"
+      end
+      context "when the address is a private 172.16/12" do
+        it_behaves_like "private address", "172.16.10.50/24"
+        it_behaves_like "private address", "172.16.10.50/14"
+      end
+      context "when the address is a private 10/8" do
+        it_behaves_like "private address", "10.10.10.50/10"
+        it_behaves_like "private address", "10.0.0.0/8"
+      end
+      context "when the address is not private" do
+        let(:addr) { "3.0.0.0" }
+        it "should not be private" do
+          expect(ip).not_to be_private 
+        end
+      end
+    end
+
+    context "classes (A, B, C)" do
+      let(:class_a) { IPAddress::IPv4.new("10.0.0.1/8") }
+      let(:class_b) { IPAddress::IPv4.new("172.16.0.1/16") }
+      let(:class_c) { IPAddress::IPv4.new("192.168.0.1/24") }
+
+      describe "#a" do
+        it "checks if it's a RFC 791 CLASS A address" do
+          expect(class_a.a?).to be_truthy
+          expect(class_b.a?).to be_falsey
+          expect(class_c.a?).to be_falsey
+        end
+      end
+      describe "#b" do
+        it "checks if it's a RFC 791 CLASS B address" do
+          expect(class_a).not_to be_b
+          expect(class_b).to be_b
+          expect(class_c).not_to be_b
+        end
+      end
+      describe "#c" do
+        it "checks if it's a RFC 791 CLASS C address" do
+          expect(class_a).not_to be_c
+          expect(class_b).not_to be_c
+          expect(class_c).to be_c
+        end
+      end
+    end
 
   end # describe IPv4
 
