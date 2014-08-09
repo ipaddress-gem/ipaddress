@@ -284,6 +284,65 @@ module IPAddress
       end
     end
 
+    describe "#to_ipv6" do
+      it "return the IPv6 Mapped IPv4 address" do
+        expect(ip.to_ipv6).to eq "0a00:0001"
+      end
+    end
+
+    describe "#reverse" do
+      it "returns the IP address in in-addr.arpa format" do
+        expect(ip.reverse).to eq "1.0.0.10.in-addr.arpa"
+      end
+    end
+
+    describe "#[]" do
+      it "returns the octet specified" do
+        expect(ip[0]).to eq 10
+        expect(ip[1]).to eq 0
+        expect(ip[3]).to eq 1
+      end
+    end
+
+    describe "#<=>" do
+      pending
+    end
+
+    describe "#-" do
+      let(:ip1) { IPAddress::IPv4.new("10.1.1.1/8") }
+      let(:ip2) { IPAddress::IPv4.new("10.1.1.10/8") }
+      it "returns the difference between two IP addresses" do
+        expect(ip2-ip1).to eq 9
+        expect(ip1-ip2).to eq 9
+      end
+    end
+
+    describe "#+" do
+      context "when two contiguous networks" do
+        let(:ip1) { IPAddress::IPv4.new("172.16.10.1/24") }
+        let(:ip2) { IPAddress::IPv4.new("172.16.11.2/24") }
+        it "returns the summarized network" do
+          expect((ip1+ip2).map{|i| i.to_string}).to eq ["172.16.10.0/23"]
+        end
+      end
+      context "when one network includes the other" do
+        let(:ip1) { IPAddress::IPv4.new("10.0.0.0/16") }
+        let(:ip2) { IPAddress::IPv4.new("10.0.2.0/24") }
+        it "returns the including network unchanged" do
+          expect((ip1+ip2).map{|i| i.to_string}).to eq ["10.0.0.0/16"]
+        end
+      end
+      context "when not contiguous networks" do
+        let(:ip1) { IPAddress::IPv4.new("10.0.0.0/23") }
+        let(:ip2) { IPAddress::IPv4.new("10.1.0.0/24") }
+        it "returns the two networks unchanged" do
+          expect((ip1+ip2).map{|i| i.to_string}).to eq ["10.0.0.0/23", "10.1.0.0/24"]
+        end
+      end
+    end
+
+    
+    
   end # describe IPv4
 
 end # module IPAddress
