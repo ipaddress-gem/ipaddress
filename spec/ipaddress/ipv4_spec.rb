@@ -341,6 +341,61 @@ module IPAddress
       end
     end
 
+    describe "#netmask=" do
+      it "changes the prefix / netmask" do
+        ip.netmask = "255.255.255.0"
+        expect(ip.prefix).to eq 24
+      end
+    end
+
+    describe IPv4, "::parse_u32" do
+      it "creates a new IPv4 object from an unsigned 32bits integer" do
+        ip = IPAddress::IPv4.parse_u32(167772161)
+        expect(ip.to_string).to eq "10.0.0.1/32"
+      end
+    end
+
+    describe IPv4, "::extract" do
+      it "extracts an IPv4 address from a string" do
+        ip = IPAddress::IPv4.extract("foobar172.16.10.1barbaz")
+        expect(ip.to_s).to eq "172.16.10.1"
+      end
+    end
+
+    describe IPv4, "::parse_data" do
+      it "creates a new IPv4 object from binary data" do
+        ip = IPAddress::IPv4.parse_data("\254\020\n\001")
+        expect(ip.to_s).to eq "172.16.10.1"
+      end
+    end
+
+    describe IPv4, "::parse_classful" do
+      context "when it's a class A address'" do
+        it "parses a class A IPv4 address" do
+          ip = IPAddress::IPv4.parse_classful("10.1.1.1")
+          expect(ip.a?).to be_truthy
+          expect(ip).not_to be_b
+          expect(ip).not_to be_c
+        end
+      end
+      context "when it's a class B address'" do
+        it "parses a class B IPv4 address" do
+          ip = IPAddress::IPv4.parse_classful("150.1.1.1")
+          expect(ip.a?).to be_falsey
+          expect(ip).to be_b
+          expect(ip).not_to be_c
+        end
+      end
+      context "when it's a class C address'" do
+        it "parses a class C IPv4 address" do
+          ip = IPAddress::IPv4.parse_classful("200.1.1.1")
+          expect(ip.a?).to be_falsey
+          expect(ip).not_to be_b
+          expect(ip).to be_c
+        end
+      end
+    end
+
     
     
   end # describe IPv4
