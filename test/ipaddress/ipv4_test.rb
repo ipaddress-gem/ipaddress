@@ -309,10 +309,15 @@ class IPv4Test < Test::Unit::TestCase
   end
 
   def test_method_rev_domains
-    assert_equal ["172.in-addr.arpa", "173.in-addr.arpa"], @klass.new("173.17.1.1/7").rev_domains
+    assert_equal ["4.17.173.in-addr.arpa", "5.17.173.in-addr.arpa"], @klass.new("173.17.5.1/23").rev_domains
     assert_equal ["16.173.in-addr.arpa", "17.173.in-addr.arpa"], @klass.new("173.17.1.1/15").rev_domains
-    assert_equal ["0.17.173.in-addr.arpa", "1.17.173.in-addr.arpa"], @klass.new("173.17.1.1/23").rev_domains
+    assert_equal ["172.in-addr.arpa", "173.in-addr.arpa"], @klass.new("173.17.1.1/7").rev_domains
     assert_equal ["1.17.173.in-addr.arpa"], @klass.new("173.17.1.1/29").rev_domains
+    assert_equal ["1.17.174.in-addr.arpa"], @klass.new("174.17.1.1/24").rev_domains
+    assert_equal ["17.175.in-addr.arpa"], @klass.new("175.17.1.1/16").rev_domains
+    assert_equal ["176.in-addr.arpa"], @klass.new("176.17.1.1/8").rev_domains
+    assert_equal ["0.in-addr.arpa"], @klass.new("177.17.1.1/0").rev_domains
+    assert_equal ["1.17.178.in-addr.arpa"], @klass.new("178.17.1.1/32").rev_domains
   end
   
   def test_method_compare

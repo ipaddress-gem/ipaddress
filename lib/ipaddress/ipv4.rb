@@ -593,15 +593,21 @@ module IPAddress;
     #     #=> ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
     #
     def rev_domains
-      p = ((prefix.to_i+8)/8)*8
-      if p == 32 # 192.16.3.0/26 => 3.16.192.in-addr.arpa
-        net = [network.supernet(24)]
+      net = [ network ]
+      cut = 4-(prefix.to_i/8)
+      if prefix.to_i <= 8 # edge case class a
+        cut = 3
+      elsif  prefix.to_i > 24 # edge case class c
         cut = 1
-      else
-        net = network.subnet(p)
-        cut = (4-(p/8))
+        net = [network.supernet(24)]
       end
-      net.map{|n| n.reverse.split('.')[cut..-1].join('.') }
+      if prefix.to_i < 24 and (prefix.to_i % 8) != 0 # case class less
+        cut = 3-(prefix.to_i/8)
+        net = network.subnet(prefix.to_i+1)         
+      end
+      net.map do |n| 
+        n.reverse.split('.')[cut..-1].join('.') 
+      end
     end
     
     #
