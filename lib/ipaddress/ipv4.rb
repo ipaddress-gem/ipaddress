@@ -582,6 +582,27 @@ module IPAddress;
       @octets.reverse.join(".") + ".in-addr.arpa"
     end
     alias_method :arpa, :reverse
+
+    #
+    # Returns the IP address in in-addr.arpa format
+    # for DNS Domain definition entries like SOA Records
+    #
+    #   ip = IPAddress("172.17.100.50/15")
+    #
+    #   ip.rev_domains
+    #     #=> ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
+    #
+    def rev_domains
+      p = ((prefix.to_i+8)/8)*8
+      if p == 32 # 192.16.3.0/26 => 3.16.192.in-addr.arpa
+        net = [network.supernet(24)]
+        cut = 1
+      else
+        net = network.subnet(p)
+        cut = (4-(p/8))
+      end
+      net.map{|n| n.reverse.split('.')[cut..-1].join('.') }
+    end
     
     #
     # Splits a network into different subnets

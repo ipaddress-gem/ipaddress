@@ -195,6 +195,14 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal str, @klass.new("3ffe:505:2::f").reverse
   end
 
+  def test_method_rev_domains
+    assert_equal ["e.ip6.arpa", "f.ip6.arpa"], @klass.new("f000:f100::/3").rev_domains
+    assert_equal ["2.a.e.f.ip6.arpa", "3.a.e.f.ip6.arpa"], @klass.new("fea3:f120::/15").rev_domains
+    assert_equal ["2.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",
+                  "3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa"],
+                  @klass.new("f000:f100::1234/125").rev_domains
+  end
+
   def test_method_compressed
     assert_equal "1:1:1::1", @klass.new("1:1:1:0:0:0:0:1").compressed
     assert_equal "1:0:1::1", @klass.new("1:0:1:0:0:0:0:1").compressed
@@ -228,6 +236,14 @@ class IPv6Test < Test::Unit::TestCase
     expected = ["2001:db8::","2001:db8::1","2001:db8::2",
                 "2001:db8::3","2001:db8::4","2001:db8::5",
                 "2001:db8::6","2001:db8::7"]
+    assert_equal expected, arr
+  end
+
+  def test_method_each_net
+    ip = @klass.new("fd01:db8::4/3")
+    arr = []
+    ip.each_net {|i| arr << i.to_string}
+    expected = ["e000::/3","f000::/3"]
     assert_equal expected, arr
   end
 

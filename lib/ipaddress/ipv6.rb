@@ -317,6 +317,26 @@ module IPAddress;
     alias_method :arpa, :reverse
 
     #
+    # Returns the IPv6 address in a DNS reverse lookup
+    # string, as per RFC3172 and RFC2874.
+    # for DNS Domain definition entries like SOA Records
+    #
+    #   ipv6 = IPAddress.parse("fd04:fd80:5::/3")
+    #
+    #   ip.reverse
+    #     #=> ["e.ip6.arpa", "f.ip6.arpa"]
+    #
+    def rev_domains
+      ret = []
+      network = IPv6.parse_u128(network_u128, [(@prefix.to_i/4)*4 + 3, 123].min)
+      network.each_net do |net|
+        ret << net.reverse[(128-(net.prefix.to_i))/4*2..-1]
+      end
+      ret
+    end
+
+
+
     # Returns the network number in Unsigned 128bits format
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -442,6 +462,32 @@ module IPAddress;
     def each
       (network_u128..broadcast_u128).each do |i|
         yield self.class.parse_u128(i, @prefix)
+      end
+    end
+
+    #
+    # Iterates over all the IP Network for the given
+    # network (or IP address).
+    #
+    # The object yielded is a new IPv6 object created
+    # from the iteration.
+    #
+    #   ip6 = IPAddress("fd01::4/3")
+    #
+    #   ip6.each_net do |i|
+    #     p i.compressed
+    #   end
+    #     #=> "e000::/3"
+    #     #=> "f000::/3"
+    #
+    # WARNING: if the host portion is very large, this method
+    # can be very slow and possibly hang your system!
+    #
+    def each_net
+      start = network_u128
+      while (@prefix.host_prefix.to_i-1) > 0 && start < broadcast_u128
+          yield self.class.parse_u128(start, @prefix)
+          start += 1<<(@prefix.host_prefix.to_i-1)
       end
     end
 

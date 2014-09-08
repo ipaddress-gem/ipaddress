@@ -307,6 +307,13 @@ class IPv4Test < Test::Unit::TestCase
   def test_method_reverse
     assert_equal "1.10.16.172.in-addr.arpa", @ip.reverse
   end
+
+  def test_method_rev_domains
+    assert_equal ["172.in-addr.arpa", "173.in-addr.arpa"], @klass.new("173.17.1.1/7").rev_domains
+    assert_equal ["16.173.in-addr.arpa", "17.173.in-addr.arpa"], @klass.new("173.17.1.1/15").rev_domains
+    assert_equal ["0.17.173.in-addr.arpa", "1.17.173.in-addr.arpa"], @klass.new("173.17.1.1/23").rev_domains
+    assert_equal ["1.17.173.in-addr.arpa"], @klass.new("173.17.1.1/29").rev_domains
+  end
   
   def test_method_compare
     ip1 = @klass.new("10.1.1.1/8")
