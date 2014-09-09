@@ -565,8 +565,8 @@ module IPAddress;
     #
     def private?
       [self.class.new("10.0.0.0/8"),
-       self.class.new("172.16.0.0/12"),
-       self.class.new("192.168.0.0/16")].any? {|i| i.include? self}
+        self.class.new("172.16.0.0/12"),
+        self.class.new("192.168.0.0/16")].any? {|i| i.include? self}
     end
 
     #
@@ -728,6 +728,49 @@ module IPAddress;
     #
     def +(oth)
       aggregate(*[self,oth].sort.map{|i| i.network})
+    end
+    
+    #
+    # Returns a new IPv4 object which is the result 
+    # of advancing this IP address by a given value.
+    # In other words, this arithmetically adds IP addresses.
+    #
+    # Will raise an error if the resulting address is in a different subnet,
+    # except validating is set to false.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.new("172.16.10.1/24")
+    #   ip.add(5).to_string
+    #     #=> "172.16.10.6/24"
+    def add(oth, validating=true)
+      oth = oth.to_i if oth.kind_of? IPAddress::IPv4 # oth shall be integer
+      
+      new_obj = self.class.parse_u32(self.to_i + oth, prefix)
+      
+      if validating and self.network_u32 != new_obj.network_u32
+        raise ArgumentError, "Subnet (/#{@prefix}) is not large enough."
+      end
+      
+      return new_obj
+    end
+    
+    #
+    # Returns a new IPv4 object which is the result 
+    # of decreasing this IP address by a given value.
+    # In other words, this arithmetically subtracts IP addresses.
+    #
+    # Will raise an error if the resulting address is in a different subnet,
+    # except validating is set to false.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.new("172.16.10.10/24")
+    #   ip.subtract(5).to_string
+    #     #=> "172.16.10.5/24"
+    def subtract(oth, validating=true)
+      oth = oth.to_i if oth.kind_of? IPAddress::IPv4 # oth shall be integer
+      return add(-oth, validating)
     end
 
     #

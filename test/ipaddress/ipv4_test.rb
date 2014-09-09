@@ -433,6 +433,28 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal "172.16.8.0/22", @ip.supernet(22).to_string
   end
 
+  def test_method_add
+    ip = IPAddress::IPv4.new("172.16.10.1/24")
+    assert_equal ip.add(5), IPAddress::IPv4.new("172.16.10.6/24")
+    assert_equal ip.add(IPAddress::IPv4.new("0.0.0.5/6")), IPAddress::IPv4.new("172.16.10.6/24")
+    assert_equal ip.add(50), IPAddress::IPv4.new("172.16.10.51/24")
+    assert_equal ip.add(254), IPAddress::IPv4.new("172.16.10.255/24")
+    assert_raise(ArgumentError) {ip.add(255)}
+    assert_raise(ArgumentError) {ip.add(1000)}
+    ip = IPAddress::IPv4.new("172.16.10.1/30")
+    assert_equal ip.add(2), IPAddress::IPv4.new("172.16.10.3/30")
+    assert_raise(ArgumentError) {ip.add(3)}
+  end
+
+  def test_method_subtract
+    ip = IPAddress::IPv4.new("172.16.10.10/24")
+    assert_equal ip.subtract(5), IPAddress::IPv4.new("172.16.10.5/24")
+    assert_equal ip.subtract(IPAddress::IPv4.new("0.0.0.5/32")), IPAddress::IPv4.new("172.16.10.5/24")
+    assert_equal ip.subtract(10), IPAddress::IPv4.new("172.16.10.0/24")
+    assert_raise(ArgumentError) {ip.subtract(11)}
+    assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv4.new("0.0.0.11/16"))}
+  end
+  
   def test_classmethod_parse_u32
     @decimal_values.each do  |addr,int|
       ip = @klass.parse_u32(int)
