@@ -258,6 +258,24 @@ class IPv6Test < Test::Unit::TestCase
            "2001:db8:1::2/64","2001:db8:2::1/64"]
     assert_equal arr, [ip1,ip2,ip3,ip4].sort.map{|s| s.to_string}
   end
+  
+  def test_method_add
+    ip = IPAddress::IPv6.new("fc42:1337::/64")
+    assert_equal ip.add(5), IPAddress::IPv6.new("fc42:1337::5/64")
+    assert_equal ip.add(IPAddress::IPv6.new("::5/42")), IPAddress::IPv6.new("fc42:1337::5/64")
+    assert_equal ip.add(50), IPAddress::IPv6.new("fc42:1337::32/64")
+    ip = IPAddress::IPv6.new("fc42:1337::/120")
+    assert_equal ip.add(2), IPAddress::IPv6.new("fc42:1337::2/120")
+    assert_raise(ArgumentError) {ip.add(256)}
+  end
+
+  def test_method_subtract
+    ip = IPAddress::IPv6.new("fc42:1337::5/64")
+    assert_equal ip.subtract(5), IPAddress::IPv6.new("fc42:1337::/64")
+    assert_equal ip.subtract(IPAddress::IPv6.new("::5/12")), IPAddress::IPv6.new("fc42:1337::0/64")
+    assert_raise(ArgumentError) {ip.subtract(11)}
+    assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv6.new("::11/66"))}
+  end
 
   def test_classmethod_expand
     compressed = "2001:db8:0:cd30::"

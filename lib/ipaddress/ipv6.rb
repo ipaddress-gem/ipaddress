@@ -315,6 +315,49 @@ module IPAddress;
       to_hex.reverse.gsub(/./){|c| c+"."} + "ip6.arpa"
     end
     alias_method :arpa, :reverse
+    
+    #
+    # Returns a new IPv6 object which is the result 
+    # of advancing this IP address by a given value.
+    # In other words, this arithmetically adds IP addresses.
+    #
+    # Will raise an error if the resulting address is in a different subnet,
+    # except validating is set to false.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337::/64")
+    #   ip.add(5).to_string
+    #     #=> "fc42:1337::5/64"
+    def add(oth, validating=true)
+      oth = oth.to_i if oth.kind_of? IPAddress::IPv6 # oth shall be integer
+      
+      new_obj = self.class.parse_u128(self.to_i + oth, prefix)
+      
+      if validating and self.network_u128 != new_obj.network_u128
+        raise ArgumentError, "Subnet (/#{@prefix}) is not large enough."
+      end
+      
+      return new_obj
+    end
+    
+    #
+    # Returns a new IPv6 object which is the result 
+    # of decreasing this IP address by a given value.
+    # In other words, this arithmetically subtracts IP addresses.
+    #
+    # Will raise an error if the resulting address is in a different subnet,
+    # except validating is set to false.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv6.new("fc42::1337::a/64")
+    #   ip.subtract(5).to_string
+    #     #=> "fc42:1337::5/64"
+    def subtract(oth, validating=true)
+      oth = oth.to_i if oth.kind_of? IPAddress::IPv6 # oth shall be integer
+      return add(-oth, validating)
+    end
 
     #
     # Returns the network number in Unsigned 128bits format
