@@ -267,6 +267,7 @@ class IPv6Test < Test::Unit::TestCase
     ip = IPAddress::IPv6.new("fc42:1337::/120")
     assert_equal ip.add(2), IPAddress::IPv6.new("fc42:1337::2/120")
     assert_raise(ArgumentError) {ip.add(256)}
+    assert_equal ip.add(256, false), IPAddress::IPv6.new("fc42:1337::100/120")
   end
 
   def test_method_subtract
