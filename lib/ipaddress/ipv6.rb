@@ -408,6 +408,18 @@ module IPAddress;
     end
     
     #
+    # Returns a new IPv6 object containing only the host part of this IP.
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337:0:5::7/64")
+    #
+    #   ip.hostpart.to_s
+    #     #=> "::7"
+    #
+    def hostpart
+      self.class.parse_u128(hostpart_u128, 128)
+    end
+    
+    #
     # Returns the network number in Unsigned 128bits format
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
@@ -417,6 +429,18 @@ module IPAddress;
     #
     def network_u128
       to_u128 & @prefix.to_u128
+    end
+    
+    #
+    # Returns this address' host part in unsigned 128bits format
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337:0:5::7/64")
+    #
+    #   ip.host_u128
+    #     #=> 7
+    #
+    def hostpart_u128
+      to_u128 & ~@prefix.to_u128
     end
 
     #

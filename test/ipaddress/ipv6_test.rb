@@ -277,6 +277,11 @@ class IPv6Test < Test::Unit::TestCase
     assert_raise(ArgumentError) {ip.subtract(11)}
     assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv6.new("::11/66"))}
   end
+  
+  def test_method_hostpart
+    ip = IPAddress::IPv6.new("fc42:1337:0:5::7/64")
+    assert_equal ip.hostpart.to_s, "::7"
+  end
 
   def test_method_advance_network
     ip = IPAddress::IPv6.new("fc42:1337:0:0::/64")
