@@ -13,13 +13,13 @@ class IPv4Test < Test::Unit::TestCase
       "10.0.0.1/255.255.255.0" => ["10.0.0.1", 24]}
     
     @invalid_ipv4 = ["10.0.0.256",
-                     "10.0.0.0.0",
-                     "10.0.0",
-                     "10.0"]
+      "10.0.0.0.0",
+      "10.0.0",
+      "10.0"]
 
     @valid_ipv4_range = ["10.0.0.1-254",
-                         "10.0.1-254.0",
-                         "10.1-254.0.0"]
+      "10.0.1-254.0",
+      "10.1-254.0.0"]
 
     @netmask_values = {
       "0.0.0.0/0"        => "0.0.0.0",
@@ -193,7 +193,7 @@ class IPv4Test < Test::Unit::TestCase
     arr = []
     ip.each_host {|i| arr << i.to_s}
     expected = ["10.0.0.1","10.0.0.2","10.0.0.3",
-                "10.0.0.4","10.0.0.5","10.0.0.6"]
+      "10.0.0.4","10.0.0.5","10.0.0.6"]
     assert_equal expected, arr
   end
 
@@ -202,8 +202,8 @@ class IPv4Test < Test::Unit::TestCase
     arr = []
     ip.each {|i| arr << i.to_s}
     expected = ["10.0.0.0","10.0.0.1","10.0.0.2",
-                "10.0.0.3","10.0.0.4","10.0.0.5",
-                "10.0.0.6","10.0.0.7"]
+      "10.0.0.3","10.0.0.4","10.0.0.5",
+      "10.0.0.6","10.0.0.7"]
     assert_equal expected, arr
   end
 
@@ -215,7 +215,7 @@ class IPv4Test < Test::Unit::TestCase
   def test_method_hosts
     ip = @klass.new("10.0.0.1/29")
     expected = ["10.0.0.1","10.0.0.2","10.0.0.3",
-                "10.0.0.4","10.0.0.5","10.0.0.6"]
+      "10.0.0.4","10.0.0.5","10.0.0.6"]
     assert_equal expected, ip.hosts.map {|i| i.to_s}
   end
 
@@ -354,7 +354,7 @@ class IPv4Test < Test::Unit::TestCase
 
     ip2 = @klass.new("172.16.12.2/24")
     assert_equal [ip1.network.to_string, ip2.network.to_string], 
-    (ip1 + ip2).map{|i| i.to_string}
+      (ip1 + ip2).map{|i| i.to_string}
 
     ip1 = @klass.new("10.0.0.0/23")
     ip2 = @klass.new("10.0.2.0/24")
@@ -388,21 +388,21 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal @ip.network, @ip.split(1).first
     
     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
-           "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
-           "172.16.10.192/27", "172.16.10.224/27"]
+      "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
+      "172.16.10.192/27", "172.16.10.224/27"]
     assert_equal arr, @network.split(8).map {|s| s.to_string}
     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
-           "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
-           "172.16.10.192/26"]
+      "172.16.10.96/27", "172.16.10.128/27", "172.16.10.160/27", 
+      "172.16.10.192/26"]
     assert_equal arr, @network.split(7).map {|s| s.to_string}
     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
-           "172.16.10.96/27", "172.16.10.128/26", "172.16.10.192/26"]
+      "172.16.10.96/27", "172.16.10.128/26", "172.16.10.192/26"]
     assert_equal arr, @network.split(6).map {|s| s.to_string}
     arr = ["172.16.10.0/27", "172.16.10.32/27", "172.16.10.64/27", 
-           "172.16.10.96/27", "172.16.10.128/25"]
+      "172.16.10.96/27", "172.16.10.128/25"]
     assert_equal arr, @network.split(5).map {|s| s.to_string}
     arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
-           "172.16.10.192/26"]
+      "172.16.10.192/26"]
     assert_equal arr, @network.split(4).map {|s| s.to_string}
     arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/25"]
     assert_equal arr, @network.split(3).map {|s| s.to_string}
@@ -417,7 +417,7 @@ class IPv4Test < Test::Unit::TestCase
     assert_raise(ArgumentError) {@network.subnet(33)}
     assert_nothing_raised {@ip.subnet(30)}
     arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
-           "172.16.10.192/26"]
+      "172.16.10.192/26"]
     assert_equal arr, @network.subnet(26).map {|s| s.to_string}
     arr = ["172.16.10.0/25", "172.16.10.128/25"]
     assert_equal arr, @network.subnet(25).map {|s| s.to_string}
@@ -463,6 +463,26 @@ class IPv4Test < Test::Unit::TestCase
     ip = IPAddress::IPv4.new("172.16.10.130/25")
     assert_equal ip.hostpart.to_s, "0.0.0.2"
   end
+  
+  def test_method_advance_network
+    ip = IPAddress::IPv4.new("172.16.10.64/24")
+    assert_equal ip.advance_network(42), IPAddress::IPv4.new("172.16.52.0/24")
+  end
+
+  def test_method_next_network
+    ip = IPAddress::IPv4.new("172.16.10.64/24")
+    assert_equal ip.next_network, IPAddress::IPv4.new("172.16.11.0/24")
+  end
+  
+  def test_method_regress_network
+    ip = IPAddress::IPv4.new("172.16.10.64/24")
+    assert_equal ip.regress_network(5), IPAddress::IPv4.new("172.16.5.0/24")
+  end
+  
+  def test_method_previous_network
+    ip = IPAddress::IPv4.new("172.16.10.64/24")
+    assert_equal ip.previous_network, IPAddress::IPv4.new("172.16.9.0/24")
+  end  
   
   def test_classmethod_parse_u32
     @decimal_values.each do  |addr,int|
@@ -512,7 +532,7 @@ class IPv4Test < Test::Unit::TestCase
     ip3 = @klass.new("10.0.4.0/24")
     ip4 = @klass.new("10.0.6.0/24")
     assert_equal ["10.0.0.0/22","10.0.4.0/24","10.0.6.0/24"], 
-              @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+      @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
 
     ip1 = @klass.new("10.0.1.1/24")
     ip2 = @klass.new("10.0.2.1/24")
@@ -530,17 +550,17 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
 
     ips = [@klass.new("10.0.0.12/30"),
-           @klass.new("10.0.100.0/24")]
+      @klass.new("10.0.100.0/24")]
     result = ["10.0.0.12/30", "10.0.100.0/24"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}
 
     ips = [@klass.new("172.16.0.0/31"),
-           @klass.new("10.10.2.1/32")]
+      @klass.new("10.10.2.1/32")]
     result = ["10.10.2.1/32", "172.16.0.0/31"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}    
            
     ips = [@klass.new("172.16.0.0/32"),
-           @klass.new("10.10.2.1/32")]
+      @klass.new("10.10.2.1/32")]
     result = ["10.10.2.1/32", "172.16.0.0/32"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}    
 

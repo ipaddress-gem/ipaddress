@@ -796,6 +796,54 @@ module IPAddress;
       oth = oth.to_i if oth.kind_of? IPAddress::IPv4 # oth shall be integer
       return add(-oth, validating)
     end
+    
+    #
+    # Returns the network address of the n-th network succeeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.new("172.16.10.0/24")
+    #   ip.advance_network(24).to_string
+    #     #=> "172.16.52.0/24"
+    def advance_network(amount)
+      IPAddress::IPv4.parse_u32(self.network.u32 + amount*self.size, @prefix)
+    end
+    
+    #
+    # Returns the network address of the network succeeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.new("172.16.10.0/24")
+    #   ip.next_network.to_string
+    #     #=> "172.16.11.0/24"
+    def next_network
+      advance_network 1
+    end
+    
+    #
+    # Returns the network address of the n-th network preceeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.new("172.16.10.0/24")
+    #   ip.regress_network(5).to_string
+    #     #=> "172.16.5.0/24"
+    def regress_network(amount)
+      advance_network -amount
+    end
+    
+    #
+    # Returns the network address of the network preceeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv4.new("172.16.10.0/24")
+    #   ip.previous_network.to_string
+    #     #=> "172.16.9.0/24"
+    def previous_network
+      regress_network 1
+    end
 
     #
     # Checks whether the ip address belongs to a 
