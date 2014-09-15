@@ -326,6 +326,18 @@ module IPAddress;
     def network
       self.class.parse_u32(network_u32, @prefix)
     end
+    
+    #
+    # Returns a new IPv4 object containing only the host part of this IP.
+    #
+    #   ip = IPAddress("172.16.10.64/24")
+    #
+    #   ip.hostpart.to_s
+    #     #=> "0.0.0.64"
+    #
+    def hostpart
+      self.class.parse_u32(hostpart_u32, 32)
+    end
 
     #
     # Returns a new IPv4 object with the
@@ -504,6 +516,18 @@ module IPAddress;
     #
     def network_u32
       @u32 & @prefix.to_u32
+    end
+    
+    #
+    # Returns this address' host part in unsigned 32bits format
+    #
+    #   ip = IPAddress("10.0.0.42/24")
+    #
+    #   ip.host_u32
+    #     #=> 42
+    #
+    def hostpart_u32
+      @u32 & ~@prefix.to_u32
     end
 
     #

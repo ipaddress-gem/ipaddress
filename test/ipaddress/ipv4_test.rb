@@ -457,6 +457,13 @@ class IPv4Test < Test::Unit::TestCase
     assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv4.new("0.0.0.11/16"))}
   end
   
+  def test_method_hostpart
+    ip = IPAddress::IPv4.new("172.16.10.64/24")
+    assert_equal ip.hostpart.to_s, "0.0.0.64"
+    ip = IPAddress::IPv4.new("172.16.10.130/25")
+    assert_equal ip.hostpart.to_s, "0.0.0.2"
+  end
+  
   def test_classmethod_parse_u32
     @decimal_values.each do  |addr,int|
       ip = @klass.parse_u32(int)
