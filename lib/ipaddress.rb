@@ -14,6 +14,7 @@
 
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
+require 'ipaddress/mongoid' if defined?(Mongoid)
 
 module IPAddress
 
