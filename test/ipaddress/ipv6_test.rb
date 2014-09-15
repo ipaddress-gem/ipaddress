@@ -278,6 +278,26 @@ class IPv6Test < Test::Unit::TestCase
     assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv6.new("::11/66"))}
   end
 
+  def test_method_advance_network
+    ip = IPAddress::IPv6.new("fc42:1337:0:0::/64")
+    assert_equal ip.advance_network(5), IPAddress::IPv6.new("fc42:1337:0:5::/64")
+  end
+
+  def test_method_next_network
+    ip = IPAddress::IPv6.new("fc42:1337:0:0::/64")
+    assert_equal ip.next_network, IPAddress::IPv6.new("fc42:1337:0:1::/64")
+  end
+  
+  def test_method_regress_network
+    ip = IPAddress::IPv6.new("fc42:1337:0:5::/64")
+    assert_equal ip.regress_network(4), IPAddress::IPv6.new("fc42:1337:0:1::/64")
+  end
+  
+  def test_method_previous_network
+    ip = IPAddress::IPv6.new("fc42:1337:0:5::/64")
+    assert_equal ip.previous_network, IPAddress::IPv6.new("fc42:1337:0:4::/64")
+  end  
+
   def test_classmethod_expand
     compressed = "2001:db8:0:cd30::"
     expanded = "2001:0db8:0000:cd30:0000:0000:0000:0000"

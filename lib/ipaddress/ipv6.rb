@@ -351,7 +351,7 @@ module IPAddress;
     #
     # Example:
     #
-    #   ip = IPAddress::IPv6.new("fc42::1337::a/64")
+    #   ip = IPAddress::IPv6.new("fc42:1337::a/64")
     #   ip.subtract(5).to_string
     #     #=> "fc42:1337::5/64"
     def subtract(oth, validating=true)
@@ -359,6 +359,54 @@ module IPAddress;
       return add(-oth, validating)
     end
 
+    #
+    # Returns the network address of the n-th network succeeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337:0:0::/64")
+    #   ip.advance_network(5).to_string
+    #     #=> "fc42:1337:0:5::/64"
+    def advance_network(amount)
+      IPAddress::IPv6.parse_u128(self.network.to_i + amount*self.size, @prefix)
+    end
+    
+    #
+    # Returns the network address of the network succeeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337:0:0::/64")
+    #   ip.next_network.to_string
+    #     #=> "fc42:1337:0:1::/64"
+    def next_network
+      advance_network 1
+    end
+    
+    #
+    # Returns the network address of the n-th network preceeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337:0:5::/64")
+    #   ip.regress_network(4).to_string
+    #     #=> "fc42:1337:0:1::/64"
+    def regress_network(amount)
+      advance_network -amount
+    end
+    
+    #
+    # Returns the network address of the network preceeding this one.
+    #
+    # Example:
+    #
+    #   ip = IPAddress::IPv6.new("fc42:1337:0:5::/64")
+    #   ip.previous_network.to_string
+    #     #=> "fc42:1337:0:4::/64"
+    def previous_network
+      regress_network 1
+    end
+    
     #
     # Returns the network number in Unsigned 128bits format
     #
