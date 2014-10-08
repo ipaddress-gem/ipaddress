@@ -166,6 +166,8 @@ module IPAddress;
     def to_s
       @address
     end
+    # this exists in ipv6
+    alias_method :compressed, :to_s
 
     #
     # Returns a string with the IP address in canonical

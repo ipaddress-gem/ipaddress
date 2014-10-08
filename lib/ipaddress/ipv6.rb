@@ -677,6 +677,7 @@ module IPAddress;
         break if str.sub!(/\b0:0:0:0\b/, ':')
         break if str.sub!(/\b0:0:0\b/, ':')
         break if str.sub!(/\b0:0\b/, ':')
+        break if str.sub!(/\b0:\b/, ':')
         break
       end
       str.sub(/:{3,}/, '::')

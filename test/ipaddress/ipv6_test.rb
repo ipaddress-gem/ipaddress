@@ -207,9 +207,12 @@ class IPv6Test < Test::Unit::TestCase
   def test_method_compressed
     assert_equal "1:1:1::1", @klass.new("1:1:1:0:0:0:0:1").compressed
     assert_equal "1:0:1::1", @klass.new("1:0:1:0:0:0:0:1").compressed
+    assert_equal "1::1:1:1:2:3:1", @klass.new("1:0:1:1:1:2:3:1").compressed
+    assert_equal "1::1:1:0:2:3:1", @klass.new("1:0:1:1::2:3:1").compressed
     assert_equal "1:0:0:1::1", @klass.new("1:0:0:1:0:0:0:1").compressed
     assert_equal "1::1:0:0:1", @klass.new("1:0:0:0:1:0:0:1").compressed
     assert_equal "1::1", @klass.new("1:0:0:0:0:0:0:1").compressed
+    #assert_equal "1:1::1:2:0:0:1", @klass.new("1:1:0:1:2::1").compressed
   end
   
   def test_method_unspecified?
