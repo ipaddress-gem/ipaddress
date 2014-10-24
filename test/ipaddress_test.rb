@@ -52,6 +52,31 @@ class IPAddressTest < Test::Unit::TestCase
     assert_equal false, IPAddress::valid_ipv4_netmask?("10.0.0.1")
   end
 
+  def test_summarize
+    networks = ["2000:1::/32", "3000:1::/32", "2000:1::/16", "2000:1::/32", "2000:29::/32"].map{|ip| IPAddress.parse(ip)}
+    assert_equal ["2000::/16", "3000:1::/32"], IPAddress::reduce_networks(networks).map{|i| i.to_string}
+
+    networks = ["10.0.1.1/24", "30.0.1.0/16", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24", "10.0.2.0/23"].map{|ip| IPAddress.parse(ip)}
+    assert_equal ["30.0.0.0/16", "10.0.2.0/23", "10.0.4.0/24", "10.0.1.0/24"], IPAddress::reduce_networks(networks).map{|i| i.to_string}
+
+    assert_equal [], IPAddress::summarize([]), []
+    assert_equal ["10.1.0.0/24"], IPAddress::summarize([IPAddress.parse("10.1.0.4/24")]).map{|i| i.to_string}
+    assert_equal ["2000:1::/32"], IPAddress::summarize([IPAddress.parse("2000:1::4711/32")]).map{|i| i.to_string}
+
+    networks = ["2000:1::/32", "3000:1::/32", "2000:2::/32", "2000:3::/32", "2000:4::/32", "2000:5::/32", "2000:6::/32", "2000:7::/32", "2000:8::/32"].map{|ip| IPAddress.parse(ip)}
+    assert_equal ["2000:1::/32", "2000:2::/31", "2000:4::/30", "2000:8::/32", "3000:1::/32"], IPAddress::summarize(networks).map{|i| i.to_string}
+
+
+    networks = ["10.0.1.1/24", "30.0.1.0/16", "10.0.2.0/24", "10.0.3.0/24", "10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24", "10.0.7.0/24", "10.0.8.0/24"].map{|ip| IPAddress.parse(ip)}
+    assert_equal ["10.0.1.0/24", "10.0.2.0/23", "10.0.4.0/22", "10.0.8.0/24", "30.0.0.0/16"], IPAddress::summarize(networks).map{|i| i.to_string}
+
+    networks = ["10.0.0.0/23", "10.0.2.0/24"].map{|ip| IPAddress.parse(ip)}
+    assert_equal ["10.0.0.0/23", "10.0.2.0/24"], IPAddress::summarize(networks).map{|i| i.to_string}
+    networks = ["10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/23"].map{|ip| IPAddress.parse(ip)}
+    assert_equal ["10.0.0.0/22"], IPAddress::summarize(networks).map{|i| i.to_string}
+
+  end
+
 end
 
 
