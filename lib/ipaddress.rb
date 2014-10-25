@@ -152,29 +152,42 @@ module IPAddress
 
   #
   # private helper for summarize
-  #
-  def self.reduce_networks(networks)
-    return [] if networks.empty?
-    return [networks.first.network] if networks.length == 1
-    prefix_ordered = networks.sort{|a,b| a.prefix <=> b.prefix }
-    first = prefix_ordered.shift
-    [first.network] + reduce_networks(prefix_ordered.select{|net| !first.include?(net) })
-  end
-
-  #
-  # private helper for summarize
+  # assumes that networks is output from reduce_networks
+  # means it should be sorted lowers first and uniq
   #
   def self.aggregate(networks)
-    return networks if networks.length <= 1
-    (first, *rest) = networks.sort{|a,b| a.network.to_string<=>b.network.to_string }
-    return [first] + aggregate(rest) if first.prefix == 0
-    supernet = IPAddress.parse(first.to_string)
-    supernet.prefix = first.prefix-1
-    return [first]+aggregate(rest) if first.network.to_i != supernet.network.to_i
-    if first.prefix == rest.first.prefix && supernet.include?(rest.first)
-      return aggregate([supernet]+aggregate(rest[1..-1]))
+    return [] if networks.nil? || networks.empty?
+    stack = networks.map{|i| i.network }.sort!
+    pos = 0
+    while true
+      pos = pos < 0 ? 0 : pos # start @beginning
+      first = stack[pos]
+      unless first
+        break
+      end
+      pos += 1
+      second = stack[pos]
+      unless second
+        break
+      end
+      pos += 1
+      if first.include?(second)
+        pos -= 2
+        stack.delete_at(pos+1)
+      else
+        first.prefix -= 1
+        if first.prefix+1 == second.prefix && first.include?(second)
+          pos -= 2
+          stack[pos] = first
+          stack.delete_at(pos+1)
+          pos -= 1 # backtrack
+        else
+          first.prefix += 1 #reset prefix
+          pos -= 1 # do it with second as first
+        end
+      end
     end
-    return [first]+aggregate(rest)
+    stack[0..pos-1]
   end
 
   #
@@ -240,7 +253,7 @@ module IPAddress
   #     #=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
   #
   def self.summarize(networks)
-    aggregate(reduce_networks(networks))
+    aggregate(networks.map{|i| ((i.kind_of?(String)&&IPAddress.parse(i))||i) })
   end
 
 end # module IPAddress

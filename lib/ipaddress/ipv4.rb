@@ -460,7 +460,7 @@ module IPAddress;
     #     #=> ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
     #
     def <=>(oth)
-      return prefix <=> oth.prefix if to_u32 == oth.to_u32  
+      return prefix <=> oth.prefix if to_u32 == oth.to_u32
       to_u32 <=> oth.to_u32
     end
     
