@@ -313,7 +313,7 @@ module IPAddress;
     #     #=> true
     #
     def network?
-      @u32 | @prefix.to_u32 == @prefix.to_u32
+      (@prefix < 32) && (@u32 | @prefix.to_u32 == @prefix.to_u32)
     end
 
     #

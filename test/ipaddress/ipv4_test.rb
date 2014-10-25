@@ -150,6 +150,11 @@ class IPv4Test < Test::Unit::TestCase
     assert_equal true, @network.network?
     assert_equal false, @ip.network?
   end
+  
+  def test_one_address_network
+    network = @klass.new("172.16.10.1/32")
+    assert_equal false, network.network?
+  end
 
   def test_method_broadcast
     @broadcast.each do |addr,bcast|
