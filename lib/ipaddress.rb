@@ -156,8 +156,7 @@ module IPAddress
   # means it should be sorted lowers first and uniq
   #
   def self.aggregate(networks)
-    return [] if networks.nil? || networks.empty?
-    stack = networks.map{|i| i.network }.sort!
+    stack = networks.map{|i| i.network }.sort! # make input imutable
     pos = 0
     while true
       pos = pos < 0 ? 0 : pos # start @beginning

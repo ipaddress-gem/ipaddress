@@ -106,7 +106,12 @@ class IPAddressTest < Test::Unit::TestCase
     #end
     #printer = RubyProf::GraphPrinter.new(result)
     #printer.print(STDOUT, {})
-
+    # test imutable input parameters
+    a1 = IPAddress.parse("10.0.0.1/24")
+    a2 = IPAddress.parse("10.0.1.1/24")
+    assert_equal ["10.0.0.0/23"], IPAddress::summarize([a1,a2]).map{|i| i.to_string}
+    assert_equal "10.0.0.1/24", a1.to_string
+    assert_equal "10.0.1.1/24", a2.to_string
   end
 
 end
