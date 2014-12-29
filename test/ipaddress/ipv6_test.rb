@@ -1,11 +1,11 @@
 require 'test_helper'
- 
+
 class IPv6Test < Test::Unit::TestCase
-  
+
   def setup
     @klass = IPAddress::IPv6
-    
-    @compress_addr = {      
+
+    @compress_addr = {
       "2001:db8:0000:0000:0008:0800:200c:417a" => "2001:db8::8:800:200c:417a",
       "2001:db8:0:0:8:800:200c:417a" => "2001:db8::8:800:200c:417a",
       "ff01:0:0:0:0:0:0:101" => "ff01::101",
@@ -29,7 +29,7 @@ class IPv6Test < Test::Unit::TestCase
       "::" => 0,
       "1080:0:0:0:8:800:200C:417A" => 21932261930451111902915077091070067066,
       "1080::8:800:200C:417A" => 21932261930451111902915077091070067066}
-      
+
     @invalid_ipv6 = [":1:2:3:4:5:6:7",
                      ":1:2:3:4:5:6:7",
                      "2002:516:2:200",
@@ -39,13 +39,13 @@ class IPv6Test < Test::Unit::TestCase
       "2001:db8:1:1:1:1:1:1/32" => "2001:db8::/32",
       "2001:db8:1:1:1:1:1::/32" => "2001:db8::/32",
       "2001:db8::1/64" => "2001:db8::/64"}
-    
+
     @ip = @klass.new "2001:db8::8:800:200c:417a/64"
     @network = @klass.new "2001:db8:8:800::/64"
     @arr = [8193,3512,0,0,8,2048,8204,16762]
     @hex = "20010db80000000000080800200c417a"
   end
-  
+
   def test_attribute_address
     addr = "2001:0db8:0000:0000:0008:0800:200c:417a"
     assert_equal addr, @ip.address
@@ -56,6 +56,7 @@ class IPv6Test < Test::Unit::TestCase
     @valid_ipv6.keys.each do |ip|
       assert_nothing_raised {@klass.new ip}
     end
+    assert_raise(ArgumentError) {@klass.new nil }
     @invalid_ipv6.each do |ip|
       assert_raise(ArgumentError) {@klass.new ip}
     end
@@ -65,7 +66,7 @@ class IPv6Test < Test::Unit::TestCase
       @klass.new "::10.1.1.1"
     }
   end
-  
+
   def test_attribute_groups
     assert_equal @arr, @ip.groups
   end
@@ -74,7 +75,7 @@ class IPv6Test < Test::Unit::TestCase
     arr = "2001:0db8:0000:0000:0008:0800:200c:417a".split(":")
     assert_equal arr, @ip.hexs
   end
-  
+
   def test_method_to_i
     @valid_ipv6.each do |ip,num|
       assert_equal num, @klass.new(ip).to_i
@@ -83,7 +84,7 @@ class IPv6Test < Test::Unit::TestCase
 
   def test_method_bits
     bits = "0010000000000001000011011011100000000000000000000" +
-      "000000000000000000000000000100000001000000000000010000" + 
+      "000000000000000000000000000100000001000000000000010000" +
       "0000011000100000101111010"
     assert_equal bits, @ip.bits
   end
@@ -116,7 +117,7 @@ class IPv6Test < Test::Unit::TestCase
   def test_method_ipv4?
     assert_equal false, @ip.ipv4?
   end
-  
+
   def test_method_ipv6?
     assert_equal true, @ip.ipv6?
   end
@@ -152,7 +153,7 @@ class IPv6Test < Test::Unit::TestCase
     not_included = @klass.new "2001:db8::8:800:200c:417a/46"
     assert_equal true, @ip.include?(included)
     assert_equal false, @ip.include?(not_included)
-    # test address on same prefix 
+    # test address on same prefix
     included = @klass.new "2001:db8::8:800:200c:0/64"
     not_included = @klass.new "2001:db8:1::8:800:200c:417a/64"
     assert_equal true, @ip.include?(included)
@@ -163,11 +164,11 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal true, @ip.include?(included)
     assert_equal false, @ip.include?(not_included)
   end
-  
+
   def test_method_to_hex
     assert_equal @hex, @ip.to_hex
   end
-  
+
   def test_method_to_s
     assert_equal "2001:db8::8:800:200c:417a", @ip.to_s
   end
@@ -177,10 +178,10 @@ class IPv6Test < Test::Unit::TestCase
   end
 
   def test_method_to_string_uncompressed
-    str = "2001:0db8:0000:0000:0008:0800:200c:417a/64" 
+    str = "2001:0db8:0000:0000:0008:0800:200c:417a/64"
     assert_equal str, @ip.to_string_uncompressed
   end
-  
+
   def test_method_data
     if RUBY_VERSION < "2.0"
       str = " \001\r\270\000\000\000\000\000\b\b\000 \fAz"
@@ -202,15 +203,15 @@ class IPv6Test < Test::Unit::TestCase
     assert_equal "1::1:0:0:1", @klass.new("1:0:0:0:1:0:0:1").compressed
     assert_equal "1::1", @klass.new("1:0:0:0:0:0:0:1").compressed
   end
-  
+
   def test_method_unspecified?
     assert_equal true, @klass.new("::").unspecified?
-    assert_equal false, @ip.unspecified?    
+    assert_equal false, @ip.unspecified?
   end
-  
+
   def test_method_loopback?
     assert_equal true, @klass.new("::1").loopback?
-    assert_equal false, @ip.loopback?        
+    assert_equal false, @ip.loopback?
   end
 
   def test_method_network
@@ -240,7 +241,7 @@ class IPv6Test < Test::Unit::TestCase
     # ip2 should be greater than ip1
     assert_equal true, ip2 > ip1
     assert_equal false, ip1 > ip2
-    assert_equal false, ip2 < ip1        
+    assert_equal false, ip2 < ip1
     # ip3 should be less than ip2
     assert_equal true, ip2 > ip3
     assert_equal false, ip2 < ip3
@@ -267,7 +268,7 @@ class IPv6Test < Test::Unit::TestCase
     assert_not_equal expanded, @klass.expand("2001:0db8::cd30")
     assert_not_equal expanded, @klass.expand("2001:0db8::cd3")
   end
-  
+
   def test_classmethod_compress
     compressed = "2001:db8:0:cd30::"
     expanded = "2001:0db8:0000:cd30:0000:0000:0000:0000"
@@ -298,7 +299,7 @@ class IPv6Test < Test::Unit::TestCase
 end # class IPv6Test
 
 class IPv6UnspecifiedTest < Test::Unit::TestCase
-  
+
   def setup
     @klass = IPAddress::IPv6::Unspecified
     @ip = @klass.new
@@ -327,12 +328,12 @@ class IPv6UnspecifiedTest < Test::Unit::TestCase
   def test_method_ipv6?
     assert_equal true, @ip.ipv6?
   end
-  
+
 end # class IPv6UnspecifiedTest
 
 
 class IPv6LoopbackTest < Test::Unit::TestCase
-  
+
   def setup
     @klass = IPAddress::IPv6::Loopback
     @ip = @klass.new
@@ -361,11 +362,11 @@ class IPv6LoopbackTest < Test::Unit::TestCase
   def test_method_ipv6?
     assert_equal true, @ip.ipv6?
   end
-  
+
 end # class IPv6LoopbackTest
 
 class IPv6MappedTest < Test::Unit::TestCase
-  
+
   def setup
     @klass = IPAddress::IPv6::Mapped
     @ip = @klass.new("::172.16.10.1")
@@ -424,5 +425,5 @@ class IPv6MappedTest < Test::Unit::TestCase
   def test_mapped?
     assert_equal true, @ip.mapped?
   end
-  
+
 end # class IPv6MappedTest
