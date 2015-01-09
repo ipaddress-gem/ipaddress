@@ -327,12 +327,9 @@ module IPAddress;
     #     #=> ["e.ip6.arpa", "f.ip6.arpa"]
     #
     def rev_domains
-      ret = []
-      network = IPv6.parse_u128(network_u128, [(@prefix.to_i/4)*4 + 3, 123].min)
-      network.each_net do |net|
-        ret << net.reverse[(128-(net.prefix.to_i))/4*2..-1]
+      network.four_bit_networks.map do |net|
+        net.reverse[(128-(net.prefix.to_i))/4*2..-1]
       end
-      ret
     end
 
 
@@ -483,12 +480,21 @@ module IPAddress;
     # WARNING: if the host portion is very large, this method
     # can be very slow and possibly hang your system!
     #
-    def each_net
-      start = network_u128
-      while (@prefix.host_prefix.to_i-1) > 0 && start < broadcast_u128
-          yield self.class.parse_u128(start, @prefix)
-          start += 1<<(@prefix.host_prefix.to_i-1)
+    # There is a symantic problem i will now
+    # decide how network work in ipv6
+    def four_bit_networks
+      step = network_u128
+      next_four_bit_mask = ((@prefix.to_i+3)/4)*4
+      return [network] if next_four_bit_mask <= 0
+      step_four_bit_net = 1<<(128-next_four_bit_mask)
+      return [network] if step_four_bit_net == 0
+      ret = []
+      while step <= broadcast_u128
+#puts "%s %x=>%x/%d"%[to_string, step,step_four_bit_net,next_four_bit_mask]
+        ret << self.class.parse_u128(step, next_four_bit_mask)
+        step += step_four_bit_net
       end
+      ret
     end
 
     #
