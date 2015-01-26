@@ -239,9 +239,8 @@ module IPAddress;
     #   ip.to_h
     #     #=> 0a000000
     #
-    def hex
-      hex = @octets.map{|o| o.to_s(16).rjust(2, '0') }.join()
-      "#{hex}"
+    def hex(space=true)
+      "%.4x%.4x" % [to_u32].pack("N").unpack("nn")
     end
     alias_method :to_h, :hex
     alias_method :to_hex, :hex   

@@ -318,11 +318,16 @@ transform it in data format using the IPv4#data method:
   ip.data
     #=> "\254\020\n\001"
 
-Finally, you can transform an IPv4 address into a format which is
+Also, you can transform an IPv4 address into a format which is
 suitable to use in IPv4-IPv6 mapped addresses:
 
   ip.to_ipv6
     #=> "ac10:0a01"
+
+Finally, much like IPv4#to_ipv6 you can use to IPv4#to_h method to return a non-semicolon delineated string (useful with pcap/byte level usage):
+
+  ip.to_h
+    #=> "ac100a01"
 
 === Classful networks
 
