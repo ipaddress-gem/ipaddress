@@ -29,6 +29,8 @@ IPAddress 0.8.0 has been tested on:
 * jruby-1.6.1 [ linux-i386-java ]
 * ruby-1.9.1-p431 [ i386 ]
 * ruby-1.9.2-p180 [ i386 ]
+* ruby-2.0.0-p353 [ x86_64-darwin14.0.0 ]
+* ruby-2.1.3-p242 [ x86_64-darwin14.0.0 ]
 
 If you want to collaborate feel 
 free to send a small report to my email address, or 
