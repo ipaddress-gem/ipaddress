@@ -231,6 +231,22 @@ module IPAddress;
     alias_method :to_u32, :u32
     
     #
+    # Returns the address portion in 
+    # hex
+    #
+    #   ip = IPAddress("10.0.0.0")
+    #
+    #   ip.to_h
+    #     #=> 0a000000
+    #
+    def hex
+      hex = @octets.map{|o| o.to_s(16).rjust(2, '0') }.join()
+      "#{hex}"
+    end
+    alias_method :to_h, :hex
+    alias_method :to_hex, :hex   
+
+    #
     # Returns the address portion of an IPv4 object
     # in a network byte order format.
     #
