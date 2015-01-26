@@ -11,9 +11,28 @@ class IPAddressTest < Test::Unit::TestCase
     @invalid_ipv6   = ":1:2:3:4:5:6:7"
     @invalid_mapped = "::1:2.3.4"
 
+    @valid_ipv4_uint32 = [4294967295, # 255.255.255.255
+                          167772160,  # 10.0.0.0
+                          3232235520, # 192.168.0.0
+                          0]
+
+    @invalid_ipv4_uint32 = [4294967296, # 256.0.0.0
+                          "A294967295", # Invalid uINT
+                          -1]           # Invalid 
+
+
     @ipv4class   = IPAddress::IPv4
     @ipv6class   = IPAddress::IPv6
     @mappedclass = IPAddress::IPv6::Mapped
+    
+    @invalid_ipv4 = ["10.0.0.256",
+                     "10.0.0.0.0",
+                     "10.0.0",
+                     "10.0"]
+
+    @valid_ipv4_range = ["10.0.0.1-254",
+                         "10.0.1-254.0",
+                         "10.1-254.0.0"]
 
     @method = Module.method("IPAddress")
   end
@@ -30,6 +49,15 @@ class IPAddressTest < Test::Unit::TestCase
     assert_raise(ArgumentError) {@method.call(@invalid_ipv4)}
     assert_raise(ArgumentError) {@method.call(@invalid_ipv6)}
     assert_raise(ArgumentError) {@method.call(@invalid_mapped)}
+
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[0]) 
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[1]) 
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[2]) 
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[3]) 
+
+    assert_raise(ArgumentError) {@method.call(@invalid_ipv4_uint32[0])}
+    assert_raise(ArgumentError) {@method.call(@invalid_ipv4_uint32[1])}
+    assert_raise(ArgumentError) {@method.call(@invalid_ipv4_uint32[2])}
 
   end
 
