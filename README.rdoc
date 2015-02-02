@@ -29,6 +29,8 @@ IPAddress 0.8.0 has been tested on:
 * jruby-1.6.1 [ linux-i386-java ]
 * ruby-1.9.1-p431 [ i386 ]
 * ruby-1.9.2-p180 [ i386 ]
+* ruby-2.0.0-p353 [ x86_64-darwin14.0.0 ]
+* ruby-2.1.3-p242 [ x86_64-darwin14.0.0 ]
 
 If you want to collaborate feel 
 free to send a small report to my email address, or 
@@ -318,11 +320,16 @@ transform it in data format using the IPv4#data method:
   ip.data
     #=> "\254\020\n\001"
 
-Finally, you can transform an IPv4 address into a format which is
+Also, you can transform an IPv4 address into a format which is
 suitable to use in IPv4-IPv6 mapped addresses:
 
   ip.to_ipv6
     #=> "ac10:0a01"
+
+Finally, much like IPv4#to_ipv6 you can use to IPv4#to_h method to return a non-semicolon delineated string (useful with pcap/byte level usage):
+
+  ip.to_h
+    #=> "ac100a01"
 
 === Classful networks
 

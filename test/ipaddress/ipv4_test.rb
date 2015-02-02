@@ -34,7 +34,13 @@ class IPv4Test < Test::Unit::TestCase
       "172.16.0.0/16"    => 2886729728,
       "192.168.0.0/24"   => 3232235520,
       "192.168.100.4/30" => 3232261124}
-    
+
+    @hex_values = {
+      "10.0.0.0"         => "0a000000",
+      "172.16.5.4"       => "ac100504",
+      "192.168.100.4"    => "c0a86404",
+    }
+
     @ip = @klass.new("172.16.10.1/24")
     @network = @klass.new("172.16.10.0/24")
     
@@ -141,6 +147,13 @@ class IPv4Test < Test::Unit::TestCase
     @decimal_values.each do |addr,int|
       ip = @klass.new(addr)
       assert_equal int, ip.to_u32
+    end
+  end
+
+  def test_method_to_hex
+    @hex_values.each do |addr,hex|
+      ip = @klass.new(addr)
+      assert_equal hex, ip.to_hex
     end
   end
 
