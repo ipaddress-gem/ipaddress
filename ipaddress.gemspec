@@ -41,6 +41,7 @@ Gem::Specification.new do |s|
     "test/test_helper.rb"
   ]
   s.homepage = %q{http://github.com/bluemonk/ipaddress}
+  s.license = 'MIT'
   s.require_paths = ["lib"]
   s.rubygems_version = %q{1.6.2}
   s.summary = %q{IPv4/IPv6 addresses manipulation library}
