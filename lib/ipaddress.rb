@@ -26,6 +26,7 @@ module IPAddress
   # Parse the argument string to create a new
   # IPv4, IPv6 or Mapped IP object
   #
+  #   ip  = IPAddress.parse 167837953 # 10.1.1.1  
   #   ip  = IPAddress.parse "172.16.10.1/24"
   #   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
   #   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
@@ -41,6 +42,12 @@ module IPAddress
   #    #=> IPAddress::IPv6::Mapped
   #
   def IPAddress::parse(str)
+    
+    # Check if an int was passed
+    if str.kind_of? Integer
+      return IPAddress::IPv4.new(ntoa(str))  
+    end
+
     case str
     when /:.+\./
       IPAddress::IPv6::Mapped.new(str)
@@ -51,6 +58,24 @@ module IPAddress
     else
       raise ArgumentError, "Unknown IP Address #{str}"
     end
+  end
+
+  #
+  # Converts a unit32 to IPv4
+  #
+  #   IPAddress::ntoa(167837953)
+  #     #-> "10.1.1.1"
+  #
+  def self.ntoa(uint)
+    unless(uint.is_a? Numeric and uint <= 0xffffffff)
+        raise(::ArgumentError, "not a long integer: #{uint.inspect}")
+      end
+      ret = []
+      4.times do 
+        ret.unshift(uint & 0xff)
+        uint >>= 8
+      end
+      ret.join('.')
   end
 
   #

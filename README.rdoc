@@ -89,7 +89,7 @@ or, in a easier way, using the IPAddress parse method
 
   ip = IPAddress.parse "172.16.10.1/24"
 
-which accepts and parses any kind of IP (IPv4, IPV6 and 
+which accepts and parses any kind of IP (uint32, IPv4, IPV6 and 
 IPv4 IPv6 Mapped addresses).
 
 If you like syntactic sugar, you can use the wrapper method
@@ -120,7 +120,14 @@ The new created object has prefix /32, which is the same
 as we created the following:
 
   host = IPAddress::IPv4.new "10.1.1.1/32"
-  
+
+You can also pass a uint32 to obtain an IPAddress::IPv4 object:
+
+  # Create host object
+  ip = IPAddress 167837953
+  puts ip.to_string
+    #=> "10.1.1.1/32"
+
 === Handling the IPv4 address
 
 Once created, you can obtain the attributes for an IPv4 object:
