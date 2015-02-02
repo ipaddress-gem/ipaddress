@@ -166,6 +166,8 @@ module IPAddress;
     def to_s
       @address
     end
+    # this exists in ipv6
+    alias_method :compressed, :to_s
 
     #
     # Returns a string with the IP address in canonical
@@ -473,7 +475,7 @@ module IPAddress;
     #     #=> ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
     #
     def <=>(oth)
-      return prefix <=> oth.prefix if to_u32 == oth.to_u32  
+      return prefix <=> oth.prefix if to_u32 == oth.to_u32
       to_u32 <=> oth.to_u32
     end
     
@@ -597,6 +599,33 @@ module IPAddress;
       @octets.reverse.join(".") + ".in-addr.arpa"
     end
     alias_method :arpa, :reverse
+
+    #
+    # Returns the IP address in in-addr.arpa format
+    # for DNS Domain definition entries like SOA Records
+    #
+    #   ip = IPAddress("172.17.100.50/15")
+    #
+    #   ip.rev_domains
+    #     #=> ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
+    #
+    def rev_domains
+      net = [ network ]
+      cut = 4-(prefix.to_i/8)
+      if prefix.to_i <= 8 # edge case class a
+        cut = 3
+      elsif  prefix.to_i > 24 # edge case class c
+        cut = 1
+        net = [network.supernet(24)]
+      end
+      if prefix.to_i < 24 and (prefix.to_i % 8) != 0 # case class less
+        cut = 3-(prefix.to_i/8)
+        net = network.subnet(prefix.to_i+1)         
+      end
+      net.map do |n| 
+        n.reverse.split('.')[cut..-1].join('.') 
+      end
+    end
     
     #
     # Splits a network into different subnets
@@ -742,7 +771,7 @@ module IPAddress;
     #     #=> ["10.0.0.0/24","10.0.2.0/24"]
     #
     def +(oth)
-      aggregate(*[self,oth].sort.map{|i| i.network})
+      IPAddress.summarize([self,oth])
     end
 
     #
@@ -925,25 +954,7 @@ module IPAddress;
     #     #=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
     #
     def self.summarize(*args)
-      # one network? no need to summarize
-      return [args.first.network] if args.size == 1
-      
-      i = 0
-      result = args.dup.sort.map{|ip| ip.network}
-      while i < result.size-1
-        sum = result[i] + result[i+1]
-        result[i..i+1] = sum.first if sum.size == 1
-        i += 1
-      end
-      
-      result.flatten!
-      if result.size == args.size
-        # nothing more to summarize
-        return result
-      else
-        # keep on summarizing
-        return self.summarize(*result)
-      end
+      IPAddress.summarize(args)
     end
 
     #
@@ -1004,16 +1015,6 @@ module IPAddress;
       return dup.reverse
     end
 
-    def aggregate(ip1,ip2)
-      return [ip1] if ip1.include? ip2
-
-      snet = ip1.supernet(ip1.prefix-1)
-      if snet.include_all?(ip1, ip2) && ((ip1.size + ip2.size) == snet.size)
-        return [snet]
-      else
-        return [ip1, ip2]
-      end
-    end
   end # class IPv4
 end # module IPAddress
 
