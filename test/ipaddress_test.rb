@@ -52,9 +52,9 @@ class IPAddressTest < Minitest::Test
     assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[2]) 
     assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[3]) 
 
-    assert_raise(ArgumentError) {@method.call(@invalid_ipv4_uint32[0])}
-    assert_raise(ArgumentError) {@method.call(@invalid_ipv4_uint32[1])}
-    assert_raise(ArgumentError) {@method.call(@invalid_ipv4_uint32[2])}
+    assert_raises(ArgumentError) {@method.call(@invalid_ipv4_uint32[0])}
+    assert_raises(ArgumentError) {@method.call(@invalid_ipv4_uint32[1])}
+    assert_raises(ArgumentError) {@method.call(@invalid_ipv4_uint32[2])}
 
   end
 

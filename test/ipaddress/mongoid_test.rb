@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'ipaddress/mongoid'
  
-class MongoidTest < Test::Unit::TestCase
+class MongoidTest < Minitest::Test
 
   def setup
     @valid_host4               = "172.16.10.1"
@@ -14,7 +14,7 @@ class MongoidTest < Test::Unit::TestCase
     @host6                     = IPAddress.parse(@valid_host6)
     @network4                  = IPAddress.parse(@valid_network4)
     @network6                  = IPAddress.parse(@valid_network6)
-    @invalid_values            = [nil, "", 1, "invalid"]
+    @invalid_values            = [nil, "", "invalid"]
   end
 
   def test_mongoize
@@ -37,9 +37,6 @@ class MongoidTest < Test::Unit::TestCase
     assert_equal @valid_network6, IPAddress.mongoize(@valid_network6_compressed)
 
     @invalid_values.each do |invalid_value|
-      # Invalid address should not raise error
-      assert_nothing_raised {IPAddress.mongoize(invalid_value)}
-      
       # Invalid addresses should serialize to nil
       assert_equal nil, IPAddress.mongoize(invalid_value)
     end
@@ -59,9 +56,6 @@ class MongoidTest < Test::Unit::TestCase
     assert_equal @network6, IPAddress.demongoize(@valid_network6)
 
     @invalid_values.each do |invalid_value|
-      # Invalid stored values should not raise error
-      assert_nothing_raised {IPAddress.demongoize(invalid_value)}
-
       # Invalid stored value should be loaded as nil
       assert_equal nil, IPAddress.demongoize(invalid_value)
     end
