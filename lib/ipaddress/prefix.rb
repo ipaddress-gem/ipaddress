@@ -53,6 +53,14 @@ module IPAddress
       @prefix <=> oth.to_i
     end
 
+    def eql?(oth)
+      self == oth
+    end
+
+    def hash
+      to_i.hash
+    end
+
     #
     # Sums two prefixes or a prefix to a 
     # number, returns a Fixnum
@@ -260,6 +268,6 @@ module IPAddress
       128 - @prefix
     end
 
-  end # class Prefix123 < Prefix
+  end # class Prefix128 < Prefix
 
 end # module IPAddress

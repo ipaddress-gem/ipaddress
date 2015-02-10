@@ -482,6 +482,14 @@ module IPAddress;
       to_u128 <=> oth.to_u128
     end
 
+    def eql?(oth)
+      self == oth
+    end
+
+    def hash
+      [ to_u128, prefix.to_u128 ].hash
+    end
+
     #
     # Returns the address portion of an IP in binary format,
     # as a string containing a sequence of 0 and 1

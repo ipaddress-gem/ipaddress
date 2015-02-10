@@ -541,7 +541,22 @@ class IPv4Test < Minitest::Test
     end
     assert_raises(ArgumentError){ @klass.parse_classful("192.168.256.257") }
   end
-  
+
+  def test_hash_equality
+    ip1 = @klass.new("10.0.1.1/24")
+    ip2 = @klass.new("10.0.1.1/24")
+    assert_equal ip1.hash, ip2.hash
+    assert_equal ip1.eql?( ip2 ), true
+  end
+
+  def test_subnet_prefix_acceptance
+    ip = @klass.new("10.0.1.1/24")
+    ip2 = @klass.new("10.0.1.1/29")
+    subnet1 = ip.subnet(29)
+    subnet2 = ip.subnet(ip2.prefix)
+    assert_equal subnet1, subnet2
+  end
+
 end # class IPv4Test
 
   

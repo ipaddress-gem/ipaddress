@@ -150,4 +150,11 @@ class Prefix128Test < Minitest::Test
     end
   end
 
+  def test_hash_equality
+    prefix1 = @klass.new(23)
+    prefix2 = @klass.new(23)
+    assert_equal prefix1.hash, prefix2.hash
+    assert_equal prefix1.eql?( prefix2 ), true
+  end
+
 end # class Prefix128Test

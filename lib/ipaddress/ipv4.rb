@@ -476,7 +476,15 @@ module IPAddress;
       return prefix <=> oth.prefix if to_u32 == oth.to_u32  
       to_u32 <=> oth.to_u32
     end
-    
+
+    def eql?(oth)
+      self == oth
+    end
+
+    def hash
+      [ to_u32, prefix.to_u32 ].hash
+    end
+
     #
     # Returns the number of IP addresses included
     # in the network. It also counts the network
@@ -695,11 +703,13 @@ module IPAddress;
     # a power of two.
     #
     def subnet(subprefix)
-      unless ((@prefix.to_i)..32).include? subprefix
+      # convert to integer in case subprefix is an IPAddress::Prefix
+      subprefix_i = subprefix.to_i
+      unless ((@prefix.to_i)..32).include? subprefix_i
         raise ArgumentError, "New prefix must be between #@prefix and 32"
       end
-      Array.new(2**(subprefix-@prefix.to_i)) do |i|
-        self.class.parse_u32(network_u32+(i*(2**(32-subprefix))), subprefix)
+      Array.new(2**(subprefix_i-@prefix.to_i)) do |i|
+        self.class.parse_u32(network_u32+(i*(2**(32-subprefix_i))), subprefix_i)
       end
     end
 
