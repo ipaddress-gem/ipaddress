@@ -1,10 +1,10 @@
-== ipaddress 0.9.0
-
-CHANGED:: ipaddress now uses this[https://gist.github.com/cpetschnig/294476] regexp to validate IPv6 addresses. Thanks to Christoph Petschnig for his regexp and to Bronislav Robenek for fixing this.
+== ipaddress 0.8.1
+CHANGED:: ipaddress now uses minitest for testing, all tests passing
 
 
 == ipaddress 0.8.0
 
+CHANGED:: ipaddress now uses this[https://gist.github.com/cpetschnig/294476] regexp to validate IPv6 addresses. Thanks to Christoph Petschnig for his regexp and to Bronislav Robenek for fixing this.
 CHANGED:: Removed extension methods and extension directory to facilitate integration with the stdlib
 CHANGED:: Reworked IPv4#<=>, now intuitively sorts objects based on the prefix
 CHANGED:: IPv4#supernet now returns "0.0.0.0/0" if supernetting with a prefix less than 1
@@ -15,6 +15,7 @@ NEW::     IPv6#broadcast_u128
 NEW::     IPv6#each
 NEW::     IPv6#<=>
 NEW::     IPv4#split
+NEW::     IP#ntoa
 
 == ipaddress 0.7.5
 
