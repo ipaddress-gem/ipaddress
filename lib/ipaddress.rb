@@ -67,7 +67,7 @@ module IPAddress
   #     #-> "10.1.1.1"
   #
   def self.ntoa(uint)
-    unless(uint.is_a? Numeric and uint <= 0xffffffff)
+    unless(uint.is_a? Numeric and uint <= 0xffffffff and uint >= 0)
         raise(::ArgumentError, "not a long integer: #{uint.inspect}")
       end
       ret = []
