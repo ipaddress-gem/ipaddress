@@ -300,7 +300,7 @@ module IPAddress;
       when prefix == 31
         self.class.parse_u32(-1, @prefix)
       when prefix == 32
-        return nil
+        return self
       end
     end
     
