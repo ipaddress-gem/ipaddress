@@ -599,6 +599,39 @@ module IPAddress;
     alias_method :arpa, :reverse
     
     #
+    # Returns the IP network in in-addr.arpa format
+    # for DNS lookups
+    #
+    #   ip = IPAddress("172.16.100.50/24")
+    #
+    #   ip.reverse_network
+    #     #=> "100.16.172.in-addr.arpa"
+    #
+    # Returns nil if the prefix is not a power of 8
+    #
+    def reverse_network
+      return if (prefix == 0) || (prefix.to_i % 8) > 0
+      length = prefix.to_i / 8
+      @octets.first(length).reverse.join(".") + ".in-addr.arpa"
+    end
+    alias_method :arpa_network, :reverse_network
+
+    #
+    # Returns the IP address from the in-addr.arpa format
+    #
+    #   IPAddress::IPv4.from_reverse("100.16.172.in-addr.arpa").to_string
+    #   #=> "172.16.15.0/24"
+    #
+    def self.from_reverse(reverse)
+      address = reverse.gsub(/^(.*)\.in-addr.arpa$/, '\1').split('.').reverse
+      prefix = address.count * 8
+      address = address.fill("0", address.length...4).join('.')
+      new("#{address}/#{prefix}")
+    rescue ArgumentError
+      raise ArgumentError, "Invalid reverse IP #{reverse.inspect}"
+    end
+
+    #
     # Splits a network into different subnets
     #
     # If the IP Address is a network, it can be divided into

@@ -28,7 +28,9 @@ module IPAddress
   #
   #   ip  = IPAddress.parse 167837953 # 10.1.1.1  
   #   ip  = IPAddress.parse "172.16.10.1/24"
+  #   ip  = IPAddress.parse "100.16.172.in-addr.arpa"
   #   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
+  #   ip6 = IPAddress.parse "0.0.0.0.0.0.0.0.8.b.d.0.1.0.0.2.ip6.arpa"
   #   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
   #
   # All the object created will be instances of the 
@@ -40,6 +42,10 @@ module IPAddress
   #    #=> IPAddress::IPv6
   #  ip_mapped.class
   #    #=> IPAddress::IPv6::Mapped
+  #  ip_reverse.class
+  #    #=> IPAddress::IPv4
+  #  ip6_reverse.class
+  #    #=> IPAddress::IPv6
   #
   def IPAddress::parse(str)
     
@@ -49,6 +55,10 @@ module IPAddress
     end
 
     case str
+    when /\.in-addr.arpa$/
+      IPAddress::IPv4.from_reverse(str)
+    when /\.ip6.arpa$/
+      IPAddress::IPv6.from_reverse(str)
     when /:.+\./
       IPAddress::IPv6::Mapped.new(str)
     when /\./
@@ -151,6 +161,20 @@ module IPAddress
   end
   
   #
+  # Checks if the argument is a valid IPv4 reverse address
+  # expressed in arpa format.
+  #
+  #   IPAddress.valid_ipv4_reverse? "10.16.172.in-addr.arpa"
+  #     #=> true
+  #
+  def self.valid_ipv4_reverse?(addr)
+    IPAddress::IPv4.from_reverse(addr)
+    true
+  rescue
+    false
+  end
+  
+  #
   # Checks if the given string is a valid IPv6 address
   #
   # Example:
@@ -165,6 +189,20 @@ module IPAddress
     # https://gist.github.com/cpetschnig/294476
     # http://forums.intermapper.com/viewtopic.php?t=452
     return true if /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/ =~ addr
+    false
+  end
+
+  #
+  # Checks if the argument is a valid IPv6 reverse address
+  # expressed in arpa format.
+  #
+  #   IPAddress.valid_ipv6_reverse? "2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
+  #     #=> true
+  #
+  def self.valid_ipv6_reverse?(addr)
+    IPAddress::IPv6.from_reverse(addr)
+    true
+  rescue
     false
   end
 

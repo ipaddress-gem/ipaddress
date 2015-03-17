@@ -317,6 +317,41 @@ module IPAddress;
     alias_method :arpa, :reverse
 
     #
+    # Returns the IPv6 network in a DNS reverse lookup
+    # string, as per RFC3172 and RFC2874.
+    #   
+    #   ip6 = IPAddress "3ffe:505:2::f/40"
+    #   
+    #   ip6.reverse_network
+    #     #=> "0.0.5.0.5.0.e.f.f.3.ip6.arpa"
+    #
+    # Returns nil if the prefix is not a power of 4
+    #
+    def reverse_network
+      return if (prefix == 0) || (prefix.to_i % 4) > 0
+      net = to_hex[0..((prefix.to_i / 4) - 1)]
+      net.reverse.gsub(/./){|c| c+"."} + "ip6.arpa"
+    end
+    alias_method :arpa_network, :reverse_network
+
+    #
+    # Returns the IP address from the in-addr.arpa format
+    #
+    #   IPAddress::IPv6.from_reverse("0.0.5.0.5.0.e.f.f.3.ip6.arpa").to_string
+    #   #=> "3ffe:505::/40"
+    #
+    def self.from_reverse(reverse)
+      address = reverse.gsub(/^(.*)\.ip6.arpa$/, '\1').split('.').reverse
+      prefix = address.count * 4
+      address = address.fill("0", address.length...32).join
+      raise ArgumentError unless address.length == 32
+      address = address.scan(/.{4}/).join(':')
+      new("#{address}/#{prefix}")
+    rescue ArgumentError
+      raise ArgumentError, "Invalid reverse IP #{reverse.inspect}"
+    end
+
+    #
     # Returns the network number in Unsigned 128bits format
     #
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"

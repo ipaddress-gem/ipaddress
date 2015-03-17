@@ -320,6 +320,18 @@ class IPv4Test < Minitest::Test
     assert_equal "1.10.16.172.in-addr.arpa", @ip.reverse
   end
   
+  def test_method_reverse_network
+    assert_equal "10.16.172.in-addr.arpa", @ip.reverse_network
+    assert_nil @klass.new("172.16.10.1/25").reverse_network
+  end
+  
+  def test_method_from_reverse
+    reverse = "10.16.172.in-addr.arpa"
+    invalid_reverse = ".16.172.in-addr.arpa"
+    assert_equal @network, @klass.from_reverse(reverse)
+    assert_raises(ArgumentError) {@klass.from_reverse(invalid_reverse)}
+  end
+  
   def test_method_compare
     ip1 = @klass.new("10.1.1.1/8")
     ip2 = @klass.new("10.1.1.1/16")

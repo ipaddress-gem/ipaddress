@@ -192,6 +192,19 @@ class IPv6Test < Minitest::Test
     assert_equal str, @klass.new("3ffe:505:2::f").reverse
   end
 
+  def test_method_reverse_network
+    str = "2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
+    assert_equal str, @klass.new("3ffe:505:2::f/48").reverse_network
+    assert_nil @klass.new("3ffe:505:2::f/49").reverse_network
+  end
+
+  def test_method_from_reverse
+    reverse = "2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
+    invalid_reverse = ".0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
+    assert_equal @klass.new("3ffe:505:2::/48"), @klass.from_reverse(reverse)
+    assert_raises(ArgumentError) {@klass.from_reverse(invalid_reverse)}
+  end
+
   def test_method_compressed
     assert_equal "1:1:1::1", @klass.new("1:1:1:0:0:0:0:1").compressed
     assert_equal "1:0:1::1", @klass.new("1:0:1:0:0:0:0:1").compressed

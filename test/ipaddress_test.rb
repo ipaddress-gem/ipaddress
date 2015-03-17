@@ -6,10 +6,14 @@ class IPAddressTest < Minitest::Test
     @valid_ipv4   = "172.16.10.1/24"
     @valid_ipv6   = "2001:db8::8:800:200c:417a/64"
     @valid_mapped = "::13.1.68.3"
+    @valid_ipv4_reverse = "10.16.172.in-addr.arpa"
+    @valid_ipv6_reverse = "2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
 
     @invalid_ipv4   = "10.0.0.256"
     @invalid_ipv6   = ":1:2:3:4:5:6:7"
     @invalid_mapped = "::1:2.3.4"
+    @invalid_ipv4_reverse = ".16.172.in-addr.arpa"
+    @invalid_ipv6_reverse = ".0.0.0.5.0.5.0.e.f.f.3.ip6.arpa"
 
     @valid_ipv4_uint32 = [4294967295, # 255.255.255.255
                           167772160,  # 10.0.0.0
@@ -42,10 +46,14 @@ class IPAddressTest < Minitest::Test
     assert_instance_of @ipv4class, @method.call(@valid_ipv4) 
     assert_instance_of @ipv6class, @method.call(@valid_ipv6) 
     assert_instance_of @mappedclass, @method.call(@valid_mapped)
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_reverse) 
+    assert_instance_of @ipv6class, @method.call(@valid_ipv6_reverse) 
 
     assert_raises(ArgumentError) {@method.call(@invalid_ipv4)}
     assert_raises(ArgumentError) {@method.call(@invalid_ipv6)}
     assert_raises(ArgumentError) {@method.call(@invalid_mapped)}
+    assert_raises(ArgumentError) {@method.call(@invalid_ipv4_reverse)}
+    assert_raises(ArgumentError) {@method.call(@invalid_ipv6_reverse)}
 
     assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[0]) 
     assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[1]) 
@@ -75,6 +83,16 @@ class IPAddressTest < Minitest::Test
   def test_module_method_valid_ipv4_netmark?
     assert_equal true, IPAddress::valid_ipv4_netmask?("255.255.255.0")
     assert_equal false, IPAddress::valid_ipv4_netmask?("10.0.0.1")
+  end
+
+  def test_module_method_valid_ipv4_reverse?
+    assert_equal true, IPAddress::valid_ipv4_reverse?("10.16.172.in-addr.arpa")
+    assert_equal false, IPAddress::valid_ipv4_reverse?(".16.172.in-addr.arpa")
+  end
+
+  def test_module_method_valid_ipv6_reverse?
+    assert_equal true, IPAddress::valid_ipv6_reverse?("2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa")
+    assert_equal false, IPAddress::valid_ipv6_reverse?(".0.0.0.5.0.5.0.e.f.f.3.ip6.arpa")
   end
 
 end
