@@ -6,3 +6,5 @@ pkg
 server.rb
 ipaddr.html
 Gemfile.lock
+/.bundle/
+/vendor/
