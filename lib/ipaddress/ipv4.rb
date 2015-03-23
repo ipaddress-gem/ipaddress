@@ -648,10 +648,10 @@ module IPAddress;
     #
     #   ip.to("172.16.100.100")
     #     #=> ["172.16.100.51",
-    #          "172.16.100.52",
-    #          ...
-    #          "172.16.100.99",
-    #          "172.16.100.100"]
+    #     #=>  "172.16.100.52",
+    #     #=>  ...
+    #     #=>  "172.16.100.99",
+    #     #=>  "172.16.100.100"]
     #
     def to(e)
       unless e.is_a? IPAddress::IPv4
@@ -675,9 +675,9 @@ module IPAddress;
     #
     #   network / 4   # implies map{|i| i.to_string}
     #     #=> ["172.16.10.0/26",
-    #          "172.16.10.64/26",
-    #          "172.16.10.128/26",
-    #          "172.16.10.192/26"]
+    #     #=>  "172.16.10.64/26",
+    #     #=>  "172.16.10.128/26",
+    #     #=>  "172.16.10.192/26"]
     #
     # If +num+ is any other number, the supernet will be 
     # divided into some networks with a even number of hosts and
@@ -687,8 +687,8 @@ module IPAddress;
     #
     #   network / 3   # implies map{|i| i.to_string}
     #     #=> ["172.16.10.0/26",
-    #          "172.16.10.64/26",
-    #          "172.16.10.128/25"]
+    #     #=>  "172.16.10.64/26",
+    #     #=>  "172.16.10.128/25"]
     #
     # Returns an array of IPv4 objects
     #
