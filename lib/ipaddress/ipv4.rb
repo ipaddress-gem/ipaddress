@@ -286,6 +286,21 @@ module IPAddress;
       @octets[index]
     end
     alias_method :octet, :[]
+
+    #
+    # Updated the octet specified at index
+    #
+    #   ip = IPAddress("172.16.100.50/24")
+    #   ip[2] = 200
+    #
+    #   #=>  #<IPAddress::IPv4:0x00000000000000 @address="172.16.200.1", 
+    #   #=>       @prefix=32, @octets=[172, 16, 200, 1], @u32=2886780929>
+    #
+    def []=(index, value)
+      @octets[index] = value.to_i
+      initialize("#{@octets.join('.')}/#{prefix}")
+    end
+    alias_method :octet=, :[]=
     
     #
     # Returns the address portion of an IP in binary format,

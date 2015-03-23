@@ -581,6 +581,20 @@ class IPv4Test < Minitest::Test
     end
   end
 
+  def test_octect_updates
+    ip = @klass.new("10.0.1.15/32")
+    ip[1] = 15
+    assert_equal "10.15.1.15/32", ip.to_string
+
+    ip = @klass.new("172.16.100.1")
+    ip[3] = 200
+    assert_equal "172.16.100.200/32", ip.to_string
+
+    ip = @klass.new("192.168.199.0/24")
+    ip[2] = 200
+    assert_equal "192.168.200.0/24", ip.to_string
+  end
+
 end # class IPv4Test
 
   
