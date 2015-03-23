@@ -1,6 +1,13 @@
-== ipaddress 0.8.1
-CHANGED:: ipaddress now uses minitest for testing, all tests passing
+== ipaddress 0.8.2
 
+FIXED:: IPAddress::IPv4.split handling (Issue #40)
+NEW:: IPV4#multicast?
+NEW:: IPV4#loopback?
+NEW:: IPV4#to()
+
+== ipaddress 0.8.1
+
+CHANGED:: ipaddress now uses minitest for testing, all tests passing
 
 == ipaddress 0.8.0
 

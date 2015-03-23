@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = %q{ipaddress}
-  s.version = "0.8.1"
+  s.version = IO.read("VERSION")
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Marco Ceresa"]
-  s.date = %q{2011-05-17}
+  s.authors = ["Marco Ceresa", "Mike Mackintosh"]
+  s.date = %q{2015-03-22}
   s.description = %q{      IPAddress is a Ruby library designed to make manipulation 
       of IPv4 and IPv6 addresses both powerful and simple. It mantains
       a layer of compatibility with Ruby's own IPAddr, while 
