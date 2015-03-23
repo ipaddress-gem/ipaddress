@@ -641,6 +641,26 @@ module IPAddress;
     alias_method :arpa, :reverse
     
     #
+    # Return a list of IP's between @address
+    # and the supplied IP
+    #
+    #   ip = IPAddress("172.16.100.51/32")
+    #
+    #   ip.to("172.16.100.100")
+    #     #=> ["172.16.100.51",
+    #          "172.16.100.52",
+    #          ...
+    #          "172.16.100.99",
+    #          "172.16.100.100"]
+    #
+    def to(e)
+      unless e.is_a? IPAddress::IPv4
+        e = IPv4.new(e)
+      end
+
+      Range.new(@u32, e.to_u32).map{|i| IPAddress.ntoa(i) }
+    end
+    #
     # Splits a network into different subnets
     #
     # If the IP Address is a network, it can be divided into
@@ -1028,7 +1048,7 @@ module IPAddress;
 
     # Tweaked to remove the #upto(32)
     def newprefix(num)
-      return @prefix + (Math::log2(num).to_i)
+      return @prefix + (Math::log2(num).ceil )
     end
     
     def sum_first_found(arr)

@@ -64,6 +64,11 @@ class IPv4Test < Minitest::Test
       "10.1.1.1"  => 8,
       "150.1.1.1" => 16,
       "200.1.1.1" => 24 }
+
+    @in_range = {
+      "10.32.0.1" => ["10.32.0.253", 253],
+      "192.0.0.0" => ["192.1.255.255", 131072]
+    }
     
   end
 
@@ -551,6 +556,14 @@ class IPv4Test < Minitest::Test
       assert_equal x.split(256).length, 256
     end
   end
+
+  def test_in_range
+    @in_range.each do |s,d|
+      ip = @klass.new(s)
+      assert_equal ip.to(d[0]).length, d[1]  
+    end
+  end
+
 end # class IPv4Test
 
   
