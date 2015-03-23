@@ -542,6 +542,15 @@ class IPv4Test < Minitest::Test
     assert_raises(ArgumentError){ @klass.parse_classful("192.168.256.257") }
   end
   
+  def test_network_split
+    @classful.each do |ip,net|
+      x = @klass.new("#{ip}/#{net}") 
+      assert_equal x.split(1).length, 1
+      assert_equal x.split(2).length, 2
+      assert_equal x.split(32).length, 32
+      assert_equal x.split(256).length, 256
+    end
+  end
 end # class IPv4Test
 
   

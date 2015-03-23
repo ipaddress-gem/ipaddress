@@ -1026,12 +1026,9 @@ module IPAddress;
     #
     private
 
+    # Tweaked to remove the #upto(32)
     def newprefix(num)
-      num.upto(32) do |i|
-        if (a = Math::log2(i).to_i) == Math::log2(i)
-          return @prefix + a 
-        end
-      end
+      return @prefix + (Math::log2(num).to_i)
     end
     
     def sum_first_found(arr)
