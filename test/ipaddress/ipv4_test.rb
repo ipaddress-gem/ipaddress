@@ -26,7 +26,8 @@ class IPv4Test < Minitest::Test
       "10.0.0.0/8"       => "255.0.0.0",
       "172.16.0.0/16"    => "255.255.0.0",
       "192.168.0.0/24"   => "255.255.255.0",
-      "192.168.100.4/30" => "255.255.255.252"}
+      "192.168.100.4/30" => "255.255.255.252",
+      "192.168.12.4/32"  => "255.255.255.255"}
 
     @decimal_values ={      
       "0.0.0.0/0"        => 0,
@@ -48,13 +49,17 @@ class IPv4Test < Minitest::Test
       "10.0.0.0/8"       => "10.255.255.255/8",
       "172.16.0.0/16"    => "172.16.255.255/16",
       "192.168.0.0/24"   => "192.168.0.255/24",
-      "192.168.100.4/30" => "192.168.100.7/30"}
+      "192.168.100.4/30" => "192.168.100.7/30",
+      "192.168.12.3/31"  => "255.255.255.255/31",
+      "10.0.0.1/32"      => "10.0.0.1/32"}
     
     @networks = {
       "10.5.4.3/8"       => "10.0.0.0/8",
       "172.16.5.4/16"    => "172.16.0.0/16",
       "192.168.4.3/24"   => "192.168.4.0/24",
-      "192.168.100.5/30" => "192.168.100.4/30"}
+      "192.168.100.5/30" => "192.168.100.4/30",
+      "192.168.1.3/31"   => "192.168.1.2/31",
+      "192.168.2.5/32"   => "192.168.2.5/32"}
 
     @class_a = @klass.new("10.0.0.1/8")
     @class_b = @klass.new("172.16.0.1/16")
@@ -194,6 +199,12 @@ class IPv4Test < Minitest::Test
     ip = @klass.new("192.168.100.50/24")
     assert_instance_of @klass, ip.first
     assert_equal "192.168.100.1", ip.first.to_s
+    ip = @klass.new("192.168.100.50/32")
+    assert_instance_of @klass, ip.first
+    assert_equal "192.168.100.50", ip.first.to_s
+    ip = @klass.new("192.168.100.50/31")
+    assert_instance_of @klass, ip.first
+    assert_equal "192.168.100.50", ip.first.to_s
   end
 
   def test_method_last
@@ -203,6 +214,12 @@ class IPv4Test < Minitest::Test
     ip = @klass.new("192.168.100.50/24")
     assert_instance_of @klass, ip.last
     assert_equal  "192.168.100.254", ip.last.to_s
+    ip = @klass.new("192.168.100.50/32")
+    assert_instance_of @klass, ip.last
+    assert_equal  "192.168.100.50", ip.last.to_s
+    ip = @klass.new("192.168.100.50/31")
+    assert_instance_of @klass, ip.last
+    assert_equal  "192.168.100.51", ip.last.to_s
   end
   
   def test_method_each_host

@@ -309,7 +309,14 @@ module IPAddress;
     #     #=> "172.16.10.255"
     #
     def broadcast
-      self.class.parse_u32(broadcast_u32, @prefix)
+      case
+      when prefix <= 30
+        self.class.parse_u32(broadcast_u32, @prefix)
+      when prefix == 31
+        self.class.parse_u32(-1, @prefix)
+      when prefix == 32
+        return self
+      end
     end
     
     #
@@ -363,7 +370,14 @@ module IPAddress;
     #     #=> "192.168.100.1"
     #
     def first
-      self.class.parse_u32(network_u32+1, @prefix)
+      case
+      when prefix <= 30
+        self.class.parse_u32(network_u32+1, @prefix)
+      when prefix == 31
+        self.class.parse_u32(network_u32, @prefix)
+      when prefix == 32
+        return self
+      end
     end
 
     #
@@ -388,7 +402,14 @@ module IPAddress;
     #     #=> "192.168.100.254"
     #
     def last
-      self.class.parse_u32(broadcast_u32-1, @prefix)
+      case
+      when prefix <= 30
+        self.class.parse_u32(broadcast_u32-1, @prefix)
+      when prefix == 31
+        self.class.parse_u32(broadcast_u32, @prefix)
+      when prefix == 32
+        return self
+      end
     end
 
     #
