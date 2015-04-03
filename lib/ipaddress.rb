@@ -102,20 +102,62 @@ module IPAddress
     self.kind_of? IPAddress::IPv6
   end
 
+
+  #
+  # Checks if the given string is either a valid IP, either a valid IPv4 subnet
+  #
+  # Example:
+  #
+  #   IPAddress::valid? "10.0.0.0/24"
+  #     #=> true
+  #
+  #   IPAddress::valid? "2002::1"
+  #     #=> true
+  #
+  #   IPAddress::valid? "10.0.0.256"
+  #     #=> false
+  #
+  #   IPAddress::valid? "10.0.0.0/999"
+  #     #=> false
+  #
+  def self.valid?(addr)
+    valid_ip?(addr) || valid_ipv4_subnet?(addr)
+  end
+
   # 
   # Checks if the given string is a valid IP address,
   # either IPv4 or IPv6
   #
   # Example:
   #
-  #   IPAddress::valid? "2002::1"
+  #   IPAddress::valid_ip? "2002::1"
   #     #=> true
   #
-  #   IPAddress::valid? "10.0.0.256"   
+  #   IPAddress::valid_ip? "10.0.0.256"
   #     #=> false
   #
-  def self.valid?(addr)
+  def self.valid_ip?(addr)
     valid_ipv4?(addr) || valid_ipv6?(addr)
+  end
+
+  #
+  # Checks if the given string is a valid IPv4 subnet
+  #
+  # Example:
+  #
+  #   IPAdress::valid_ipv4_subnet? "10.0.0.0/24"
+  #     #=> true
+  #
+  #   IPAdress::valid_ipv4_subnet? "10.0.0.0/255.255.255.0"
+  #     #=> true
+  #
+  #   IPAdress::valid_ipv4_subnet? "10.0.0.0/64"
+  #     #=> false
+  #
+  def self.valid_ipv4_subnet?(addr)
+    ip, netmask = addr.split("/")
+
+    valid_ipv4?(ip) && (!(netmask =~ /\A([12]?\d|3[0-2])\z/).nil? || valid_ipv4_netmask?(netmask))
   end
   
   #
