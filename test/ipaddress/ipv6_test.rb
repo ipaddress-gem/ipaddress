@@ -292,6 +292,12 @@ class IPv6Test < Minitest::Test
     assert_equal @ip.to_s, @klass.parse_hex(@hex,64).to_s
   end
 
+  def test_group_updates
+    ip = @klass.new("2001:db8::8:800:200c:417a/64")
+    ip[2] = '1234'
+    assert_equal "2001:db8:4d2:0:8:800:200c:417a/64", ip.to_string
+  end
+
 end # class IPv6Test
 
 class IPv6UnspecifiedTest < Minitest::Test
@@ -416,5 +422,5 @@ class IPv6MappedTest < Minitest::Test
   def test_mapped?
     assert_equal true, @ip.mapped?
   end
-  
+
 end # class IPv6MappedTest

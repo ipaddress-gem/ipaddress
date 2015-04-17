@@ -286,6 +286,21 @@ module IPAddress;
       @octets[index]
     end
     alias_method :octet, :[]
+
+    #
+    # Updated the octet specified at index
+    #
+    #   ip = IPAddress("172.16.100.50/24")
+    #   ip[2] = 200
+    #
+    #   #=>  #<IPAddress::IPv4:0x00000000000000 @address="172.16.200.1", 
+    #   #=>       @prefix=32, @octets=[172, 16, 200, 1], @u32=2886780929>
+    #
+    def []=(index, value)
+      @octets[index] = value.to_i
+      initialize("#{@octets.join('.')}/#{prefix}")
+    end
+    alias_method :octet=, :[]=
     
     #
     # Returns the address portion of an IP in binary format,
@@ -309,7 +324,14 @@ module IPAddress;
     #     #=> "172.16.10.255"
     #
     def broadcast
-      self.class.parse_u32(broadcast_u32, @prefix)
+      case
+      when prefix <= 30
+        self.class.parse_u32(broadcast_u32, @prefix)
+      when prefix == 31
+        self.class.parse_u32(-1, @prefix)
+      when prefix == 32
+        return self
+      end
     end
     
     #
@@ -363,7 +385,14 @@ module IPAddress;
     #     #=> "192.168.100.1"
     #
     def first
-      self.class.parse_u32(network_u32+1, @prefix)
+      case
+      when prefix <= 30
+        self.class.parse_u32(network_u32+1, @prefix)
+      when prefix == 31
+        self.class.parse_u32(network_u32, @prefix)
+      when prefix == 32
+        return self
+      end
     end
 
     #
@@ -388,7 +417,14 @@ module IPAddress;
     #     #=> "192.168.100.254"
     #
     def last
-      self.class.parse_u32(broadcast_u32-1, @prefix)
+      case
+      when prefix <= 30
+        self.class.parse_u32(broadcast_u32-1, @prefix)
+      when prefix == 31
+        self.class.parse_u32(broadcast_u32, @prefix)
+      when prefix == 32
+        return self
+      end
     end
 
     #
@@ -585,6 +621,48 @@ module IPAddress;
     end
 
     #
+    # Checks if an IPv4 address objects belongs
+    # to a multicast network RFC3171
+    #
+    # Example:
+    #
+    #   ip = IPAddress "224.0.0.0/4"
+    #   ip.multicast?
+    #     #=> true
+    #    
+    def multicast?
+      [self.class.new("224.0.0.0/4")].any? {|i| i.include? self}
+    end
+
+    #
+    # Checks if an IPv4 address objects belongs
+    # to a multicast network RFC3171
+    #
+    # Example:
+    #
+    #   ip = IPAddress "224.0.0.0/4"
+    #   ip.multicast?
+    #     #=> true
+    #    
+    def multicast?
+      [self.class.new("224.0.0.0/4")].any? {|i| i.include? self}
+    end
+
+    #
+    # Checks if an IPv4 address objects belongs
+    # to a loopback network RFC1122
+    #
+    # Example:
+    #
+    #   ip = IPAddress "127.0.0.1"
+    #   ip.loopback?
+    #     #=> true
+    #    
+    def loopback?
+      [self.class.new("127.0.0.0/8")].any? {|i| i.include? self}
+    end
+
+    #
     # Returns the IP address in in-addr.arpa format
     # for DNS lookups
     #
@@ -598,6 +676,26 @@ module IPAddress;
     end
     alias_method :arpa, :reverse
     
+    #
+    # Return a list of IP's between @address
+    # and the supplied IP
+    #
+    #   ip = IPAddress("172.16.100.51/32")
+    #
+    #   ip.to("172.16.100.100")
+    #     #=> ["172.16.100.51",
+    #     #=>  "172.16.100.52",
+    #     #=>  ...
+    #     #=>  "172.16.100.99",
+    #     #=>  "172.16.100.100"]
+    #
+    def to(e)
+      unless e.is_a? IPAddress::IPv4
+        e = IPv4.new(e)
+      end
+
+      Range.new(@u32, e.to_u32).map{|i| IPAddress.ntoa(i) }
+    end
     #
     # Splits a network into different subnets
     #
@@ -613,9 +711,9 @@ module IPAddress;
     #
     #   network / 4   # implies map{|i| i.to_string}
     #     #=> ["172.16.10.0/26",
-    #          "172.16.10.64/26",
-    #          "172.16.10.128/26",
-    #          "172.16.10.192/26"]
+    #     #=>  "172.16.10.64/26",
+    #     #=>  "172.16.10.128/26",
+    #     #=>  "172.16.10.192/26"]
     #
     # If +num+ is any other number, the supernet will be 
     # divided into some networks with a even number of hosts and
@@ -625,8 +723,8 @@ module IPAddress;
     #
     #   network / 3   # implies map{|i| i.to_string}
     #     #=> ["172.16.10.0/26",
-    #          "172.16.10.64/26",
-    #          "172.16.10.128/25"]
+    #     #=>  "172.16.10.64/26",
+    #     #=>  "172.16.10.128/25"]
     #
     # Returns an array of IPv4 objects
     #
@@ -984,12 +1082,9 @@ module IPAddress;
     #
     private
 
+    # Tweaked to remove the #upto(32)
     def newprefix(num)
-      num.upto(32) do |i|
-        if (a = Math::log2(i).to_i) == Math::log2(i)
-          return @prefix + a 
-        end
-      end
+      return @prefix + (Math::log2(num).ceil )
     end
     
     def sum_first_found(arr)

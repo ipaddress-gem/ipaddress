@@ -1,25 +1,8 @@
 require 'rubygems'
 require 'rake'
 require 'rake/clean'
+require "bundler/gem_tasks"
 
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "ipaddress"
-    gem.summary = %Q{IPv4/IPv6 addresses manipulation library}
-    gem.email = "ceresa@gmail.com"
-    gem.homepage = "http://github.com/bluemonk/ipaddress"
-    gem.authors = ["Marco Ceresa"]
-    gem.description   = <<-EOD
-      IPAddress is a Ruby library designed to make manipulation 
-      of IPv4 and IPv6 addresses both powerful and simple. It mantains
-      a layer of compatibility with Ruby's own IPAddr, while 
-      addressing many of its issues.
-    EOD
-  end
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: sudo gem install jeweler"
-end
 
 require 'rake/testtask'
 Rake::TestTask.new(:test) do |test|
