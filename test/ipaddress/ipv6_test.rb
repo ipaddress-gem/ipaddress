@@ -58,6 +58,7 @@ class IPv6Test < Minitest::Test
     end
     assert_equal 64, @ip.prefix
 
+    assert_raises(ArgumentError) {@klass.new nil }
     assert_raises(ArgumentError) {
       @klass.new "::10.1.1.1"
     }

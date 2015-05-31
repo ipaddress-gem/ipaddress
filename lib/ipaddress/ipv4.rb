@@ -61,6 +61,7 @@ module IPAddress;
     #   IPAddress::IPv4.new "10.0.0.1/255.0.0.0"
     #
     def initialize(str)
+      raise ArgumentError, "Nil IP" unless str
       ip, netmask = str.split("/")
       
       # Check the ip and remove white space
