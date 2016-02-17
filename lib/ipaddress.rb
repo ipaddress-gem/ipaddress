@@ -214,7 +214,7 @@ end
 #
 # Compatibility with Ruby 1.8
 #
-if RUBY_VERSION =~ /1\.8/
+if RUBY_VERSION =~ /^1\.8/
   class Hash # :nodoc:
     alias :key :index
   end
