@@ -16,3 +16,4 @@ server.rb
 *.sw?
 /tmp/
 /_yardoc/
+.idea/
