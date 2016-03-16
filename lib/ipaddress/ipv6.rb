@@ -487,6 +487,7 @@ module IPAddress;
     #     #=> ["2001:db8:1::1/64","2001:db8:1::1/65","2001:db8:2::1/64"]
     #
     def <=>(oth)
+      return nil unless oth.is_a?(self.class)
       return prefix <=> oth.prefix if to_u128 == oth.to_u128  
       to_u128 <=> oth.to_u128
     end
