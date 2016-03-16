@@ -636,20 +636,6 @@ module IPAddress;
 
     #
     # Checks if an IPv4 address objects belongs
-    # to a multicast network RFC3171
-    #
-    # Example:
-    #
-    #   ip = IPAddress "224.0.0.0/4"
-    #   ip.multicast?
-    #     #=> true
-    #    
-    def multicast?
-      [self.class.new("224.0.0.0/4")].any? {|i| i.include? self}
-    end
-
-    #
-    # Checks if an IPv4 address objects belongs
     # to a loopback network RFC1122
     #
     # Example:
