@@ -361,8 +361,10 @@ class IPv4Test < Minitest::Test
     assert_equal false, ip3 < ip1
     # ip1 should be equal to itself
     assert_equal true, ip1 == ip1
+    assert_equal true, ip1.eql?(ip1)
     # ip1 should be equal to ip4
     assert_equal true, ip1 == ip4
+    assert_equal true, ip1.eql?(ip4)
     # test sorting
     arr = ["10.1.1.1/8","10.1.1.1/16","172.16.1.1/14"]
     assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_string}

@@ -247,6 +247,11 @@ class IPv6Test < Minitest::Test
     assert_equal false, ip3 < ip1
     # ip1 should be equal to itself
     assert_equal true, ip1 == ip1
+    assert_equal true, ip1.eql?(ip1)
+    # ip1 should be equal to a copy of itself
+    other = ip1.dup
+    assert_equal true, ip1 == other
+    assert_equal true, ip1.eql?(other)
     # ip4 should be greater than ip1
     assert_equal true, ip1 < ip4
     assert_equal false, ip1 > ip4
