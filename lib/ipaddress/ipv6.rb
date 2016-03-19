@@ -490,6 +490,7 @@ module IPAddress;
       return prefix <=> oth.prefix if to_u128 == oth.to_u128  
       to_u128 <=> oth.to_u128
     end
+    alias eql? ==
 
     #
     # Returns the address portion of an IP in binary format,

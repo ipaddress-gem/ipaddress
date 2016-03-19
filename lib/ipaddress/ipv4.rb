@@ -512,6 +512,7 @@ module IPAddress;
       return prefix <=> oth.prefix if to_u32 == oth.to_u32  
       to_u32 <=> oth.to_u32
     end
+    alias eql? ==
     
     #
     # Returns the number of IP addresses included
