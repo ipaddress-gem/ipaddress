@@ -11,6 +11,8 @@ rvm:
 - rbx
 - ree
 install:
+- gem install bundler
+- gem install rake
 - bundle install
 script:
 - uname -s
