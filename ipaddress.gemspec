@@ -22,6 +22,7 @@ Gem::Specification.new do |s|
   s.files = [
     ".document",
     ".rock.yml",
+    ".travis.yml",
     "CHANGELOG.rdoc",
     "CONTRIBUTING.md",
     "Gemfile",
@@ -53,33 +54,30 @@ Gem::Specification.new do |s|
     s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<ipaddress>, [">= 0"])
-      s.add_development_dependency(%q<minitest>, [">= 5.8.4", "~> 5.8"])
-      s.add_development_dependency(%q<bundler>, [">= 3.2.0"])
+      s.add_development_dependency(%q<bundler>, [">= 1.0"])
       s.add_development_dependency(%q<rake>, [">= 11.1.0"])
       s.add_development_dependency(%q<minitest>, [">= 5.8.4", "~> 5.8"])
       s.add_development_dependency(%q<pry>, [">= 0.10.1"])
       s.add_development_dependency(%q<travis>, [">= 1.8.2"])
       s.add_development_dependency(%q<jeweler>, [">= 2.0.1"])
+      s.add_development_dependency(%q<codeclimate-test-reporter>, [">= 0"])
     else
-      s.add_dependency(%q<ipaddress>, [">= 0"])
-      s.add_dependency(%q<minitest>, [">= 5.8.4", "~> 5.8"])
-      s.add_dependency(%q<bundler>, [">= 3.2.0"])
+      s.add_dependency(%q<bundler>, [">= 1.0"])
       s.add_dependency(%q<rake>, [">= 11.1.0"])
       s.add_dependency(%q<minitest>, [">= 5.8.4", "~> 5.8"])
       s.add_dependency(%q<pry>, [">= 0.10.1"])
       s.add_dependency(%q<travis>, [">= 1.8.2"])
       s.add_dependency(%q<jeweler>, [">= 2.0.1"])
+      s.add_dependency(%q<codeclimate-test-reporter>, [">= 0"])
     end
   else
-    s.add_dependency(%q<ipaddress>, [">= 0"])
-    s.add_dependency(%q<minitest>, [">= 5.8.4", "~> 5.8"])
-    s.add_dependency(%q<bundler>, [">= 3.2.0"])
+    s.add_dependency(%q<bundler>, [">= 1.0"])
     s.add_dependency(%q<rake>, [">= 11.1.0"])
     s.add_dependency(%q<minitest>, [">= 5.8.4", "~> 5.8"])
     s.add_dependency(%q<pry>, [">= 0.10.1"])
     s.add_dependency(%q<travis>, [">= 1.8.2"])
     s.add_dependency(%q<jeweler>, [">= 2.0.1"])
+    s.add_dependency(%q<codeclimate-test-reporter>, [">= 0"])
   end
 end
 
