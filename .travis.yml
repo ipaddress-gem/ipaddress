@@ -17,4 +17,5 @@ script:
 - rake test
 addons:
   code_climate:
-    repo_token: TBD
+    repo_token:
+      secure: Na2Ghl3W0IpUWAWx66V9skLie5MqiJWfn7muCSRkAYIVL/j9fR6jhhawOKlX0R6bg4byouOyLieDu9HWsv2EY5L7JweVspodRuuaJndxDQ1E5rOp0mU6vDl7kIqBeboX3AsivXDgcc8C8qvE+WD++vr3oEMg22c2/RIbt6ecJGs=
