@@ -1,6 +1,6 @@
 # Contributing to the IPAddress Gem
 
-[![Build Status](https://travis-ci.org/ipaddress-gem/ipaddress.svg?branch=master)](https://travis-ci.org/ipaddress-gem/ipaddress)[![Code Climate](https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg)](https://codeclimate.com/github/ipaddress-gem/ipaddress)[![Dependency Status](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat)](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
+[![Build Status](https://travis-ci.org/ipaddress-gem/ipaddress.svg?branch=master)](https://travis-ci.org/ipaddress-gem/ipaddress) [![Code Climate](https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg)](https://codeclimate.com/github/ipaddress-gem/ipaddress) [![Dependency Status](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat)](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
 
 This gem is run by people who have jobs.  So please understand if we can't always prioritize PRs and issues.
 
