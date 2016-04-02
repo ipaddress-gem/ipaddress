@@ -1,7 +1,3 @@
-== <b>IPAddress 1.0 is currently under development and will be released soon! Stay tuned!</b>
-
----
-
 = IPAddress
 
 IPAddress is a Ruby library designed to make the use of IPv4 and IPv6
@@ -18,10 +14,13 @@ examples of typical usage.
 
 == Requirements
 
-* Ruby >= 1.8.7 (not tested with previous versions)
-* Ruby 1.9.2 or later is strongly recommended 
+* Ruby 1.9.3 or later
 
-IPAddress 0.8.2 has been tested on:
+Please refer to {Travis CI}[https://travis-ci.org/ipaddress-gem/ipaddress] for Build Tests on specific versions of Ruby.
+
+{<img src="https://travis-ci.org/ipaddress-gem/ipaddress.svg?branch=master" alt="Build Status" />}[https://travis-ci.org/ipaddress-gem/ipaddress]{<img src="https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg" />}[https://codeclimate.com/github/ipaddress-gem/ipaddress]{<img src="https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat" alt="Dependency Status" />}[https://www.versioneye.com/user/projects/57001305fcd19a0051853bde]
+
+IPAddress 0.8.2 was manually tested on:
 
 * ruby-1.8.7-p334 [ i386 ]
 * ree-1.8.7-2011.03 [ i386 ]
@@ -32,9 +31,7 @@ IPAddress 0.8.2 has been tested on:
 * ruby-2.0.0-p353 [ x86_64-darwin14.0.0 ]
 * ruby-2.1.3-p242 [ x86_64-darwin14.0.0 ]
 
-If you want to collaborate feel 
-free to send a small report to my email address, or 
-{join the discussion}[http://groups.google.com/group/ruby-ipaddress]. 
+If you want to contribute, please refer to {Contributing.md}[https://github.com/ipaddress-gem/ipaddress/blob/master/CONTRIBUTING.md].
 
 
 == Installation
