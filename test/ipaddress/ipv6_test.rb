@@ -263,7 +263,7 @@ class IPv6Test < Minitest::Test
     assert_equal ip.add(50), IPAddress::IPv6.new("fc42:1337::32/64")
     ip = IPAddress::IPv6.new("fc42:1337::/120")
     assert_equal ip.add(2), IPAddress::IPv6.new("fc42:1337::2/120")
-    assert_raise(ArgumentError) {ip.add(256)}
+    assert_raise(RuntimeError) {ip.add(256)}
     assert_equal ip.add(256, false), IPAddress::IPv6.new("fc42:1337::100/120")
   end
 
@@ -271,8 +271,8 @@ class IPv6Test < Minitest::Test
     ip = IPAddress::IPv6.new("fc42:1337::5/64")
     assert_equal ip.subtract(5), IPAddress::IPv6.new("fc42:1337::/64")
     assert_equal ip.subtract(IPAddress::IPv6.new("::5/12")), IPAddress::IPv6.new("fc42:1337::0/64")
-    assert_raise(ArgumentError) {ip.subtract(11)}
-    assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv6.new("::11/66"))}
+    assert_raise(RuntimeError) {ip.subtract(11)}
+    assert_raise(RuntimeError) {ip.subtract(IPAddress::IPv6.new("::11/66"))}
   end
   
   def test_method_hostpart

@@ -472,12 +472,12 @@ class IPv4Test < Minitest::Test
     assert_equal ip.add(IPAddress::IPv4.new("0.0.0.5/6")), IPAddress::IPv4.new("172.16.10.6/24")
     assert_equal ip.add(50), IPAddress::IPv4.new("172.16.10.51/24")
     assert_equal ip.add(254), IPAddress::IPv4.new("172.16.10.255/24")
-    assert_raise(ArgumentError) {ip.add(255)}
+    assert_raise(RuntimeError) {ip.add(255)}
     assert_equal ip.add(255, false), IPAddress::IPv4.new("172.16.11.0/24")
-    assert_raise(ArgumentError) {ip.add(1000)}
+    assert_raise(RuntimeError) {ip.add(1000)}
     ip = IPAddress::IPv4.new("172.16.10.1/30")
     assert_equal ip.add(2), IPAddress::IPv4.new("172.16.10.3/30")
-    assert_raise(ArgumentError) {ip.add(3)}
+    assert_raise(RuntimeError) {ip.add(3)}
   end
 
   def test_method_subtract
@@ -485,9 +485,9 @@ class IPv4Test < Minitest::Test
     assert_equal ip.subtract(5), IPAddress::IPv4.new("172.16.10.5/24")
     assert_equal ip.subtract(IPAddress::IPv4.new("0.0.0.5/32")), IPAddress::IPv4.new("172.16.10.5/24")
     assert_equal ip.subtract(10), IPAddress::IPv4.new("172.16.10.0/24")
-    assert_raise(ArgumentError) {ip.subtract(11)}
+    assert_raise(RuntimeError) {ip.subtract(11)}
     assert_equal ip.subtract(11, false), IPAddress::IPv4.new("172.16.9.255/24")
-    assert_raise(ArgumentError) {ip.subtract(IPAddress::IPv4.new("0.0.0.11/16"))}
+    assert_raise(RuntimeError) {ip.subtract(IPAddress::IPv4.new("0.0.0.11/16"))}
   end
   
   def test_method_hostpart
