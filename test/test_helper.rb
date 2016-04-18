@@ -1,14 +1,20 @@
 require 'rubygems'
-gem 'test-unit' if RUBY_VERSION >= "1.9.0"
-require 'test/unit'
+require 'minitest/autorun'
 
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 require 'ipaddress'
 
-module Test::Unit
+if Minitest.const_defined?('Test')
+  # We're on Minitest 5+. Nothing to do here.
+else
+  # Minitest 4 doesn't have Minitest::Test yet.
+  Minitest::Test = MiniTest::Unit::TestCase
+end
+
+module Minitest
   
-  class TestCase
+  class Test
     
     def self.must(name, &block)
       test_name = "test_#{name.gsub(/\s+/,'_')}".to_sym

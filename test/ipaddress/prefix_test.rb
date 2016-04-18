@@ -1,6 +1,6 @@
 require 'test_helper'
  
-class Prefix32Test < Test::Unit::TestCase
+class Prefix32Test < Minitest::Test
 
   def setup
     @netmask0  = "0.0.0.0"
@@ -89,11 +89,8 @@ class Prefix32Test < Test::Unit::TestCase
   end
 
   def test_initialize
-    assert_raise (ArgumentError) do
+    assert_raises (ArgumentError) do
       @klass.new 33
-    end
-    assert_nothing_raised do
-      @klass.new 8
     end
     assert_instance_of @klass, @klass.new(8)
   end
@@ -122,7 +119,7 @@ class Prefix32Test < Test::Unit::TestCase
 end # class Prefix32Test
 
   
-class Prefix128Test < Test::Unit::TestCase
+class Prefix128Test < Minitest::Test
   
   def setup
     @u128_hash = {
@@ -135,11 +132,8 @@ class Prefix128Test < Test::Unit::TestCase
   end
 
   def test_initialize
-    assert_raise (ArgumentError) do
+    assert_raises (ArgumentError) do
       @klass.new 129
-    end
-    assert_nothing_raised do
-      @klass.new 64
     end
     assert_instance_of @klass, @klass.new(64)
   end

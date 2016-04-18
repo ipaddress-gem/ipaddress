@@ -252,6 +252,15 @@ module IPAddress;
     end
     alias_method :group, :[]
 
+    #
+    # Updated the octet specified at index
+    #
+    def []=(index, value)
+      @groups[index] = value
+      initialize("#{IN6FORMAT % @groups}/#{prefix}")
+    end
+    alias_method :group=, :[]=
+
     # 
     # Returns a Base16 number representing the IPv6 
     # address
