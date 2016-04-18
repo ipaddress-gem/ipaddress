@@ -388,7 +388,7 @@ class IPv4Test < Minitest::Test
 
     ip2 = @klass.new("172.16.12.2/24")
     assert_equal [ip1.network.to_string, ip2.network.to_string], 
-      (ip1 + ip2).map{|i| i.to_string}
+                 (ip1 + ip2).map{|i| i.to_string}
 
     ip1 = @klass.new("10.0.0.0/23")
     ip2 = @klass.new("10.0.2.0/24")
@@ -565,7 +565,7 @@ class IPv4Test < Minitest::Test
     ip3 = @klass.new("10.0.4.0/24")
     ip4 = @klass.new("10.0.6.0/24")
     assert_equal ["10.0.0.0/22","10.0.4.0/24","10.0.6.0/24"], 
-      @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+              @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
 
     ip1 = @klass.new("10.0.1.1/24")
     ip2 = @klass.new("10.0.2.1/24")
@@ -583,17 +583,17 @@ class IPv4Test < Minitest::Test
     assert_equal result, @klass.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
 
     ips = [@klass.new("10.0.0.12/30"),
-      @klass.new("10.0.100.0/24")]
+           @klass.new("10.0.100.0/24")]
     result = ["10.0.0.12/30", "10.0.100.0/24"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}
 
     ips = [@klass.new("172.16.0.0/31"),
-      @klass.new("10.10.2.1/32")]
+           @klass.new("10.10.2.1/32")]
     result = ["10.10.2.1/32", "172.16.0.0/31"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}    
            
     ips = [@klass.new("172.16.0.0/32"),
-      @klass.new("10.10.2.1/32")]
+           @klass.new("10.10.2.1/32")]
     result = ["10.10.2.1/32", "172.16.0.0/32"]
     assert_equal result, @klass.summarize(*ips).map{|i| i.to_string}    
 
