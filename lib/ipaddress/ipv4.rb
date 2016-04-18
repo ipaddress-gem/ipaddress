@@ -640,8 +640,8 @@ module IPAddress;
     #
     def private?
       [self.class.new("10.0.0.0/8"),
-        self.class.new("172.16.0.0/12"),
-        self.class.new("192.168.0.0/16")].any? {|i| i.include? self}
+       self.class.new("172.16.0.0/12"),
+       self.class.new("192.168.0.0/16")].any? {|i| i.include? self}
     end
 
     #
@@ -872,10 +872,10 @@ module IPAddress;
       new_obj = self.class.parse_u32(self.to_i + oth, prefix)
       
       if validating and self.network_u32 != new_obj.network_u32
-        raise ArgumentError, "Subnet (/#{@prefix}) is not large enough."
+        raise RuntimeError, "Subnet (/#{@prefix}) is not large enough."
       end
       
-      return new_obj
+      new_obj
     end
     
     #
@@ -893,7 +893,7 @@ module IPAddress;
     #     #=> "172.16.10.5/24"
     def subtract(oth, validating=true)
       oth = oth.to_i if oth.kind_of? IPAddress::IPv4 # oth shall be integer
-      return add(-oth, validating)
+      add(-oth, validating)
     end
     
     #

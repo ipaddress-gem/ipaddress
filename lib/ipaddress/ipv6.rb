@@ -344,10 +344,10 @@ module IPAddress;
       new_obj = self.class.parse_u128(self.to_i + oth, prefix)
       
       if validating and self.network_u128 != new_obj.network_u128
-        raise ArgumentError, "Subnet (/#{@prefix}) is not large enough."
+        raise RuntimeError, "Subnet (/#{@prefix}) is not large enough."
       end
       
-      return new_obj
+      new_obj
     end
     
     #
@@ -365,7 +365,7 @@ module IPAddress;
     #     #=> "fc42:1337::5/64"
     def subtract(oth, validating=true)
       oth = oth.to_i if oth.kind_of? IPAddress::IPv6 # oth shall be integer
-      return add(-oth, validating)
+      add(-oth, validating)
     end
 
     #
