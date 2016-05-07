@@ -1,0 +1,25 @@
+language: ruby
+
+ruby:
+  - 1.9
+  - 2.0
+  - 2.1
+  - 2.2
+  - 2.3
+  - jruby
+  - rbx-2
+
+#before_install:
+#    - sudo apt-get -qq update
+#    - sudo apt-get install -y ruby
+#install:
+#    - rvm use ruby-2.0.0-p598
+#    - gem install construqt-ipaddress
+
+#script: 
+#    - rvm use ruby-2.0.0-p598 
+#    - (cd ruby && ruby test/linux_ip_addr_test.rb)
+#    - (cd ruby && ruby test/linux_ip_route_test.rb)
+#    - (cd rust && cargo build --verbose)
+#    - (cd rust && cargo test --verbose)
+

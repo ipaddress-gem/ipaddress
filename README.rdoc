@@ -1,4 +1,11 @@
-== <b>IPAddress 1.0 is currently under development and will be released soon! Stay tuned!</b>
+
+[![Build Status](https://travis-ci.org/mabels/ip-address.svg?branch=master)](https://travis-ci.org/mabels/ip-address)
+
+== I not more planning to integrate with the orignal Version. of ip-address. 
+== This has some improvements which i mainly use in construqt
+
+== This is from the orignal Version for now a one Year or More!
+<b>IPAddress 1.0 is currently under development and will be released soon! Stay tuned!</b>
 
 ---
 
