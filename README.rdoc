@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.org/mabels/ip-address.svg?branch=master)](https://travis-ci.org/mabels/ip-address)
+[![Build Status](https://travis-ci.org/mabels/ipaddress.svg?branch=master)](https://travis-ci.org/mabels/ipaddress)
 
 == I not more planning to integrate with the orignal Version. of ip-address. 
 == This has some improvements which i mainly use in construqt
