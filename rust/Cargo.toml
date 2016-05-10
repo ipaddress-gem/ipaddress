@@ -1,0 +1,7 @@
+[package]
+name = "rust"
+version = "0.1.0"
+authors = ["Meno Abels <meno.abels@adviser.com>"]
+
+[dependencies]
+num = "0.1.32"
