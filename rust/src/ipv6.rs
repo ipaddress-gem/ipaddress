@@ -341,9 +341,9 @@ module IPAddress;
     //    ip6.network_u128
     //      // => 42540766411282592856903984951653826560
     //
-    pub fn network_u128
-      to_u128 & @prefix.to_u128
-    end
+    pub fn network_u128(&self) {
+      self.to_u128() & self.prefix.to_u128()
+    }
 
     //
     //  Returns the broadcast address in Unsigned 128bits format
@@ -357,9 +357,9 @@ module IPAddress;
     //  addresses as in IPv4 addresses, and this method is just
     //  an helper to other functions.
     //
-    pub fn broadcast_u128
-      network_u128 + size - 1
-    end
+    pub fn broadcast_u128(&self) {
+      self.network_u128 + size - 1
+  }
 
     //
     //  Returns the number of IP addresses included
@@ -371,9 +371,9 @@ module IPAddress;
     //    ip6.size
     //      // => 18446744073709551616
     //
-    pub fn size
-      2 ** @prefix.host_prefix
-    end
+    pub fn size(&self) {
+      return 1 << self.prefix.host_prefix
+    }
 
     //
     //  Checks whether a subnet includes the given IP address.
@@ -389,9 +389,10 @@ module IPAddress;
     //    ip6.include? IPAddress("2001:db8:1::8:800:200c:417a/76")
     //      // => false
     //
-    pub fn include?(oth)
-      @prefix <= oth.prefix and network_u128 == self.class.new(oth.address+"/// @prefix").network_u128
-    end
+    pub fn include(&self, oth: IPv6) {
+      self.prefix <= oth.prefix &&
+      self.network_u128 == IPv6::new(format!("{}/{}", oth.address, self.prefix)).network_u128
+    }
 
     //
     //  Compressed form of the IPv6 address
@@ -401,36 +402,36 @@ module IPAddress;
     //    ip6.compressed
     //      // => "2001:db8::8:800:200c:417a"
     //
-    pub fn compressed
-      @compressed
-    end
+    pub fn compressed(&self) {
+      self.compressed()
+    }
 
     //
     //  Returns true if the address is an unspecified address
     //
     //  See IPAddress::IPv6::Unspecified for more information
     //
-    pub fn unspecified?
-      @prefix == 128 and @compressed == "::"
-    end
+    pub fn unspecified(&self) {
+      self.prefix == 128 and self.compressed == "::"
+  }
 
     //
     //  Returns true if the address is a loopback address
     //
     //  See IPAddress::IPv6::Loopback for more information
     //
-    pub fn loopback?
-      @prefix == 128 and @compressed == "::1"
-    end
+    pub fn loopback(&self) {
+      self.prefix == 128 and self.compressed == "::1"
+  }
 
     //
     //  Returns true if the address is a mapped address
     //
     //  See IPAddress::IPv6::Mapped for more information
     //
-    pub fn mapped?
-      to_u128 >> 32 == 0xffff
-    end
+    pub fn mapped(&self) {
+      self.to_u128() >> 32 == 0xffff
+  }
 
     //
     //  Iterates over all the IP addresses for the given
@@ -456,11 +457,11 @@ module IPAddress;
     //  WARNING: if the host portion is very large, this method
     //  can be very slow and possibly hang your system!
     //
-    pub fn each
+    pub fn each(&self) {
       (network_u128..broadcast_u128).each do |i|
         yield self.class.parse_u128(i, @prefix)
       end
-    end
+    }
 
     //
     //  Iterates over all the IP Network for the given
@@ -482,7 +483,7 @@ module IPAddress;
     //
     //  There is a symantic problem i will now
     //  decide how network work in ipv6
-    pub fn four_bit_networks
+    pub fn four_bit_networks(&self) {
       step = network_u128
       next_four_bit_mask = ((@prefix.to_i+3)/4)*4
       return [network] if next_four_bit_mask <= 0
@@ -495,7 +496,7 @@ module IPAddress;
         step += step_four_bit_net
       end
       ret
-    end
+  }
 
     //
     //  Spaceship operator to compare IPv6 objects

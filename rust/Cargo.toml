@@ -1,7 +1,8 @@
 [package]
-name = "rust"
+name = "ipaddress"
 version = "0.1.0"
 authors = ["Meno Abels <meno.abels@adviser.com>"]
 
 [dependencies]
 num = "0.1.32"
+num-traits = "0.1.32"

@@ -1,24 +1,45 @@
 
-extern crate num;
+
 
 use num::bigint::BigInt;
 
+//#[derive(Ord,PartialOrd,Eq,PartialEq,Debug,Copy,Clone)]
+pub struct Prefix128 {
+}
 
-impl Prefix128 for Prefix {
-
-  IN6MASK = b"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"
+impl Prefix128 {
   //
   //  Creates a new prefix object for 128 bits IPv6 addresses
   //
   //    prefix = IPAddress::Prefix128.new 64
   //      // => 64
   //
-  pub fn new(num: u8)
-      if (0 <= num && num <= 128) {
-          return Ok(Prefix128 { prefix:  num })
+  pub fn new(num: u8) -> Result<::Prefix, String> {
+      if 0 <= num && num <= 128 {
+          static _from: &'static (Fn(&::Prefix, u8) -> Result<::Prefix, String>) = &Prefix128::from;
+          static _host_prefix: &'static (Fn(&::Prefix) -> u8) = &Prefix128::host_prefix;
+          static _bits: &'static (Fn(&::Prefix) -> String) = &Prefix128::bits;
+          static _to_ip_str: &'static (Fn(&::Prefix) -> String) = &Prefix128::to_ip_str;
+          static _to_number: &'static (Fn(&::Prefix) -> BigInt) = &Prefix128::to_number;
+          return Ok(::Prefix{
+              num: num,
+              vt_from: _from,
+              vt_host_prefix: _host_prefix,
+              vt_bits: _bits,
+              vt_to_ip_str: _to_ip_str,
+              vt_to_number: _to_number,
+          })
       }
       return Err(format!("Prefix must be in range 0..128, got: {}", num))
-  end
+  }
+
+  pub fn from(my: &::Prefix, num: u8) -> Result<::Prefix, String> {
+      return Prefix128::new(num)
+  }
+
+  pub fn to_ip_str(my: &::Prefix) -> String {
+      return String::from("fuckoff")
+  }
 
   //
   //  Transforms the prefix into a string of bits
@@ -30,8 +51,8 @@ impl Prefix128 for Prefix {
   //      // => "1111111111111111111111111111111111111111111111111111111111111111"
   //          "0000000000000000000000000000000000000000000000000000000000000000"
   //
-  pub fn bits(&self) {
-      self.to_u128().to_str_radix(2)
+  pub fn bits(my: &::Prefix) -> String {
+      return my.to_number().to_str_radix(2)
   }
 
   //
@@ -43,8 +64,9 @@ impl Prefix128 for Prefix {
   //    prefix.to_u128
   //      // => 340282366920938463444927863358058659840
   //
-  pub fn to_u128() {
-    return (BigInt::parse_bytes(IN6MASK, 16) >> self.host_prefix()) << self.host_prefix()
+  pub fn to_number(my: &::Prefix) -> BigInt {
+    return (BigInt::parse_bytes(::IN6MASK, 16).unwrap()
+        >> (my.host_prefix() as usize)) << (my.host_prefix() as usize)
   }
 
   //
@@ -54,9 +76,9 @@ impl Prefix128 for Prefix {
   //    prefix = Prefix128.new 96
   //
   //    prefix.host_prefix
-  //      // => 32
+  //      // => 128
   //
-  pub fn host_prefix(&self) {
-    return 128 - self.prefix
+  pub fn host_prefix(my: &::Prefix) -> u8 {
+    return 128 - my.num
   }
 }
