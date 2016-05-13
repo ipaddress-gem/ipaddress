@@ -12,8 +12,7 @@ install:
 
 script: 
     - rvm use ruby-2.0.0-p598 
-    - (cd ruby && ruby test/linux_ip_addr_test.rb)
-    - (cd ruby && ruby test/linux_ip_route_test.rb)
+    - (cd ruby && rake test)
     - (cd rust && cargo build --verbose)
     - (cd rust && cargo test --verbose)
 
