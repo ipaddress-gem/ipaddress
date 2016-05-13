@@ -1,13 +1,18 @@
 extern crate ipaddress;
 extern crate num;
+extern crate num_traits;
+
 
 
 #[cfg(test)]
 mod tests {
     use ipaddress::Prefix32;
     use std::collections::HashMap;
-    use num::bigint::BigInt;
+    //use num::bigint::BigUint;
+    use num_traits::cast::ToPrimitive;
 
+
+    #[allow(dead_code)]
     struct Prefix32Test {
         netmask0: String,
         netmask8: String,
@@ -16,11 +21,12 @@ mod tests {
         netmask30: String,
         netmasks: Vec<String>,
         prefix_hash: HashMap<String, u8>,
-        octets_hash: HashMap<Vec<u8>, u8>,
+        octets_hash: HashMap<Vec<u16>, u8>,
         u32_hash: HashMap<u8, u32>,
     }
 
     impl Prefix32Test {
+        #[allow(dead_code)]
         pub fn setup() -> Prefix32Test {
             let mut p32t = Prefix32Test {
                 netmask0: String::from("0.0.0.0"),
@@ -33,11 +39,11 @@ mod tests {
                 octets_hash: HashMap::new(),
                 u32_hash: HashMap::new(),
             };
-            p32t.netmasks.push(p32t.netmask0);
-            p32t.netmasks.push(p32t.netmask8);
-            p32t.netmasks.push(p32t.netmask16);
-            p32t.netmasks.push(p32t.netmask24);
-            p32t.netmasks.push(p32t.netmask30);
+            p32t.netmasks.push(p32t.netmask0.clone());
+            p32t.netmasks.push(p32t.netmask8.clone());
+            p32t.netmasks.push(p32t.netmask16.clone());
+            p32t.netmasks.push(p32t.netmask24.clone());
+            p32t.netmasks.push(p32t.netmask30.clone());
             p32t.prefix_hash.insert(String::from("0.0.0.0"), 0);
             p32t.prefix_hash.insert(String::from("255.0.0.0"), 8);
             p32t.prefix_hash.insert(String::from("255.255.0.0"), 16);
@@ -56,96 +62,109 @@ mod tests {
             return p32t;
         }
 
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_attributes() {
             for num in Prefix32Test::setup().prefix_hash.values() {
-                let prefix = Prefix32::new(num);
-                assert_eq!(num, prefix.num)
+                let prefix = Prefix32::new(*num).unwrap();
+                assert_eq!(*num, prefix.num)
             }
         }
 
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_parse_netmask() {
             for (netmask, num) in Prefix32Test::setup().prefix_hash {
-                let prefix = Prefix32::parse_netmask(netmask);
-                assert_eq!(num, prefix.prefix);
-                match *prefix {
-                    Prefix32 => {}
-                    _ => assert!(false),
-                }
+                let prefix = Prefix32::parse_netmask(netmask).unwrap();
+                assert_eq!(num, prefix.num);
             }
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_to_ip() {
             for (netmask, num) in Prefix32Test::setup().prefix_hash {
-                let prefix = Prefix32::new(num);
-                assert_eq!(netmask, prefix.to_ip())
+                let prefix = Prefix32::new(num).unwrap();
+                assert_eq!(*netmask, prefix.to_ip_str())
             }
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_to_s() {
-            let prefix = Prefix32::new(8);
+            let prefix = Prefix32::new(8).unwrap();
             assert_eq!("8", prefix.to_s())
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_bits() {
-            let prefix = Prefix32::new(16);
+            let prefix = Prefix32::new(16).unwrap();
             assert_eq!("11111111111111110000000000000000", prefix.bits())
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_to_u32() {
             for (num, ip32) in Prefix32Test::setup().u32_hash {
-                assert_eq!(ip32, Prefix32::new(num).to_u32())
+                assert_eq!(ip32, Prefix32::new(num).unwrap().net_mask().to_u32().unwrap())
             }
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_plus() {
-            let p1 = Prefix32::new(8);
-            let p2 = Prefix32::new(10);
-            assert_eq!(18, p1 + p2);
-            assert_eq!(12, p1 + 4)
+            let p1 = Prefix32::new(8).unwrap();
+            let p2 = Prefix32::new(10).unwrap();
+            assert_eq!(18, p1.add_prefix(&p2).unwrap().num);
+            assert_eq!(12, p1.add_u8(4).unwrap().num)
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_minus() {
-            let p1 = Prefix32::new(8);
-            let p2 = Prefix32::new(24);
-            assert_eq!(16, p1 - p2);
-            assert_eq!(16, p2 - p1);
-            assert_eq!(20, p2 - 4);
+            let p1 = Prefix32::new(8).unwrap();
+            let p2 = Prefix32::new(24).unwrap();
+            assert_eq!(16, p1.sub_prefix(&p2).unwrap().num);
+            assert_eq!(16, p2.sub_prefix(&p1).unwrap().num);
+            assert_eq!(20, p2.sub_u8(4).unwrap().num);
         }
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_initialize() {
-            assert!(Prefix32::new(33).is());
-            assert!(!Prefix32::new(8).is());
-            match *Prefix32::new(8) {
-                Prefix32 => {}
-                _ => assert!(false),
-            }
+            assert!(Prefix32::new(33).is_err());
+            assert!(Prefix32::new(8).is_ok());
         }
-
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_octets() {
             for (arr, pref) in Prefix32Test::setup().octets_hash {
-                let prefix = Prefix32::new(pref);
-                assert_eq!(prefix.octets, arr);
+                let prefix = Prefix32::new(pref).unwrap();
+                assert_eq!(prefix.ip_parts(&prefix.net_mask()), arr);
             }
         }
-
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_brackets() {
             for (arr, pref) in Prefix32Test::setup().octets_hash {
-                let prefix = Prefix32::new(pref);
-                for index in (0..arr.len()) {
+                let prefix = Prefix32::new(pref).unwrap();
+                for index in 0..arr.len() {
                     let oct = arr.get(index);
-                    assert_eq!(prefix.get(index), oct)
+                    assert_eq!(prefix.ip_parts(&prefix.net_mask()).get(index), oct)
                 }
             }
         }
-
+        #[allow(dead_code)]
+        #[allow(unused_attributes)]
         #[test]
         pub fn test_method_hostmask() {
-            let prefix = Prefix32::new(8);
-            assert_eq!("0.255.255.255", prefix.hostmask())
+            let prefix = Prefix32::new(8).unwrap();
+            assert_eq!("0.255.255.255", prefix.host_mask_str())
         }
     }
 }

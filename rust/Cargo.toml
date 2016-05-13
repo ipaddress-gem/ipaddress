@@ -6,3 +6,4 @@ authors = ["Meno Abels <meno.abels@adviser.com>"]
 [dependencies]
 num = "0.1.32"
 num-traits = "0.1.32"
+num-integer = "0.1.32"

@@ -1,16 +1,12 @@
 extern crate num;
 extern crate num_traits;
+extern crate num_integer;
 
-pub fn to_ipv4_str(value: u32) -> String {
-  return format!("{}.{}.{}.{}",
-      (value >> 24) & 0xff,
-      (value >> 16) & 0xff,
-      (value >> 8) & 0xff,
-       value & 0xff)
-}
+// use num::bigint::BigUint;
 
-const IN4MASK:  &'static [u8; 8] = b"FFFFFFFF";
-const IN6MASK : &'static [u8; 32] = b"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
+
+// const IN4MASK:  &'static [u8; 8] = b"FFFFFFFF";
+// const IN6MASK : &'static [u8; 32] = b"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF";
 
 
 mod prefix;
