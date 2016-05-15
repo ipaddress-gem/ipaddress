@@ -64,3 +64,5 @@ task :todo do
   end
   egrep /(FIXME|TODO|TBD)/
 end
+
+Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |raketask| load raketask }
