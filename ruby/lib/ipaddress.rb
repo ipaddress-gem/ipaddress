@@ -14,6 +14,7 @@
 
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
+require 'rbtree'
 
 module IPAddress
 
@@ -155,6 +156,68 @@ module IPAddress
   # assumes that networks is output from reduce_networks
   # means it should be sorted lowers first and uniq
   #
+
+  def self.remove_enclosed_network(filter, network)
+    while true
+      next_network = filter.lower_bound(network.to_i)
+      break if next_network.nil?
+      break if !network.include?(next_network.last)
+      filter.delete(next_network.first)
+    end
+  end
+
+  def self.is_there_a_outer_network(filter, network)
+    outer = filter.upper_bound(network.to_i)
+    return outer && outer.last.include?(network)
+  end
+
+  def self.is_outer_prefix_network_complete?(filter, network)
+    return nil if network.prefix < 1
+    outer = network.network
+    outer.prefix -= 1
+    outer_net = outer.network
+    #puts "outer #{outer.to_string} #{network.to_string} #{filter.values.map{|i| i.to_string}}"
+    if outer_net.to_i == network.to_i
+      found_upper = filter[outer_net.to_i+network.size]
+      #puts "found_upper #{found_upper.to_s} #{network.to_string}"
+      if found_upper && found_upper.prefix.to_i == network.prefix.to_i
+        #puts "found_upper #{outer_net.to_string} #{network.to_string}"
+        return outer_net
+      end
+    else
+      found_lower = filter[outer_net.to_i]
+      #puts "found_lower #{found_lower.to_s} #{network.to_string}"
+      if found_lower && found_lower.prefix.to_i == network.prefix.to_i
+        #puts "found_lower #{outer_net.to_string} #{network.to_string}"
+        return outer_net
+      end
+    end
+    nil
+  end
+
+  def self._aggregate(networks)
+    filter = RBTree.new
+    networks.each do |addr|
+      next if addr.nil?
+      network = addr.network
+      remove_enclosed_network(filter, network)
+      if !is_there_a_outer_network(filter, network)
+        outer = nil
+        while true
+          #puts "#{outer ? outer.to_string : "*"} #{network.to_string}"
+          outer = is_outer_prefix_network_complete?(filter, network)
+          if outer.nil?
+            filter[network.to_i] = network
+            break
+          end
+          remove_enclosed_network(filter, outer)
+          network = outer
+        end
+      end
+    end
+    filter.values
+  end
+
   def self.aggregate(networks)
     stack = networks.map{|i| i.network }.sort! # make input imutable
     pos = 0
@@ -188,6 +251,9 @@ module IPAddress
     end
     stack[0..pos-1]
   end
+
+
+
 
   #
   # Summarization (or aggregation) is the process when two or more
@@ -303,4 +369,3 @@ if RUBY_VERSION =~ /1\.8/
     end
   end
 end
-
