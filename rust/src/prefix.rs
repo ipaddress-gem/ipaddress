@@ -7,10 +7,10 @@ use num_integer::Integer;
 use num_traits::cast::ToPrimitive;
 use num_traits::cast::FromPrimitive;
 
+
 pub struct Prefix {
     pub num: u8,
-    pub ip_bits: u8,
-    pub ip_part_bits: u8,
+    pub ip_bits: ::ip_bits::IpBits,
     pub in_mask: BigUint,
     pub vt_from: &'static (Fn(&Prefix, u8) -> Result<Prefix, String>),
     pub vt_to_ip_str: &'static (Fn(&Vec<u16>) -> String)
@@ -24,21 +24,13 @@ impl Prefix {
 
     #[allow(dead_code)]
     pub fn to_ip_str(&self) -> String {
-        return (self.vt_to_ip_str)(&self.ip_parts(&self.net_mask()))
+        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.net_mask()))
     }
 
-    #[allow(unused_variables)]
-    pub fn ip_parts(&self, bu: &BigUint) -> Vec<u16> {
-        let mut vec: Vec<u16> = Vec::new();
-        let mut my = bu.clone();
-        let part_mod = BigUint::from_u32(1 << self.ip_part_bits).unwrap();
-        for i in 0..(self.ip_bits/self.ip_part_bits) {
-            vec.push(my.mod_floor(&part_mod).to_u16().unwrap());
-            my = my >> (self.ip_part_bits as usize);
-        }
-        vec.reverse();
-        return vec
+    pub fn size(&self) -> BigUint {
+      return BigUint::one() << (self.ip_bits.bits-self.num)
     }
+
 
     #[allow(dead_code)]
     #[allow(unused_variables)]
@@ -72,7 +64,7 @@ impl Prefix {
 
     #[allow(dead_code)]
     pub fn host_mask_str(&self) -> String {
-        return (self.vt_to_ip_str)(&self.ip_parts(&self.host_mask()))
+        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.host_mask()))
     }
 
 
@@ -88,7 +80,7 @@ impl Prefix {
     //
     #[allow(dead_code)]
     pub fn host_prefix(&self) -> u8 {
-        return self.ip_bits - self.num;
+        return (self.ip_bits.bits as u8) - self.num;
     }
 
     //

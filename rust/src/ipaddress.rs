@@ -1,235 +1,1211 @@
-impl IPAddress {
 
-  //
-  // Parse the argument string to create a new
-  // IPv4, IPv6 or Mapped IP object
-  //
-  //   ip  = IPAddress.parse "172.16.10.1/24"
-  //   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
-  //   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
-  //
-  // All the object created will be instances of the
-  // correct class:
-  //
-  //  ip.class
-  //    //=> IPAddress::IPv4
-  //  ip6.class
-  //    //=> IPAddress::IPv6
-  //  ip_mapped.class
-  //    //=> IPAddress::IPv6::Mapped
-  //
-  pub fn parse(str:: String) {
-    case str
-    when /:.+\./
-      IPAddress::IPv6::Mapped.new(str)
-    when /\./
-      IPAddress::IPv4.new(str)
-    when /:/
-      IPAddress::IPv6.new(str)
-    else
-      raise ArgumentError, "Unknown IP Address //{str}"
-    end
-  }
-
-  //
-  // True if the object is an IPv4 address
-  //
-  //   ip = IPAddress("192.168.10.100/24")
-  //
-  //   ip.ipv4?
-  //     //-> true
-  //
-  pub fn is_ipv4(&self) {
-    self.kind_of? IPAddress::IPv4
-  }
-
-  //
-  // True if the object is an IPv6 address
-  //
-  //   ip = IPAddress("192.168.10.100/24")
-  //
-  //   ip.ipv6?
-  //     //-> false
-  //
-  pub fn is_ipv6(&self) {
-    self.kind_of? IPAddress::IPv6
-  }
-
-  //
-  // Checks if the given string is a valid IP address,
-  // either IPv4 or IPv6
-  //
-  // Example:
-  //
-  //   IPAddress::valid? "2002::1"
-  //     //=> true
-  //
-  //   IPAddress::valid? "10.0.0.256"
-  //     //=> false
-  //
-  pub fn is_valid(addr: String) {
-    valid_ipv4?(addr) || valid_ipv6?(addr)
-  }
-
-  //
-  // Checks if the given string is a valid IPv4 address
-  //
-  // Example:
-  //
-  //   IPAddress::valid_ipv4? "2002::1"
-  //     //=> false
-  //
-  //   IPAddress::valid_ipv4? "172.16.10.1"
-  //     //=> true
-  //
-  pub fn valid_ipv4(addr: String) {
-    if /\A(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\Z/ =~ addr
-      return $~.captures.all? {|i| i.to_i < 256}
-    end
-    false
-  }
-
-  //
-  // Checks if the argument is a valid IPv4 netmask
-  // expressed in dotted decimal format.
-  //
-  //   IPAddress.valid_ipv4_netmask? "255.255.0.0"
-  //     //=> true
-  //
-  pub fn valid_ipv4_netmask(addr: String) {
-    arr = addr.split(".").map{|i| i.to_i}.pack("CCCC").unpack("B*").first.scan(/01/)
-    arr.empty? && valid_ipv4?(addr)
-  rescue
-    return false
-  }
-
-  //
-  // Checks if the given string is a valid IPv6 address
-  //
-  // Example:
-  //
-  //   IPAddress::valid_ipv6? "2002::1"
-  //     //=> true
-  //
-  //   IPAddress::valid_ipv6? "2002::DEAD::BEEF"
-  //     //=> false
-  //
-  pub fn valid_ipv6(addr: String) {
-    // https://gist.github.com/cpetschnig/294476
-    // http://forums.intermapper.com/viewtopic.php?t=452
-    return true if /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/ =~ addr
-    false
-  }
+use num::bigint::BigUint;
+use ip_bits::IpBits;
+use prefix::Prefix;
+// use ::prefix32::Prefix32;
+use regex::Regex;
+use std::f64;
 
 
-  //
-  // private helper for summarize
-  // assumes that networks is output from reduce_networks
-  // means it should be sorted lowers first and uniq
-  //
-  pub fn aggregate(networks: &[]) {
-    stack = networks.map{|i| i.network }.sort! // make input imutable
-    pos = 0
-    while true
-      pos = pos < 0 ? 0 : pos // start @beginning
-      first = stack[pos]
-      unless first
-        break
-      end
-      pos += 1
-      second = stack[pos]
-      unless second
-        break
-      end
-      pos += 1
-      if first.include?(second)
-        pos -= 2
-        stack.delete_at(pos+1)
-      else
-        first.prefix -= 1
-        if first.prefix+1 == second.prefix && first.include?(second)
-          pos -= 2
-          stack[pos] = first
-          stack.delete_at(pos+1)
-          pos -= 1 // backtrack
-        else
-          first.prefix += 1 //reset prefix
-          pos -= 1 // do it with second as first
-        end
-      end
-    end
-    stack[0..pos-1]
+struct IPAddress {
+
+    pub ip_net_to_host_ofs: usize, // ipv4=1, ipv6=0
+    pub ip_bits: &'static IpBits,
+    pub host_address: BigUint,
+    pub prefix: Prefix,
+    pub mapped: Option<Box<IPAddress>>,
 }
 
-  //
-  // Summarization (or aggregation) is the process when two or more
-  // networks are taken together to check if a supernet, including all
-  // and only these networks, exists. If it exists then this supernet
-  // is called the summarized (or aggregated) network.
-  //
-  // It is very important to understand that summarization can only
-  // occur if there are no holes in the aggregated network, or, in other
-  // words, if the given networks fill completely the address space
-  // of the supernet. So the two rules are:
-  //
-  // 1) The aggregate network must contain +all+ the IP addresses of the
-  //    original networks;
-  // 2) The aggregate network must contain +only+ the IP addresses of the
-  //    original networks;
-  //
-  // A few examples will help clarify the above. Let's consider for
-  // instance the following two networks:
-  //
-  //   ip1 = IPAddress("172.16.10.0/24")
-  //   ip2 = IPAddress("172.16.11.0/24")
-  //
-  // These two networks can be expressed using only one IP address
-  // network if we change the prefix. Let Ruby do the work:
-  //
-  //   IPAddress::IPv4::summarize(ip1,ip2).to_s
-  //     //=> "172.16.10.0/23"
-  //
-  // We note how the network "172.16.10.0/23" includes all the addresses
-  // specified in the above networks, and (more important) includes
-  // ONLY those addresses.
-  //
-  // If we summarized +ip1+ and +ip2+ with the following network:
-  //
-  //   "172.16.0.0/16"
-  //
-  // we would have satisfied rule //1 above, but not rule //2. So "172.16.0.0/16"
-  // is not an aggregate network for +ip1+ and +ip2+.
-  //
-  // If it's not possible to compute a single aggregated network for all the
-  // original networks, the method returns an array with all the aggregate
-  // networks found. For example, the following four networks can be
-  // aggregated in a single /22:
-  //
-  //   ip1 = IPAddress("10.0.0.1/24")
-  //   ip2 = IPAddress("10.0.1.1/24")
-  //   ip3 = IPAddress("10.0.2.1/24")
-  //   ip4 = IPAddress("10.0.3.1/24")
-  //
-  //   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_string
-  //     //=> "10.0.0.0/22",
-  //
-  // But the following networks can't be summarized in a single network:
-  //
-  //   ip1 = IPAddress("10.0.1.1/24")
-  //   ip2 = IPAddress("10.0.2.1/24")
-  //   ip3 = IPAddress("10.0.3.1/24")
-  //   ip4 = IPAddress("10.0.4.1/24")
-  //
-  //   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
-  //     //=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
-  //
-  pub fn summarize(networks: []) {
-    aggregate(networks.map{|i| ((i.kind_of?(String)&&IPAddress.parse(i))||i) })
-  }
+impl IPAddress {
+    // Parse the argument string to create a new
+    // IPv4, IPv6 or Mapped IP object
+    //
+    //   ip  = IPAddress.parse "172.16.10.1/24"
+    //   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
+    //   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
+    //
+    // All the object created will be instances of the
+    // correct class:
+    //
+    //  ip.class
+    //    //=> IPAddress::IPv4
+    //  ip6.class
+    //    //=> IPAddress::IPv6
+    //  ip_mapped.class
+    //    //=> IPAddress::IPv6::Mapped
+    //
+    pub fn parse(str: &String) -> Result<IPAddress, String> {
+        let re_mapped = Regex::new(r":.+\.").unwrap();
+        let re_ipv4 = Regex::new(r"\.").unwrap();
+        let re_ipv6 = Regex::new(r":").unwrap();
+        if re_mapped.match(str) {
+            return Ok(IPAddress::IPv6::Mapped::new(str));
+        } else {
+            if re_ipv4.match(str) {
+                return Ok(IPAddress::IPv4::new(str));
+            } else if re_ipv6.match(str) {
+                return Ok(IPAddress::IPv6::new(str));
+            }
+        }
+        return Err(format!("Unknown IP Address {}", str));
+    }
 
-} // module IPAddress
+    pub fn split_at_slash(str: &String) -> (String, Option<String>) {
+        let _slash = str.trim().split("/");
+        let mut addr = String::new();
+        if _slash.get(0).is_some() {
+            addr = _slash.get(0).unwrap().trim();
+        }
+        if _slash.get(1).is_some() {
+            return (addr, Some(_slash.get(1).unwrap()));
+        } else {
+            return (addr, None);
+        }
+    }
 
-//
+    // True if the object is an IPv4 address
+    //
+    //   ip = IPAddress("192.168.10.100/24")
+    //
+    //   ip.ipv4?
+    //     //-> true
+    //
+    // pub fn is_ipv4(&self) {
+    //     return self.is_ipv4
+    //   self.kind_of? IPAddress::IPv4
+    // }
+
+    // True if the object is an IPv6 address
+    //
+    //   ip = IPAddress("192.168.10.100/24")
+    //
+    //   ip.ipv6?
+    //     //-> false
+    //
+    // pub fn is_ipv6(&self) {
+    //   self.kind_of? IPAddress::IPv6
+    // }
+
+    // Checks if the given string is a valid IP address,
+    // either IPv4 or IPv6
+    //
+    // Example:
+    //
+    //   IPAddress::valid? "2002::1"
+    //     //=> true
+    //
+    //   IPAddress::valid? "10.0.0.256"
+    //     //=> false
+    //
+    pub fn is_valid(addr: &String) -> bool {
+        IPAddress::is_valid_ipv4(addr) || IPAddress::is_valid_ipv6(addr)
+    }
+
+
+
+    // Checks if the given string is a valid IPv4 address
+    //
+    // Example:
+    //
+    //   IPAddress::valid_ipv4? "2002::1"
+    //     //=> false
+    //
+    //   IPAddress::valid_ipv4? "172.16.10.1"
+    //     //=> true
+    //
+    fn split_to_u32(addr: &String) -> Result<u32, String> {
+        let mut ip = 0;
+        let mut shift = 24;
+        for i in addr.split(".") {
+            let part = i.parse::<u32>();
+            if part.is_err() {
+                return Err(format!("IP must contain numbers {} ", addr));
+            }
+            if part.unwrap() >= 256 {
+                return Err(format!("IP items has to lower than 256. {} ", addr));
+            }
+            ip = ip | (part.unwrap() << shift);
+            shift -= 8;
+        }
+        return Ok(ip);
+    }
+    pub fn is_valid_ipv4(addr: &String) -> bool {
+        return IPAddress::split_to_u32(addr).is_ok();
+    }
+
+    // Checks if the argument is a valid IPv4 netmask
+    // expressed in dotted decimal format.
+    //
+    //   IPAddress.valid_ipv4_netmask? "255.255.0.0"
+    //     //=> true
+    //
+    pub fn valid_ipv4_netmask(addr: &String) {
+        return ::prefix32::parse_netmask(addr).is_some();
+    }
+
+    // Checks if the given string is a valid IPv6 address
+    //
+    // Example:
+    //
+    //   IPAddress::valid_ipv6? "2002::1"
+    //     //=> true
+    //
+    //   IPAddress::valid_ipv6? "2002::DEAD::BEEF"
+    //     //=> false
+    //
+    fn split_on_colon(addr: &String) -> (Result<BigUint, String>, usize) {
+        let parts = addr.split(":").collect();
+        let mut ip = BigUint::zero();
+        if parts.len() == 0 {
+            return (Ok(ip), 0);
+        }
+        let mut shift = (parts - 1) * 16;
+        for i in parts {
+            let part = u64::from_str_radix(i, 16);
+            if part.is_err() {
+                return (Err(format!("IP must contain hex numbers {}", addr)), 0);
+            }
+            if part.unwrap() >= 65536 {
+                return (Err(format!("IP items has to lower than 65536. {}", addr)), 0);
+            }
+            ip = ip + (part.unwrap() << shift);
+            shift -= 16;
+        }
+        return (Ok(ip), parts.len());
+    }
+    fn split_to_num(addr: &String) -> Result<BigUint, String> {
+        let mut ip = 0;
+        let pre_post = addr.trim().split("::").collect();
+        if pre_post.len() > 2 {
+            return Err(format!("IPv6 only allow one :: {}", addr));
+        }
+        if pre_post.len() != 0 {
+            let (pre, pre_parts) = IPAddress::split_on_colon(&pre_post.get(0).unwrap());
+            if pre.is_err() {
+                return pre;
+            }
+            let (post, post_parts) = IPAddress::split_on_colon(&pre_post.get(1).unwrap());
+            if post.is_err() {
+                return post;
+            }
+            return Ok((pre.unwrap() << ((128 - (pre_parts * 16) - (post_parts * 16)))) +
+                      post.unwrap());
+        }
+        let (ret, parts) = IPAddress::split_on_colon(addr);
+        return ret;
+    }
+
+
+    pub fn is_valid_ipv6(addr: &String) {
+        return IPAddress::split_to_num(addr).is_ok();
+    }
+
+
+    // private helper for summarize
+    // assumes that networks is output from reduce_networks
+    // means it should be sorted lowers first and uniq
+    //
+    pub fn aggregate(networks: &[IPAddress]) {
+        let mut stack = networks.map(|i| i.network()).sort_by(|a, b| a.cmp(b));
+        let mut pos = 0;
+        loop {
+            if pos < 0 {
+                pos = 0;
+            } // start @beginning
+            let mut first = stack.get(pos);
+            if !first {
+                break;
+            }
+            pos = pos + 1;
+            let second = stack.get(pos);
+            if second.is_none() {
+                break;
+            }
+            pos = pos + 1;
+            if first.includes(second) {
+                pos = pos - 2;
+                stack.remove(pos + 1);
+            } else {
+                first.prefix = first.prefix.sub_prefix(1);
+                if first.prefix.add_prefix(1).cmp(second.prefix) && first.includes(second) {
+                    pos = pos - 2;
+                    stack.get_mut(pos) = first; // kaputt
+                    stack.remove(pos + 1);
+                    pos = pos - 1; // backtrack
+                } else {
+                    first.prefix = first.prefix.from(1); //reset prefix
+                    pos = pos - 1; // do it with second as first
+                }
+            }
+        }
+        let mut ret = Vec::new();
+        for i in 0..pos - 1 {
+            ret.push(stack.get(i));
+        }
+        return ret;
+    }
+
+    // Summarization (or aggregation) is the process when two or more
+    // networks are taken together to check if a supernet, including all
+    // and only these networks, exists. If it exists then this supernet
+    // is called the summarized (or aggregated) network.
+    //
+    // It is very important to understand that summarization can only
+    // occur if there are no holes in the aggregated network, or, in other
+    // words, if the given networks fill completely the address space
+    // of the supernet. So the two rules are:
+    //
+    // 1) The aggregate network must contain +all+ the IP addresses of the
+    //    original networks;
+    // 2) The aggregate network must contain +only+ the IP addresses of the
+    //    original networks;
+    //
+    // A few examples will help clarify the above. Let's consider for
+    // instance the following two networks:
+    //
+    //   ip1 = IPAddress("172.16.10.0/24")
+    //   ip2 = IPAddress("172.16.11.0/24")
+    //
+    // These two networks can be expressed using only one IP address
+    // network if we change the prefix. Let Ruby do the work:
+    //
+    //   IPAddress::IPv4::summarize(ip1,ip2).to_s
+    //     //=> "172.16.10.0/23"
+    //
+    // We note how the network "172.16.10.0/23" includes all the addresses
+    // specified in the above networks, and (more important) includes
+    // ONLY those addresses.
+    //
+    // If we summarized +ip1+ and +ip2+ with the following network:
+    //
+    //   "172.16.0.0/16"
+    //
+    // we would have satisfied rule //1 above, but not rule //2. So "172.16.0.0/16"
+    // is not an aggregate network for +ip1+ and +ip2+.
+    //
+    // If it's not possible to compute a single aggregated network for all the
+    // original networks, the method returns an array with all the aggregate
+    // networks found. For example, the following four networks can be
+    // aggregated in a single /22:
+    //
+    //   ip1 = IPAddress("10.0.0.1/24")
+    //   ip2 = IPAddress("10.0.1.1/24")
+    //   ip3 = IPAddress("10.0.2.1/24")
+    //   ip4 = IPAddress("10.0.3.1/24")
+    //
+    //   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_string
+    //     //=> "10.0.0.0/22",
+    //
+    // But the following networks can't be summarized in a single network:
+    //
+    //   ip1 = IPAddress("10.0.1.1/24")
+    //   ip2 = IPAddress("10.0.2.1/24")
+    //   ip3 = IPAddress("10.0.3.1/24")
+    //   ip4 = IPAddress("10.0.4.1/24")
+    //
+    //   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //     //=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
+    //
+    //
+    //  Summarization (or aggregation) is the process when two or more
+    //  networks are taken together to check if a supernet, including all
+    //  and only these networks, exists. If it exists then this supernet
+    //  is called the summarized (or aggregated) network.
+    //
+    //  It is very important to understand that summarization can only
+    //  occur if there are no holes in the aggregated network, or, in other
+    //  words, if the given networks fill completely the address space
+    //  of the supernet. So the two rules are:
+    //
+    //  1) The aggregate network must contain +all+ the IP addresses of the
+    //     original networks;
+    //  2) The aggregate network must contain +only+ the IP addresses of the
+    //     original networks;
+    //
+    //  A few examples will help clarify the above. Let's consider for
+    //  instance the following two networks:
+    //
+    //    ip1 = IPAddress("2000:0::4/32")
+    //    ip2 = IPAddress("2000:1::6/32")
+    //
+    //  These two networks can be expressed using only one IP address
+    //  network if we change the prefix. Let Ruby do the work:
+    //
+    //    IPAddress::IPv6::summarize(ip1,ip2).to_s
+    //      // => "2000:0::/31"
+    //
+    //  We note how the network "2000:0::/31" includes all the addresses
+    //  specified in the above networks, and (more important) includes
+    //  ONLY those addresses.
+    //
+    //  If we summarized +ip1+ and +ip2+ with the following network:
+    //
+    //    "2000::/16"
+    //
+    //  we would have satisfied rule // 1 above, but not rule // 2. So "2000::/16"
+    //  is not an aggregate network for +ip1+ and +ip2+.
+    //
+    //  If it's not possible to compute a single aggregated network for all the
+    //  original networks, the method returns an array with all the aggregate
+    //  networks found. For example, the following four networks can be
+    //  aggregated in a single /22:
+    //
+    //    ip1 = IPAddress("2000:0::/32")
+    //    ip2 = IPAddress("2000:1::/32")
+    //    ip3 = IPAddress("2000:2::/32")
+    //    ip4 = IPAddress("2000:3::/32")
+    //
+    //    IPAddress::IPv6::summarize(ip1,ip2,ip3,ip4).to_string
+    //      // => ""2000:3::/30",
+    //
+    //  But the following networks can't be summarized in a single network:
+    //
+    //    ip1 = IPAddress("2000:1::/32")
+    //    ip2 = IPAddress("2000:2::/32")
+    //    ip3 = IPAddress("2000:3::/32")
+    //    ip4 = IPAddress("2000:4::/32")
+    //
+    //    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //      // => ["2000:1::/32","2000:2::/31","2000:4::/32"]
+    //
+    pub fn summarize(networks: &Vec<IPAddress>) -> Vec<IPAddress> {
+        return IPAddress::aggregate(networks);
+    }
+
+
+    pub fn ip_same_kind(&self, oth: &IPAddress) {
+        return self.ipv4 == oth.ipv4 && self.ipv6 == oth.ipv6;
+    }
+
+
+    //  Returns true if the address is an unspecified address
+    //
+    //  See IPAddress::IPv6::Unspecified for more information
+    //
+    pub fn unspecified(&self) -> bool {
+        return self.host_address.cmp(BigUint::zero());
+    }
+
+    //  Returns true if the address is a loopback address
+    //
+    //  See IPAddress::IPv6::Loopback for more information
+    //
+    pub fn loopback(&self) -> bool {
+        return self.host_address.cmp(BigUint::one());
+    }
+
+    //  Returns true if the address is a mapped address
+    //
+    //  See IPAddress::IPv6::Mapped for more information
+    //
+    pub fn mapped(&self) -> bool {
+        return self.mapped.is_some() && (self.host_address >> 32).cmp((BigUint::one() << 1) - 1);
+    }
+
+    // //
+    // //  Returns the address portion of the IPv4 object
+    // //  as a string.
+    // //
+    // //    ip = IPAddress("172.16.100.4/22")
+    // //
+    // //    ip.address
+    // //      // => "172.16.100.4"
+    // //
+    // pub fn address(&self) -> String {
+    //   return (self.to_ip_str)(&self.host_address)
+    // }
+
+    //  Returns a string with the address portion of
+    //  the IPv4 object
+    //
+    //    ip = IPAddress("172.16.100.4/22")
+    //
+    //    ip.to_s
+    //      // => "172.16.100.4"
+    //
+    // pub fn to_s(&self) -> String {
+    //   return self.address()
+    // }
+    // pub fn compressed(&self) -> String {
+    //   return (self.to_ip_str_compressed)(&self.host_address)
+    // }
+
+    //  Returns the prefix portion of the IPv4 object
+    //  as a IPAddress::Prefix32 object
+    //
+    //    ip = IPAddress("172.16.100.4/22")
+    //
+    //    ip.prefix
+    //      // => 22
+    //
+    //    ip.prefix.class
+    //      // => IPAddress::Prefix32
+    //
+    pub fn prefix(&self) -> Prefix {
+        return self.prefix;
+    }
+
+    //  Set a new prefix number for the object
+    //
+    //  This is useful if you want to change the prefix
+    //  to an object created with IPv4::parse_u32 or
+    //  if the object was created using the classful
+    //  mask.
+    //
+    //    ip = IPAddress("172.16.100.4")
+    //
+    //    puts ip
+    //      // => 172.16.100.4/16
+    //
+    //    ip.prefix = 22
+    //
+    //    puts ip
+    //      // => 172.16.100.4/22
+    //
+    // pub fn set_prefix(&mut self, num: u8) -> Prefix {
+    //     self.prefix = Prefix32::new(num);
+    //     return self.prefix;
+    // }
+
+    // //
+    // //  Returns the address as an array of decimal values
+    // //
+    // //    ip = IPAddress("172.16.100.4")
+    // //
+    // //    ip.octets
+    // //      // => [172, 16, 100, 4]
+    // //
+    // pub fn octets(&self) {
+    //   self.octets
+    // }
+
+
+    //  Returns a string with the IP address in canonical
+    //  form.
+    //
+    //    ip = IPAddress("172.16.100.4/22")
+    //
+    //    ip.to_string
+    //      // => "172.16.100.4/22"
+    //
+    pub fn to_string(&self) -> String {
+        return format!("{}/{}", self.compressed(), self.prefix.to_s());
+    }
+
+    //  Returns the prefix as a string in IP format
+    //
+    //    ip = IPAddress("172.16.100.4/22")
+    //
+    //    ip.netmask
+    //      // => "255.255.252.0"
+    //
+    // pub fn netmask(&self) -> String {
+    //   return (self.to_ip_str_compressed)(&self.prefix.net_mask())
+    // }
+
+    //  Like IPv4// prefix=, this method allow you to
+    //  change the prefix / netmask of an IP address
+    //  object.
+    //
+    //    ip = IPAddress("172.16.100.4")
+    //
+    //    puts ip
+    //      // => 172.16.100.4/16
+    //
+    //    ip.netmask = "255.255.252.0"
+    //
+    //    puts ip
+    //      // => 172.16.100.4/22
+    //
+    // pub fn set_netmask(&self, addr: &String) {
+    //     self.prefix = Prefix::parse_netmask(addr)
+    // }
+
+    //  Returns the address portion in unsigned
+    //  32 bits integer format.
+    //
+    //  This method is identical to the C function
+    //  inet_pton to create a 32 bits address family
+    //  structure.
+    //
+    //    ip = IPAddress("10.0.0.0/8")
+    //
+    //    ip.to_i
+    //      // => 167772160
+    //
+    // pub fn to_i() -> BigUint {
+    //   return self.host_address
+    // }
+    // //
+    //  Returns the address portion of an IPv4 object
+    //  in a network byte order format.
+    //
+    //    ip = IPAddress("172.16.10.1/24")
+    //
+    //    ip.data
+    //      // => "\254\020\n\001"
+    //
+    //  It is usually used to include an IP address
+    //  in a data packet to be sent over a socket
+    //
+    //    a = Socket.open(params) //  socket details here
+    //    ip = IPAddress("10.1.1.0/24")
+    //    binary_data = ["Address: "].pack("a*") + ip.data
+    //
+    //    //  Send binary data
+    //    a.puts binary_data
+    //
+    // pub fn data(&self) {
+    //   self.ip32
+    // }
+
+    //  Returns the octet specified by index
+    //
+    //    ip = IPAddress("172.16.100.50/24")
+    //
+    //    ip[0]
+    //      // => 172
+    //    ip[1]
+    //      // => 16
+    //    ip[2]
+    //      // => 100
+    //    ip[3]
+    //      // => 50
+    //
+    // pub fn get(&self, index: u8) {
+    //   self.octets.get(index)
+    // }
+    // pub fn octet(&self, index: u8) {
+    //   self.octets.get(index)
+    // }
+
+    //  Returns the address portion of an IP in binary format,
+    //  as a string containing a sequence of 0 and 1
+    //
+    //    ip = IPAddress("127.0.0.1")
+    //
+    //    ip.bits
+    //      // => "01111111000000000000000000000001"
+    //
+    pub fn bits(&self) {
+        return self.host_address.to_str_radix(2);
+    }
+
+    //  Returns the broadcast address for the given IP.
+    //
+    //    ip = IPAddress("172.16.10.64/24")
+    //
+    //    ip.broadcast.to_s
+    //      // => "172.16.10.255"
+    //
+    pub fn broadcast(&self) -> BigUint {
+        return self.network_address + self.size() - 1;
+        // IPv4::parse_u32(self.broadcast_u32, self.prefix)
+    }
+
+    //  Checks if the IP address is actually a network
+    //
+    //    ip = IPAddress("172.16.10.64/24")
+    //
+    //    ip.network?
+    //      // => false
+    //
+    //    ip = IPAddress("172.16.10.64/26")
+    //
+    //    ip.network?
+    //      // => true
+    //
+    pub fn is_network(&self) -> bool {
+        return self.host_address == IPAddress::to_network(self.host_address, self.prefix.num);
+    }
+
+    //  Returns a new IPv4 object with the network number
+    //  for the given IP.
+    //
+    //    ip = IPAddress("172.16.10.64/24")
+    //
+    //    ip.network.to_s
+    //      // => "172.16.10.0"
+    //
+    pub fn network(&self) -> BigUint {
+        return IPAddress::to_network(self.host_address, self.prefix.num);
+    }
+
+    pub fn to_network(adr: &BigUint, prefix: &u8) -> BigUint {
+        return (adr.clone() >> (prefix as usize)) << (prefix as usize);
+    }
+
+    //  Returns a new IPv4 object with the
+    //  first host IP address in the range.
+    //
+    //  Example: given the 192.168.100.0/24 network, the first
+    //  host IP address is 192.168.100.1.
+    //
+    //    ip = IPAddress("192.168.100.0/24")
+    //
+    //    ip.first.to_s
+    //      // => "192.168.100.1"
+    //
+    //  The object IP doesn't need to be a network: the method
+    //  automatically gets the network number from it
+    //
+    //    ip = IPAddress("192.168.100.50/24")
+    //
+    //    ip.first.to_s
+    //      // => "192.168.100.1"
+    //
+    pub fn first(&self) -> IPAddress {
+        return self.from(self.network + self.ip_net_to_host_ofs, self.prefix);
+    }
+
+    //  Like its sibling method IPv4// first, this method
+    //  returns a new IPv4 object with the
+    //  last host IP address in the range.
+    //
+    //  Example: given the 192.168.100.0/24 network, the last
+    //  host IP address is 192.168.100.254
+    //
+    //    ip = IPAddress("192.168.100.0/24")
+    //
+    //    ip.last.to_s
+    //      // => "192.168.100.254"
+    //
+    //  The object IP doesn't need to be a network: the method
+    //  automatically gets the network number from it
+    //
+    //    ip = IPAddress("192.168.100.50/24")
+    //
+    //    ip.last.to_s
+    //      // => "192.168.100.254"
+    //
+    pub fn last(&self) {
+        return self.from(self.broadcast - self.ip_net_to_host_ofs, self.prefix);
+    }
+
+    //  Iterates over all the hosts IP addresses for the given
+    //  network (or IP address).
+    //
+    //    ip = IPAddress("10.0.0.1/29")
+    //
+    //    ip.each_host do |i|
+    //      p i.to_s
+    //    end
+    //      // => "10.0.0.1"
+    //      // => "10.0.0.2"
+    //      // => "10.0.0.3"
+    //      // => "10.0.0.4"
+    //      // => "10.0.0.5"
+    //      // => "10.0.0.6"
+    //
+    pub fn each_host(&self, func: &Fn(&IPAddress)) {
+        for i in self.first()..self.last() {
+            (func)(self.from(i, self.prefix));
+        }
+    }
+
+    //  Iterates over all the IP addresses for the given
+    //  network (or IP address).
+    //
+    //  The object yielded is a new IPv4 object created
+    //  from the iteration.
+    //
+    //    ip = IPAddress("10.0.0.1/29")
+    //
+    //    ip.each do |i|
+    //      p i.address
+    //    end
+    //      // => "10.0.0.0"
+    //      // => "10.0.0.1"
+    //      // => "10.0.0.2"
+    //      // => "10.0.0.3"
+    //      // => "10.0.0.4"
+    //      // => "10.0.0.5"
+    //      // => "10.0.0.6"
+    //      // => "10.0.0.7"
+    //
+    pub fn each(&self, func: &Fn(&IPAddress)) {
+        for i in self.network..self.broadcast {
+            (func)(self.from(i, self.prefix));
+        }
+    }
+
+    //  Spaceship operator to compare IPv4 objects
+    //
+    //  Comparing IPv4 addresses is useful to ordinate
+    //  them into lists that match our intuitive
+    //  perception of ordered IP addresses.
+    //
+    //  The first comparison criteria is the u32 value.
+    //  For example, 10.100.100.1 will be considered
+    //  to be less than 172.16.0.1, because, in a ordered list,
+    //  we expect 10.100.100.1 to come before 172.16.0.1.
+    //
+    //  The second criteria, in case two IPv4 objects
+    //  have identical addresses, is the prefix. An higher
+    //  prefix will be considered greater than a lower
+    //  prefix. This is because we expect to see
+    //  10.100.100.0/24 come before 10.100.100.0/25.
+    //
+    //  Example:
+    //
+    //    ip1 = IPAddress "10.100.100.1/8"
+    //    ip2 = IPAddress "172.16.0.1/16"
+    //    ip3 = IPAddress "10.100.100.1/16"
+    //
+    //    ip1 < ip2
+    //      // => true
+    //    ip1 > ip3
+    //      // => false
+    //
+    //    [ip1,ip2,ip3].sort.map{|i| i.to_string}
+    //      // => ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
+    //
+    pub fn cmp(&self, oth: &IPAddress) -> i16 {
+        if !self.is_same_kind(oth) {
+            return 0;
+        }
+        let adr_diff = self.address - oth.address;
+        if adr_diff == 0 {
+            return self.prefix.num - oth.prefix.num;
+        }
+        if adr_diff < 0 {
+            return -1;
+        } else if adr_diff > 0 {
+            return 1;
+        }
+        return 0;
+    }
+
+    //  Returns the number of IP addresses included
+    //  in the network. It also counts the network
+    //  address and the broadcast address.
+    //
+    //    ip = IPAddress("10.0.0.1/29")
+    //
+    //    ip.size
+    //      // => 8
+    //
+    pub fn size(&self) {
+        return 1 << (self.prefix.host_prefix() as usize);
+    }
+
+
+    //  Checks whether a subnet includes the given IP address.
+    //
+    //  Accepts an IPAddress::IPv4 object.
+    //
+    //    ip = IPAddress("192.168.10.100/24")
+    //
+    //    addr = IPAddress("192.168.10.102/24")
+    //
+    //    ip.include? addr
+    //      // => true
+    //
+    //    ip.include? IPAddress("172.16.0.48/16")
+    //      // => false
+    //
+    pub fn includes(&self, oth: &IPAddress) -> bool {
+        return !self.is_same_kind(oth) && self.prefix.num <= oth.prefix.num && self.network() =
+                   IPAddress::to_network(&oth.address, self.prefix.num);
+    }
+
+    //  Checks whether a subnet includes all the
+    //  given IPv4 objects.
+    //
+    //    ip = IPAddress("192.168.10.100/24")
+    //
+    //    addr1 = IPAddress("192.168.10.102/24")
+    //    addr2 = IPAddress("192.168.10.103/24")
+    //
+    //    ip.include_all?(addr1,addr2)
+    //      // => true
+    //
+    pub fn includes_all(&self, oths: &Vec<IPAddress>) {
+        for oth in oths {
+            if !self.includes(&oth) {
+                return false;
+            }
+        }
+        return true;
+    }
+    //  Checks if an IPv4 address objects belongs
+    //  to a private network RFC1918
+    //
+    //  Example:
+    //
+    //    ip = IPAddress "10.1.1.1/24"
+    //    ip.private?
+    //      // => true
+    //
+    pub fn is_private(&self) {
+        return (self.vt_is_private)(self);
+    }
+
+
+    //  Returns the IP address in in-addr.arpa format
+    //  for DNS Domain definition entries like SOA Records
+    //
+    //    ip = IPAddress("172.17.100.50/15")
+    //
+    //    ip.rev_domains
+    //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
+    //
+    pub fn rev_domains(&self) -> Vec<String> {
+        // let mut net = vec![self.network()];
+        // let mut cut = 4 - (self.prefix.num / 8);
+        // if self.prefix.num <= 8 {
+        //     //  edge case class a
+        //     cut = 3;
+        // } else if self.prefix.num > 24 {
+        //     //  edge case class c
+        //     cut = 1;
+        //     net = [network.supernet(24)];
+        // }
+        // if self.prefix.num < 24 && (self.prefix.num % 8) != 0 {
+        //     //  case class less
+        //     cut = 3 - (self.prefix.num / 8);
+        //     net = network.subnet(self.prefix.num + 1);
+        // }
+        // return net.map(|n| n.reverse.split('.')[cut..-1].join('.'));
+        return Err("not implemented!");
+    }
+
+    //  Splits a network into different subnets
+    //
+    //  If the IP Address is a network, it can be divided into
+    //  multiple networks. If +self+ is not a network, this
+    //  method will calculate the network from the IP and then
+    //  subnet it.
+    //
+    //  If +subnets+ is an power of two number, the resulting
+    //  networks will be divided evenly from the supernet.
+    //
+    //    network = IPAddress("172.16.10.0/24")
+    //
+    //    network / 4   //  implies map{|i| i.to_string}
+    //      // => ["172.16.10.0/26",
+    //           "172.16.10.64/26",
+    //           "172.16.10.128/26",
+    //           "172.16.10.192/26"]
+    //
+    //  If +num+ is any other number, the supernet will be
+    //  divided into some networks with a even number of hosts and
+    //  other networks with the remaining addresses.
+    //
+    //    network = IPAddress("172.16.10.0/24")
+    //
+    //    network / 3   //  implies map{|i| i.to_string}
+    //      // => ["172.16.10.0/26",
+    //           "172.16.10.64/26",
+    //           "172.16.10.128/25"]
+    //
+    //  Returns an array of IPv4 objects
+    //
+    pub fn split(&self, subnets: usize) {
+        if subnets <= 1 || (1 << self.prefix.host_prefix()) <= subnets {
+            return Err(format!("Value {} out of range", subnets));
+        }
+        let mut networks = self.subnet(self.newprefix(subnets));
+        if networks.len() != subnets {
+            networks = IPAddress::sum_first_found(networks);
+        }
+        return networks;
+    }
+    // alias_method :/, :split
+
+    //  Returns a new IPv4 object from the supernetting
+    //  of the instance network.
+    //
+    //  Supernetting is similar to subnetting, except
+    //  that you getting as a result a network with a
+    //  smaller prefix (bigger host space). For example,
+    //  given the network
+    //
+    //    ip = IPAddress("172.16.10.0/24")
+    //
+    //  you can supernet it with a new /23 prefix
+    //
+    //    ip.supernet(23).to_string
+    //      // => "172.16.10.0/23"
+    //
+    //  However if you supernet it with a /22 prefix, the
+    //  network address will change:
+    //
+    //    ip.supernet(22).to_string
+    //      // => "172.16.8.0/22"
+    //
+    //  If +new_prefix+ is less than 1, returns 0.0.0.0/0
+    //
+    pub fn supernet(&self, new_prefix: u8) -> Result<IPAddress, String> {
+        if new_prefix >= self.prefix.num {
+            return Err(format!("New prefix must be smaller than existing prefix: {} >= {}",
+                               new_prefix,
+                               self.prefix.num));
+        }
+        let mut new_ip = self.clone();
+        for i in new_prefix..self.prefix.num {
+            new_ip.host_address = new_ip.host_address << 1;
+        }
+        return Ok(new_ip);
+    }
+
+    //  This method implements the subnetting function
+    //  similar to the one described in RFC3531.
+    //
+    //  By specifying a new prefix, the method calculates
+    //  the network number for the given IPv4 object
+    //  and calculates the subnets associated to the new
+    //  prefix.
+    //
+    //  For example, given the following network:
+    //
+    //    ip = IPAddress "172.16.10.0/24"
+    //
+    //  we can calculate the subnets with a /26 prefix
+    //
+    //    ip.subnets(26).map(&:to_string)
+    //      // => ["172.16.10.0/26", "172.16.10.64/26",
+    //           "172.16.10.128/26", "172.16.10.192/26"]
+    //
+    //  The resulting number of subnets will of course always be
+    //  a power of two.
+    //
+    pub fn subnet(&self, subprefix: u8) -> Result<Vec<IPAddress>, String> {
+        if subprefix <= self.prefix.num || self.ip_bits.bits <= subprefix {
+            return Err(format!("New prefix must be between {} and {}",
+                               subprefix,
+                               self.ip_bits.bits));
+        }
+        let mut ret = Vec::new();
+        let mut net = self.network().change_prefix(subprefix);
+        for i in 0..(1 << (subprefix - self.prefix.num)) {
+            ret.push(net);
+            net = net.clone();
+            net.host_address = net.host_address + net.size();
+        }
+        return Ok(ret);
+    }
+
+
+    //  Checks whether the ip address belongs to a
+    //  RFC 791 CLASS A network, no matter
+    //  what the subnet mask is.
+    //
+    //  Example:
+    //
+    //    ip = IPAddress("10.0.0.1/24")
+    //
+    //    ip.a?
+    //      // => true
+    //
+    // pub fn is_class_a(&self) {
+    //   return self.bits == 8 && 0 <= self.to_u32() && self.to_u32() < 0x80000000
+    // }
+
+    //  Checks whether the ip address belongs to a
+    //  RFC 791 CLASS B network, no matter
+    //  what the subnet mask is.
+    //
+    //  Example:
+    //
+    //    ip = IPAddress("172.16.10.1/24")
+    //
+    //    ip.b?
+    //      // => true
+    //
+    // pub fn is_class_b(&self) {
+    //   return self.bits == 16 && 0x80000000 <= self.to_u32() && self.to_u32() < 0xc0000000
+    // }
+
+    //  Checks whether the ip address belongs to a
+    //  RFC 791 CLASS C network, no matter
+    //  what the subnet mask is.
+    //
+    //  Example:
+    //
+    //    ip = IPAddress("192.168.1.1/30")
+    //
+    //    ip.c?
+    //      // => true
+    //
+    // pub fn is_class_c(&self) {
+    //   return self.bits == 24 && 0xc0000000 <= self.to_u32() && self.to_u32() <= u32::MAX
+    // }
+
+    //  Return the ip address in a format compatible
+    //  with the IPv6 Mapped IPv4 addresses
+    //
+    //  Example:
+    //
+    //    ip = IPAddress("172.16.10.1/24")
+    //
+    //    ip.to_ipv6
+    //      // => "ac10:0a01"
+    //
+    pub fn to_ipv6(&self) -> IPAddress {
+        return (self.vt_to_ipv6)(self);
+    }
+
+    //  Creates a new IPv4 object from an
+    //  unsigned 32bits integer.
+    //
+    //    ip = IPAddress::IPv4::parse_u32(167772160)
+    //
+    //    ip.prefix = 8
+    //    ip.to_string
+    //      // => "10.0.0.0/8"
+    //
+    //  The +prefix+ parameter is optional:
+    //
+    //    ip = IPAddress::IPv4::parse_u32(167772160, 8)
+    //
+    //    ip.to_string
+    //      // => "10.0.0.0/8"
+    //
+    // pub fn parse_u32(ip32: u32, prefix: u8) {
+    //   IPv4::new(format!("{}/{}", IPv4::to_ipv4_str(ip32), prefix))
+    // }
+
+    //  Creates a new IPv4 object from binary data,
+    //  like the one you get from a network stream.
+    //
+    //  For example, on a network stream the IP 172.16.0.1
+    //  is represented with the binary "\254\020\n\001".
+    //
+    //    ip = IPAddress::IPv4::parse_data "\254\020\n\001"
+    //    ip.prefix = 24
+    //
+    //    ip.to_string
+    //      // => "172.16.10.1/24"
+    //
+    // pub fn self.parse_data(str, prefix=32)
+    //   self.new(str.unpack("C4").join(".")+"/// {prefix}")
+    // end
+
+
+    //  Summarization (or aggregation) is the process when two or more
+    //  networks are taken together to check if a supernet, including all
+    //  and only these networks, exists. If it exists then this supernet
+    //  is called the summarized (or aggregated) network.
+    //
+    //  It is very important to understand that summarization can only
+    //  occur if there are no holes in the aggregated network, or, in other
+    //  words, if the given networks fill completely the address space
+    //  of the supernet. So the two rules are:
+    //
+    //  1) The aggregate network must contain +all+ the IP addresses of the
+    //     original networks;
+    //  2) The aggregate network must contain +only+ the IP addresses of the
+    //     original networks;
+    //
+    //  A few examples will help clarify the above. Let's consider for
+    //  instance the following two networks:
+    //
+    //    ip1 = IPAddress("172.16.10.0/24")
+    //    ip2 = IPAddress("172.16.11.0/24")
+    //
+    //  These two networks can be expressed using only one IP address
+    //  network if we change the prefix. Let Ruby do the work:
+    //
+    //    IPAddress::IPv4::summarize(ip1,ip2).to_s
+    //      // => "172.16.10.0/23"
+    //
+    //  We note how the network "172.16.10.0/23" includes all the addresses
+    //  specified in the above networks, and (more important) includes
+    //  ONLY those addresses.
+    //
+    //  If we summarized +ip1+ and +ip2+ with the following network:
+    //
+    //    "172.16.0.0/16"
+    //
+    //  we would have satisfied rule // 1 above, but not rule // 2. So "172.16.0.0/16"
+    //  is not an aggregate network for +ip1+ and +ip2+.
+    //
+    //  If it's not possible to compute a single aggregated network for all the
+    //  original networks, the method returns an array with all the aggregate
+    //  networks found. For example, the following four networks can be
+    //  aggregated in a single /22:
+    //
+    //    ip1 = IPAddress("10.0.0.1/24")
+    //    ip2 = IPAddress("10.0.1.1/24")
+    //    ip3 = IPAddress("10.0.2.1/24")
+    //    ip4 = IPAddress("10.0.3.1/24")
+    //
+    //    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_string
+    //      // => "10.0.0.0/22",
+    //
+    //  But the following networks can't be summarized in a single network:
+    //
+    //    ip1 = IPAddress("10.0.1.1/24")
+    //    ip2 = IPAddress("10.0.2.1/24")
+    //    ip3 = IPAddress("10.0.3.1/24")
+    //    ip4 = IPAddress("10.0.4.1/24")
+    //
+    //    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //      // => ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
+    //
+    // pub fn self.summarize(args)
+    //   IPAddress.summarize(args)
+    // end
+
+    //  Creates a new IPv4 address object by parsing the
+    //  address in a classful way.
+    //
+    //  Classful addresses have a fixed netmask based on the
+    //  class they belong to:
+    //
+    //  * Class A, from 0.0.0.0 to 127.255.255.255
+    //  * Class B, from 128.0.0.0 to 191.255.255.255
+    //  * Class C, D and E, from 192.0.0.0 to 255.255.255.254
+    //
+    //  Example:
+    //
+    //    ip = IPAddress::IPv4.parse_classful "10.0.0.1"
+    //
+    //    ip.netmask
+    //      // => "255.0.0.0"
+    //    ip.a?
+    //      // => true
+    //
+    //  Note that classes C, D and E will all have a default
+    //  prefix of /24 or 255.255.255.0
+    //
+    // pub fn self.parse_classful(ip: String) {
+    //   if (IPAddress::valid_ipv4?(ip)) {
+    //     address = ip.strip
+    //   }
+    //     raise ArgumentError, "Invalid IP // {ip.inspect}"
+    //   end
+    //   prefix = CLASSFUL.find{|h,k| h === ("%.8b" % address.to_i)}.last
+    //   self.new "// {address}/// {prefix}"
+    // }
+
+    //  private methods
+    //
+    fn newprefix(&self, num: u8) {
+        for i in num..32 {
+            let a = f64::log(i, 2) as usize;
+            if a == f64::log(i, 2) {
+                return self.prefix + a;
+            }
+        }
+    }
+
+    fn sum_first_found(&self, arr: &Vec<u32>) {
+        let mut dup = arr.reverse();
+        for i in 0..dup.len() {
+            let obj = dup.get(i).unwrap();
+            let a = IPAddress::summarize(obj, dup[i + 1]);
+            if a.size == 1 {
+                dup[i..i + 1] = a;
+                return dup.reverse();
+            }
+        }
+        return dup.reverse();
+    }
+}
+
+
 // IPAddress is a wrapper method built around
 // IPAddress's library classes. Its purpouse is to
 // make you indipendent from the type of IP address
@@ -262,7 +1238,6 @@ impl IPAddress {
 //   IPAddress::parse str
 // end
 
-//
 // Compatibility with Ruby 1.8
 //
 // if RUBY_VERSION =~ /1\.8/

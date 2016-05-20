@@ -144,7 +144,7 @@ mod tests {
         pub fn test_method_octets() {
             for (arr, pref) in Prefix32Test::setup().octets_hash {
                 let prefix = Prefix32::new(pref).unwrap();
-                assert_eq!(prefix.ip_parts(&prefix.net_mask()), arr);
+                assert_eq!(prefix.ip_bits.parts(&prefix.net_mask()), arr);
             }
         }
         #[allow(dead_code)]
@@ -155,7 +155,7 @@ mod tests {
                 let prefix = Prefix32::new(pref).unwrap();
                 for index in 0..arr.len() {
                     let oct = arr.get(index);
-                    assert_eq!(prefix.ip_parts(&prefix.net_mask()).get(index), oct)
+                    assert_eq!(prefix.ip_bits.parts(&prefix.net_mask()).get(index), oct)
                 }
             }
         }
