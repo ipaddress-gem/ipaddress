@@ -12,6 +12,8 @@
 #
 #++
 
+require 'socket'
+require 'timeout'
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
 require 'ipaddress/mongoid' if defined?(Mongoid)
@@ -175,6 +177,36 @@ module IPAddress
     message ||= "You are using deprecated behavior which will be removed from the next major or minor release."
     warn("DEPRECATION WARNING: #{message}")
   end
+
+ 
+  # Checks if the given string is an IP address,
+  # either IPv4 or IPv6 with the specified port opened
+  #
+  # Example:
+  #
+  #   IPAddress::open?('120.32.32.3', 80)
+  #     #=> true
+  #
+  #   IPAddress::open?('120.32.32.3', -4)
+  #     #=> false
+  #
+  def self.open?(addr, port)
+    begin
+      Timeout::timeout(2) do
+        begin
+          s = TCPSocket.new(addr, port)
+          s.close
+          return true
+        rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH, Errno::EPERM
+          return false
+        end
+      end
+    rescue Timeout::Error
+      return false
+    end
+
+  end
+
   
 end # module IPAddress
 
