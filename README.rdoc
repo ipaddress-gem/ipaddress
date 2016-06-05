@@ -248,7 +248,7 @@ address:
                                      @prefix=24, 
                                      @address="172.16.10.255">
   bcast.to_string
-    #=> "172.16.10.255/24"
+    #=> "172.16.10.255"
 
 ==== Addresses, ranges and iterators
 
@@ -283,10 +283,10 @@ respectively the first and the last host address in the range
   ip = IPAddress "172.16.10.100/24"
 
   ip.first.to_string
-    #=> "172.16.10.1/24"
+    #=> "172.16.10.1"
 
   ip.last.to_string
-    #=> "172.16.10.254/24"
+    #=> "172.16.10.254"
 
 Checking if an address is loopback is easy with the `IPv4#loopback?`
 method:
