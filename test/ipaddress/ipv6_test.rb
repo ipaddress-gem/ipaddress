@@ -142,6 +142,18 @@ class IPv6Test < Minitest::Test
     assert_equal 2**4, ip.size
   end
 
+  def test_method_subnet
+    assert_raises(ArgumentError) {@network.subnet(62)}
+    assert_raises(ArgumentError) {@network.subnet(129)}
+    arr = ["172.16.10.0/26", "172.16.10.64/26", "172.16.10.128/26", 
+           "172.16.10.192/26"]
+    assert_equal arr, @network.subnet(26).map {|s| s.to_string}
+    arr = ["172.16.10.0/25", "172.16.10.128/25"]
+    assert_equal arr, @network.subnet(25).map {|s| s.to_string}
+    arr = ["172.16.10.0/24"]
+    assert_equal arr, @network.subnet(24).map {|s| s.to_string}
+  end
+
   def test_method_include?
     assert_equal true, @ip.include?(@ip)
     # test prefix on same address
