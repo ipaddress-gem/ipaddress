@@ -560,13 +560,13 @@ module IPAddress;
     #
     # For example, given the following network:
     #
-    #   ip = IPAddress "172.16.10.0/24"
+    #   ip = IPAddress "2001:db8:8:800::/64"
     #
-    # we can calculate the subnets with a /26 prefix
+    # we can calculate the subnets with a /66 prefix
     #
-    #   ip.subnets(26).map{&:to_string)
-    #     #=> ["172.16.10.0/26", "172.16.10.64/26", 
-    #          "172.16.10.128/26", "172.16.10.192/26"]
+    #   ip.subnets(66).map{&:to_string)
+    #     #=> ["2001:db8:8:800::/66", "2001:db8:8:800:4000::/66", "2001:db8:8:800:8000::/66", 
+    #      "2001:db8:8:800:c000::/66"]
     #
     # The resulting number of subnets will of course always be
     # a power of two.

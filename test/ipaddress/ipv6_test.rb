@@ -145,10 +145,10 @@ class IPv6Test < Minitest::Test
   def test_method_subnet
     assert_raises(ArgumentError) {@network.subnet(62)}
     assert_raises(ArgumentError) {@network.subnet(129)}
-    arr = ["2001:db8:8:800::/66", "2001:db8:8:800:4000:/66", "2001:db8:8:800:8000:/66", 
-           "2001:db8:8:800:c000:/66"]
+    arr = ["2001:db8:8:800::/66", "2001:db8:8:800:4000::/66", "2001:db8:8:800:8000::/66", 
+           "2001:db8:8:800:c000::/66"]
     assert_equal arr, @network.subnet(66).map {|s| s.to_string}
-    arr = ["2001:db8:8:800::/65", "2001:db8:8:800:8000:/65"]
+    arr = ["2001:db8:8:800::/65", "2001:db8:8:800:8000::/65"]
     assert_equal arr, @network.subnet(65).map {|s| s.to_string}
     arr = ["2001:db8:8:800::/64"]
     assert_equal arr, @network.subnet(64).map {|s| s.to_string}
