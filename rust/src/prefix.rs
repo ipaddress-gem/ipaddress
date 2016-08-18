@@ -9,32 +9,32 @@ use num_traits::cast::FromPrimitive;
 
 
 pub struct Prefix {
-    pub num: u8,
+    pub num: usize,
     pub ip_bits: ::ip_bits::IpBits,
     pub in_mask: BigUint,
-    pub vt_from: &'static (Fn(&Prefix, u8) -> Result<Prefix, String>),
-    pub vt_to_ip_str: &'static (Fn(&Vec<u16>) -> String)
+    pub vt_from: &'static (Fn(&Prefix, usize) -> Result<Prefix, String>),
+    //pub vt_to_ip_str: &'static (Fn(&Vec<u16>) -> String)
 }
 
 impl Prefix {
     #[allow(dead_code)]
-    pub fn from(&self, num: u8) -> Result<Prefix, String>{
+    pub fn from(&self, num: usize) -> Result<Prefix, String>{
         return (self.vt_from)(self, num)
     }
 
     #[allow(dead_code)]
     pub fn to_ip_str(&self) -> String {
-        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.net_mask()))
+//        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.net_mask()))
     }
 
     pub fn size(&self) -> BigUint {
-      return BigUint::one() << (self.ip_bits.bits-self.num)
+      return BigUint::one() << (self.ip_bits.bits-self.num.to_usize().unwrap())
     }
 
 
     #[allow(dead_code)]
     #[allow(unused_variables)]
-    pub fn in_mask(num: u8) -> BigUint {
+    pub fn in_mask(num: usize) -> BigUint {
         let mut mask = BigUint::zero();
         for i in 1..num {
             mask = mask + BigUint::one();
@@ -44,7 +44,7 @@ impl Prefix {
     }
 
     #[allow(dead_code)]
-    fn get_prefix(&self) -> u8 {
+    fn get_prefix(&self) -> usize {
         return self.num
     }
 
@@ -59,12 +59,12 @@ impl Prefix {
     //
     #[allow(dead_code)]
     pub fn host_mask(&self) -> BigUint {
-        return self.in_mask.clone() >> (self.get_prefix() as usize)
+        return self.in_mask.clone() >> self.get_prefix().to_usize().unwrap()
     }
 
     #[allow(dead_code)]
     pub fn host_mask_str(&self) -> String {
-        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.host_mask()))
+//        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.host_mask()))
     }
 
 
@@ -79,8 +79,8 @@ impl Prefix {
     //      // => 128
     //
     #[allow(dead_code)]
-    pub fn host_prefix(&self) -> u8 {
-        return (self.ip_bits.bits as u8) - self.num;
+    pub fn host_prefix(&self) -> usize {
+        return (self.ip_bits.bits) - self.num;
     }
 
     //
@@ -111,7 +111,7 @@ impl Prefix {
         return self.to_s();
     }
     #[allow(dead_code)]
-    pub fn to_i(&self) -> u8 {
+    pub fn to_i(&self) -> usize {
         return self.get_prefix();
     }
 
@@ -120,7 +120,7 @@ impl Prefix {
         self.from(self.get_prefix() + other.get_prefix())
     }
     #[allow(dead_code)]
-    pub fn add_u8(&self, other: u8) -> Result<Prefix, String> {
+    pub fn add_u8(&self, other: usize) -> Result<Prefix, String> {
         self.from(self.get_prefix() + other)
     }
     #[allow(dead_code)]
@@ -128,7 +128,7 @@ impl Prefix {
         self.from(self.get_prefix() + other.get_prefix())
     }
     #[allow(dead_code)]
-    pub fn sub_u8(&self, other: u8) -> Result<Prefix, String> {
+    pub fn sub_u8(&self, other: usize) -> Result<Prefix, String> {
         self.from(self.get_prefix() + other)
     }
 

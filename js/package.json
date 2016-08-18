@@ -1,0 +1,75 @@
+{
+  "name": "ipaddress",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/ipaddress.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean",
+    "build": "webpack",
+    "build:watch": "webpack --watch --debug --output-pathinfo --progress",
+    "start": "nodemon ./dist/ipaddress.js",
+    "pretest": "npm run build",
+    "test": "mocha --require ./test/setup dist/test",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -w",
+    "preversion": "npm test",
+    "version": "npm run build && conventional-changelog -p angular -v -r 0 > CHANGELOG.md && git add -A .",
+    "postversion": "git push && git push --tags",
+    "prepublish": "not-in-install && npm run build || echo 'In install cycle, skipping prepublish'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "mabels/ipaddress"
+  },
+  "license": "AFL-2.0",
+  "bugs": {
+    "url": "https://github.com/mabels/ipaddress/issues"
+  },
+  "homepage": "https://github.com/mabels/ipaddress#readme",
+  "devDependencies": {
+    "awesome-typescript-loader": "1.1.1",
+    "babel-core": "6.9.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "6.10.3",
+    "chai": "3.5.0",
+    "css-loader": "0.23.1",
+    "cz-conventional-changelog": "1.1.6",
+    "enzyme": "2.3.0",
+    "extract-text-webpack-plugin": "1.0.1",
+    "globby": "5.0.0",
+    "html-webpack-plugin": "2.21.0",
+    "in-publish": "2.0.0",
+    "jsdom": "9.4.0",
+    "less": "2.7.1",
+    "typings": "1.3.2",
+    "less-loader": "2.2.3",
+    "mocha": "2.5.3",
+    "nodemon": "1.9.2",
+    "rimraf": "2.5.2",
+    "source-map-support": "0.4.1",
+    "style-loader": "0.13.1",
+    "tslint": "3.11.0",
+    "typescript": "1.8.10",
+    "webpack": "1.13.1"
+  },
+  "dependencies": {
+    "express": "4.14.0",
+    "express-ws": "1.0.0",
+    "react": "15.1.0",
+    "react-dom": "15.1.0",
+    "node-uuid": "1.4.7",
+    "ws": "1.1.1",
+    "bufferutil": "1.2.1",
+    "utf-8-validate":  "1.2.1",
+    "linebyline": "1.3.0",
+    "node-uuid": "1.4.7",
+    "winston": "2.2.0"
+  },
+  "publishConfig": {
+    "tag": "next"
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}

@@ -53,7 +53,7 @@ pub fn new(num: u8) -> Result<::prefix::Prefix, String> {
         //static _TO_IP_STR: &'static (Fn(&Vec<u16>) -> String) = &to_ip_str;
         return Ok(::prefix::Prefix {
             num: num,
-            ip_bits: &::ip_bits::IP_BITS_V4,
+            ip_bits: ::ip_bits::IP_BITS_V4,
             in_mask: ::prefix::Prefix::in_mask(32),
             vt_from: _FROM,
             //vt_to_ip_str: _TO_IP_STR,
@@ -64,15 +64,15 @@ pub fn new(num: u8) -> Result<::prefix::Prefix, String> {
 
 pub fn parse_netmask(netmask: &String) -> Result<::prefix::Prefix, String> {
     if !IPAddress::is_valid_ipv4(netmask) {
-        let re = Regex::new(r"^\d{1,2}$");
-        if re.match(netmask) {
+        let re = Regex::new(r"^\d{1,2}$").unwrap();
+        if re.is_match(netmask) {
             return new(netmask.to_u8());
         }
         return Err(format!("Error wrong netmask {}", netmask));
     }
     let res_ip = IPAddress::split_to_u32(netmask);
     if res_ip.is_err() {
-        return res_ip;
+        return Err(res_ip.unwrap_err());
     }
     let ip = res_ip.unwrap();
     let mut nulls = 0;

@@ -44,6 +44,6 @@ use ipaddress::IPAddress;
 //    ip.to_string
 //      // => "::1/128"
 //
-pub fn loopback() -> IPAddress {
-    return IPAddress::parse("::1").unwrap();
+pub fn new() -> IPAddress {
+    return IPAddress::parse(&String::from("::1")).unwrap();
 }

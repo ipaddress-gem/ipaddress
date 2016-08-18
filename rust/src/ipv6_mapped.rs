@@ -2,6 +2,11 @@
 use num::bigint::BigUint;
 use ip_bits::IpBits;
 use ipaddress::IPAddress;
+
+use num_integer::Integer;
+
+use num_traits::cast::ToPrimitive;
+
 //  Ac
 //  It is usually identified as a IPv4 mapped IPv6 address, a particular
 //  IPv6 address which aids the transition from IPv4 to IPv6. The
@@ -78,29 +83,34 @@ use ipaddress::IPAddress;
 //    ip6.to_string
 //      // => "::ffff:13.1.68.3"
 //
-pub fn mapped(str: &String) -> Result<IPAddress, String> {
+pub fn new(str: &String) -> Result<IPAddress, String> {
     let (ip, o_netmask) = IPAddress::split_at_slash(str);
-    let split_colon = ip.split(':');
+    let split_colon = ip.split(':').collect();
     let mut mapped: Option<IPAddress> = None;
-    let mut netmask = "";
+    let mut netmask = String::from("");
     if o_netmask.is_some() {
         netmask = o_netmask.unwrap();
     }
     if IPAddress::is_valid_ipv4(split_colon.last()) {
-        let ipv4 = IPAddress::parse(format!("{}{}", split_colon.last(), netmask));
+        let ipv4 = IPAddress::parse(&format!("{}{}", split_colon.last(), netmask));
         if ipv4.is_err() {
             return ipv4;
         }
         mapped = Some(ipv4.unwrap());
-        return IPAddress::parse(format!("::ffff:{}/{}", mapped.to_ipv6(), mapped.prefix.num));
+        let addr = mapped.unwrap().host_address;
+        let part_mod = ::ip_bits::IP_BITS_V6.part_mod;
+        return IPAddress::parse(&format!("::ffff:{}:{}/{}",
+            (addr >> ::ip_bits::IP_BITS_V6.part_bits).mod_floor(&part_mod).to_u16(),
+            addr.mod_floor(&part_mod).to_u16(),
+            mapped.unwrap().prefix.num));
     } else if split_colon.len() >= 2 {
         //  IPv4 in hex form
-        let last_2 = split_colon.get(split_colon.len() - 2).to_u16();
-        let last_1 = split_colon.get(split_colon.len() - 1).to_u16();
+        let last_2 = split_colon.get(split_colon.len() - 2);
+        let last_1 = split_colon.get(split_colon.len() - 1);
         if last_1.is_err() || last_2.is_err() {
             return Err(format!("unknown hex mapped format:{}", str));
         }
-        return IPAddress::parse(format!("::ffff:{}:{}{}", last_2.unwrap(), last_1.unwrap(), netmask));
+        return IPAddress::parse(&format!("::ffff:{}:{}{}", last_2.unwrap(), last_1.unwrap(), netmask));
     }
     return Err(format!("unknown mapped format:{}", str));
 }

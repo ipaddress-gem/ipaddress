@@ -20,7 +20,7 @@ pub fn new(num: u8) -> Result<Prefix, String> {
         //static _TO_IP_STR: &'static (Fn(&Vec<u16>) -> String) = &Prefix128::to_ip_str;
         return Ok(Prefix {
             num: num,
-            ip_bits: &::ip_bits::IP_BITS_V6,
+            ip_bits: ::ip_bits::IP_BITS_V6,
             in_mask: Prefix::in_mask(128),
             vt_from: _FROM, // vt_to_ip_str: _TO_IP_STR
         });

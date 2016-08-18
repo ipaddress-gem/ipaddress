@@ -2,17 +2,22 @@ use num::bigint::BigUint;
 
 
 use num_traits::identities::One;
+use num_traits::identities::Zero;
 use num_integer::Integer;
 use num_traits::cast::ToPrimitive;
 
-enum IpVersion { V4, V6 }
+#[derive(PartialEq, Eq)]
+pub enum IpVersion { V4, V6 }
 
 pub struct IpBits {
     pub version: IpVersion,
+    pub vt_as_compressed_string: &'static (Fn(&IpBits, &BigUint) -> String),
     pub bits: usize,
     pub part_bits: usize,
     pub dns_bits: usize,
     pub rev_domain: &'static str,
+    pub part_mod: BigUint,
+    pub host_ofs: BigUint // ipv4=1, ipv6=0
 }
 
 impl IpBits {
@@ -28,6 +33,11 @@ impl IpBits {
         vec.reverse();
         return vec;
     }
+
+    pub fn as_compressed_string(&self, bu: &BigUint) -> String {
+        return (self.vt_as_compressed_string)(self, bu);
+    }
+
     //  Returns the IP address in in-addr.arpa format
     //  for DNS lookups
     //
@@ -44,9 +54,10 @@ impl IpBits {
         let mut addr = bu.clone();
         for i in 0..(self.bits/self.dns_bits) {
             ret.push_str(dot);
-            ret.push_str(self.dns_part_format(addr.mod_floor(&part_mod).to_usize()));
+            let lower = addr.mod_floor(&part_mod).to_usize().unwrap();
+            ret.push_str(self.dns_part_format(lower).as_str());
             addr = addr >> self.dns_bits;
-            dot = the_dot;
+            dot = &the_dot;
         }
         ret.push_str(self.rev_domain);
         return ret;
@@ -65,18 +76,47 @@ impl IpBits {
 }
 
 
-const IP_BITS_V4: IpBits = IpBits {
+fn ipv4_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
+    let ret = String::new();
+    let mut sep = "";
+    for part in ip_bits.parts(host_address) {
+        ret.push_str(sep);
+        ret.push_str(&format!("{}", part));
+        sep = ".";
+    }
+    return ret;
+}
+fn ipv6_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
+    let ret = String::new();
+    let mut sep = "";
+    for part in ip_bits.parts(host_address) {
+        ret.push_str(sep);
+        ret.push_str(&format!("{:x}", part));
+        sep = ":";
+    }
+    return ret;
+}
+
+
+
+pub const IP_BITS_V4: IpBits = IpBits {
     version: IpVersion::V4,
+    vt_as_compressed_string: &ipv4_as_compressed,
     bits: 32,
     part_bits: 8,
     dns_bits: 8,
-    rev_domain: ".in-addr.arpa"
+    rev_domain: ".in-addr.arpa",
+    part_mod: BigUint::one() << 8,
+    host_ofs: BigUint::one()
 };
 
-const IP_BITS_V6 : IpBits = IpBits {
+pub const IP_BITS_V6 : IpBits = IpBits {
      version: IpVersion::V6,
+     vt_as_compressed_string: &ipv6_as_compressed,
      bits: 128,
      part_bits: 16,
      dns_bits: 8,
-     rev_domain: ".ip6.arpa"
+     rev_domain: ".ip6.arpa",
+     part_mod: BigUint::one() << 16,
+     host_ofs: BigUint::zero()
  };

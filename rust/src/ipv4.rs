@@ -2,6 +2,12 @@
 use num::bigint::BigUint;
 use ip_bits::IpBits;
 use ipaddress::IPAddress;
+use num_integer::Integer;
+
+use num_traits::identities::One;
+
+use num_traits::cast::ToPrimitive;
+use num_traits::cast::FromPrimitive;
 // use prefix::Prefix;
 // use prefix::Prefix32;
 // use regex::Regex;
@@ -58,7 +64,7 @@ use ipaddress::IPAddress;
 
 pub fn new(str: &String) -> Result<IPAddress, String> {
     let (ip, netmask) = IPAddress::split_at_slash(str);
-    if !IPAddress::is_valid_ipv4(ip) {
+    if !IPAddress::is_valid_ipv4(&ip) {
         return Err(format!("Invalid IP {}", str));
     }
     let mut prefix = ::prefix32::new(32);
@@ -69,14 +75,27 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
             return Err(prefix.unwrap_err());
         }
     }
-    return IPAddress {
-        ip_net_to_host_ofs: 1,
+    let split_u32 = IPAddress::split_to_u32(ip);
+    if split_u32.is_err() {
+        return Err(split_u32.unwrap_err());
+    }
+    return Ok(IPAddress {
         ip_bits: &::ip_bits::IP_BITS_V4,
-        host_address: BigUint::from_u32(IPAddress::split_to_u32(ip)),
-        prefix: prefix,
+        host_address: BigUint::from_u32(split_u32.unwrap()),
+        prefix: prefix.unwrap(),
         mapped: None,
-    };
+        vt_is_private: &ipv4_is_private,
+    });
 }
+
+fn ipv4_is_private(my: &IPAddress) -> bool {
+    [IPAddress::parse(&String::from("10.0.0.0/8")),
+     IPAddress::parse(&String::from("172.16.0.0/12")),
+     IPAddress::parse(&String::from("192.168.0.0/16"))]
+        .find(|i| i.includes(my));
+}
+
+
 
 
 
@@ -567,12 +586,7 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
 //    ip.private?
 //      // => true
 //
-pub fn is_private(my: &IPAddress) -> bool {
-    [IPAddress::parse("10.0.0.0/8"),
-     IPAddress::parse("172.16.0.0/12"),
-     IPAddress::parse("192.168.0.0/16")]
-        .find(|i| i.includes(my));
-}
+
 
 //  Returns the IP address in in-addr.arpa format
 //  for DNS lookups
@@ -738,8 +752,8 @@ pub fn is_private(my: &IPAddress) -> bool {
 //
 
 
-pub fn is_class_a(my: &IPAddress) {
-    return my.host_address < 0x80000000;
+pub fn is_class_a(my: &IPAddress) -> bool {
+    return my.is_ipv4() && my.host_address < BigUint::from_u32(0x80000000).unwrap();
 }
 
 //  Checks whether the ip address belongs to a
@@ -753,8 +767,10 @@ pub fn is_class_a(my: &IPAddress) {
 //    ip.b?
 //      // => true
 //
-pub fn is_class_b(my: &IPAddress) {
-    return 0x80000000 <= my.host_address && my.host_address < 0xc0000000;
+pub fn is_class_b(my: &IPAddress) -> bool {
+    return my.is_ipv4() &&
+        BigUint::from_u32(0x80000000).unwrap() <= my.host_address &&
+        my.host_address < BigUint::from_u32(0xc0000000).unwrap();
 }
 
 //  Checks whether the ip address belongs to a
@@ -768,8 +784,10 @@ pub fn is_class_b(my: &IPAddress) {
 //    ip.c?
 //      // => true
 //
-pub fn is_class_c(my: &IPAddress) {
-    return 0xc0000000 <= my.host_address && my.host_address <= u32::MAX;
+pub fn is_class_c(my: &IPAddress) -> bool {
+    return my.is_ipv4() &&
+        BigUint::from_u32(0xc0000000).unwrap() <= my.host_address &&
+        my.host_address <= u32::MAX;
 }
 
 //  Return the ip address in a format compatible
@@ -929,7 +947,7 @@ pub fn to_ipv6(my: &IPAddress) {
 //  Note that classes C, D and E will all have a default
 //  prefix of /24 or 255.255.255.0
 //
-pub fn parse_classful(ip_s: &String) {
+pub fn parse_classful(ip_s: &String) -> Result<IPAddress, String> {
     if IPAddress::is_valid_ipv4(ip_s) {
         return Err(format!("Invalid IP {}", ip_s));
     }
@@ -938,14 +956,14 @@ pub fn parse_classful(ip_s: &String) {
         return o_ip;
     }
     let mut ip = o_ip.unwrap();
-    if is_class_a(ip) {
-        ip.prefix = ::prefix32::new(8);
-    } else if is_class_b(ip) {
-        ip.prefix = ::prefix32::new(16);
-    } else if is_class_c(ip) {
-        ip.prefix = ::prefix32::new(24);
+    if ::ipv4::is_class_a(&ip) {
+        ip.prefix = ::prefix32::new(8).unwrap();
+    } else if ::ipv4::is_class_b(&ip) {
+        ip.prefix = ::prefix32::new(16).unwrap();
+    } else if ::ipv4::is_class_c(&ip) {
+        ip.prefix = ::prefix32::new(24).unwrap();
     }
-    return ip;
+    return o_ip;
 }
 
 //  private methods

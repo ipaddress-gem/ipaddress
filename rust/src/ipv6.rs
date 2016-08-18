@@ -2,6 +2,9 @@
 use num::bigint::BigUint;
 use ip_bits::IpBits;
 use ipaddress::IPAddress;
+use core::str::FromStr;
+
+//use core::fmt::Display::fmt;
 //  =Name
 //
 //  IPAddress::IPv6 - IP version 6 address manipulation library
@@ -75,32 +78,41 @@ use ipaddress::IPAddress;
 //
 //    ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
 //
-pub fn new(str: &String) {
+pub fn new(str: &String) -> Result<IPAddress, String> {
     let (ip, o_netmask) = IPAddress::split_at_slash(str);
-    if IPAddress::is_valid_ipv6(ip) {
-        let o_num = IPAddress::split_on_colon(ip);
+    if IPAddress::is_valid_ipv6(&ip) {
+        let o_num = IPAddress::split_on_colon(&ip);
         if o_num.is_err() {
-            return o_num;
+            return Err(o_num.unwrap_err());
         }
         let mut netmask = 128;
         if o_netmask.is_some() {
-            let num_mask = u8::from_str(netmask);
+            let num_mask = u8::from_str(o_netmask.unwrap());
             if num_mask.is_err() {
-                return Err("Invalid Netmask {}", str);
+                return Err(format!("Invalid Netmask {}", str));
             }
             netmask = o_netmask.unwrap();
         }
-        return IPAddress {
-            ip_net_to_host_ofs: 0,
+        let prefix = ::prefix128::new(netmask);
+        if prefix.is_err() {
+            return Err(prefix.unwrap_err());
+        }
+        return Ok(IPAddress {
             ip_bits: &::ip_bits::IP_BITS_V6,
-            host_address: ip.unwrap(),
-            prefix: ::prefix128::new(netmask),
+            host_address: o_num.unwrap(),
+            prefix: prefix.unwrap(),
             mapped: None,
-        };
+            vt_is_private: &ipv6_is_private
+        });
     } else {
-        return Err("Invalid IP {}", str);
+        return Err(format!("Invalid IP {}", str));
     }
 } //  pub fn initialize
+
+
+pub fn ipv6_is_private(my: &IPAddress) -> bool {
+    return IPAddress::parse(&String::from("fd00::/8")).includes(my);
+}
 
 // //
 // //  Returns the IPv6 address in uncompressed form:
@@ -162,15 +174,15 @@ pub fn new(str: &String) {
 //   self.prefix = ::prefix128::new(num)
 // }
 
-pub fn to_ip_str(addr: &BigUint) -> String {
-    // let mut ret = String::new();
-    // let part_mod = 1<<16;
-    // for (i = 128-16; i >= 0; i -= 16) {
-    //     ret.push_str((addr>>i).mod_floor(&part_mod).to_u16(
-    // }
-    // return ret.reserve().join()
-    return String::new();
-}
+// pub fn to_ip_str(addr: &BigUint) -> String {
+//     // let mut ret = String::new();
+//     // let part_mod = 1<<16;
+//     // for (i = 128-16; i >= 0; i -= 16) {
+//     //     ret.push_str((addr>>i).mod_floor(&part_mod).to_u16(
+//     // }
+//     // return ret.reserve().join()
+//     return String::new();
+// }
 
 //  Unlike its counterpart IPv6// to_string method, IPv6// to_string_uncompressed
 //  returns the whole IPv6 address and prefix in an uncompressed form
@@ -180,7 +192,7 @@ pub fn to_ip_str(addr: &BigUint) -> String {
 //    ip6.to_string_uncompressed
 //      // => "2001:0db8:0000:0000:0008:0800:200c:417a/64"
 //
-pub fn to_string_uncompressed(addr: &BigUint) -> String {
-    // return format!("{}/{}", self.address, self.prefix)
-    return String::new();
-}
+// pub fn to_string_uncompressed(addr: &BigUint) -> String {
+//     // return format!("{}/{}", self.address, self.prefix)
+//     return String::new();
+// }

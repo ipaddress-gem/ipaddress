@@ -49,7 +49,7 @@ use ipaddress::IPAddress;
 //    ip.to_s
 //       // => => "::/128"
 //
-pub fn unspecified() -> IPAddress {
-    return IPAddress::parse("::").unwrap();
+pub fn new() -> IPAddress {
+    return IPAddress::parse(&String::from("::")).unwrap();
 }
 //  class IPv6::Unspecified
