@@ -2,10 +2,14 @@
 // use num::bigint::BigUint;
 // use ip_bits::IpBits;
 use ipaddress::IPAddress;
-use core::str::FromStr;
 use core::result::Result;
 use num::bigint::BigUint;
+use core::str::FromStr;
 use num_traits::One;
+use num_traits::Num;
+use prefix128;
+// use core::fmt::Display;
+//use core::fmt::Display::fmt;
 // use core::fmt::Debug;
 // use ::prefix::Prefix;
 //use core::fmt::Display::fmt;
@@ -66,6 +70,31 @@ use num_traits::One;
 //
 //
 
+pub fn from_str<S: Into<String>>(_str: S, radix: u32, prefix: usize) -> Result<IPAddress, String> {
+    let str = _str.into();
+    let num = BigUint::from_str_radix(&str.clone(), radix);
+    if num.is_err() {
+        return Err(format!("unparsable {}", str));
+    }
+    return from_int(num.unwrap(), prefix);
+}
+
+pub fn from_int(adr: BigUint, prefix: usize) -> Result<IPAddress, String> {
+    let prefix = prefix128::new(prefix);
+    if prefix.is_err() {
+        return Err(prefix.unwrap_err());
+    }
+    return Ok(IPAddress {
+        ip_bits: ::ip_bits::v6(),
+        host_address: adr.clone(),
+        prefix: prefix.unwrap(),
+        mapped: None,
+        vt_is_private: ipv6_is_private,
+        vt_is_loopback: ipv6_is_loopback,
+        vt_to_ipv6: to_ipv6,
+    });
+}
+
 
 //  Creates a new IPv6 address object.
 //
@@ -82,9 +111,10 @@ use num_traits::One;
 //
 //    ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
 //
-pub fn new(str: &String) -> Result<IPAddress, String> {
-    let (ip, o_netmask) = IPAddress::split_at_slash(str);
-    if IPAddress::is_valid_ipv6(&ip) {
+pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
+    let str = _str.into();
+    let (ip, o_netmask) = IPAddress::split_at_slash(&str);
+    if IPAddress::is_valid_ipv6(ip.clone()) {
         let (o_num, _) = IPAddress::split_on_colon(&ip);
         if o_num.is_err() {
             return Err(o_num.unwrap_err());
@@ -126,7 +156,7 @@ pub fn ipv6_is_loopback(my: &IPAddress) -> bool {
 
 
 pub fn ipv6_is_private(my: &IPAddress) -> bool {
-    return IPAddress::parse(&String::from("fd00::/8")).unwrap().includes(my);
+    return IPAddress::parse("fd00::/8").unwrap().includes(my);
 }
 
 // //

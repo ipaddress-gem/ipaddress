@@ -3,6 +3,7 @@
 use num::bigint::BigUint;
 // use ip_bits::IpBits;
 use ipaddress::IPAddress;
+use prefix32;
 // use num_integer::Integer;
 
 
@@ -66,15 +67,32 @@ use num_traits::cast::FromPrimitive;
 //
 // mod IPv4 {
 
-pub fn new(str: &String) -> Result<IPAddress, String> {
-    let (ip, netmask) = IPAddress::split_at_slash(str);
-    if !IPAddress::is_valid_ipv4(&ip) {
+pub fn from_u32(addr: u32, prefix: usize) -> Result<IPAddress, String> {
+    let prefix = prefix32::new(prefix);
+    if prefix.is_err() {
+        return Err(prefix.unwrap_err());
+    }
+    return Ok(IPAddress {
+        ip_bits: ::ip_bits::v4(),
+        host_address: BigUint::from_u32(addr).unwrap(),
+        prefix: prefix.unwrap(),
+        mapped: None,
+        vt_is_private: ipv4_is_private,
+        vt_is_loopback: ipv4_is_loopback,
+        vt_to_ipv6: to_ipv6,
+    });
+}
+
+pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
+    let str = _str.into();
+    let (ip, netmask) = IPAddress::split_at_slash(&str);
+    if !IPAddress::is_valid_ipv4(ip.clone()) {
         return Err(format!("Invalid IP {}", str));
     }
     let mut prefix = ::prefix32::new(32);
     if netmask.is_some() {
         //  netmask is defined
-        prefix = ::prefix32::parse_netmask(&netmask.unwrap());
+        prefix = ::prefix32::parse_netmask(netmask.unwrap());
         if prefix.is_err() {
             return Err(prefix.unwrap_err());
         }
@@ -95,14 +113,14 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
 }
 
 fn ipv4_is_private(my: &IPAddress) -> bool {
-    return [IPAddress::parse(&String::from("10.0.0.0/8")).unwrap(),
-     IPAddress::parse(&String::from("172.16.0.0/12")).unwrap(),
-     IPAddress::parse(&String::from("192.168.0.0/16")).unwrap()]
+    return [IPAddress::parse("10.0.0.0/8").unwrap(),
+     IPAddress::parse("172.16.0.0/12").unwrap(),
+     IPAddress::parse("192.168.0.0/16").unwrap()]
      .iter().find(|i| i.includes(my)).is_some();
 }
 
 fn ipv4_is_loopback(my: &IPAddress) -> bool {
-    return IPAddress::parse(&String::from("127.0.0.0/8"))
+    return IPAddress::parse("127.0.0.0/8")
         .unwrap().includes(my);
 }
 
@@ -973,11 +991,12 @@ pub fn is_class_c(my: &IPAddress) -> bool {
 //  prefix of /24 or 255.255.255.0
 //
 #[allow(dead_code)]
-pub fn parse_classful(ip_s: &String) -> Result<IPAddress, String> {
-    if IPAddress::is_valid_ipv4(ip_s) {
-        return Err(format!("Invalid IP {}", ip_s));
+pub fn parse_classful<S: Into<String>>(ip_s: S) -> Result<IPAddress, String> {
+    let ip_si = ip_s.into();
+    if IPAddress::is_valid_ipv4(ip_si.clone()) {
+        return Err(format!("Invalid IP {}", ip_si));
     }
-    let o_ip = IPAddress::parse(ip_s);
+    let o_ip = IPAddress::parse(ip_si.clone());
     if o_ip.is_err() {
         return o_ip;
     }

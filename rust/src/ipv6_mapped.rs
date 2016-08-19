@@ -85,8 +85,9 @@ use core::ops::Shr;
 //    ip6.to_string
 //      // => "::ffff:13.1.68.3"
 //
-pub fn new(str: &String) -> Result<IPAddress, String> {
-    let (ip, o_netmask) = IPAddress::split_at_slash(str);
+pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
+    let str = _str.into();
+    let (ip, o_netmask) = IPAddress::split_at_slash(&str);
     let split_colon = ip.split(':').collect::<Vec<&str>>();
     // let mapped: Option<IPAddress> = None;
     let mut netmask = String::from("");
@@ -94,8 +95,8 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
         netmask = o_netmask.unwrap();
     }
     let ipv4_str = String::from(*split_colon.iter().last().unwrap());
-    if IPAddress::is_valid_ipv4(&ipv4_str) {
-        let ipv4 = IPAddress::parse(&format!("{}{}", ipv4_str, netmask));
+    if IPAddress::is_valid_ipv4(ipv4_str.clone()) {
+        let ipv4 = IPAddress::parse(format!("{}{}", ipv4_str, netmask));
         if ipv4.is_err() {
             return ipv4;
         }
@@ -104,7 +105,7 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
         let part_mod = ::ip_bits::v6().part_mod;
         let up_addr = addr.host_address.clone();
         let down_addr = addr.host_address.clone();
-        return IPAddress::parse(&format!("::ffff:{}:{}/{}",
+        return IPAddress::parse(format!("::ffff:{}:{}/{}",
             up_addr.shr(::ip_bits::v6().part_bits).mod_floor(&part_mod).to_u16().unwrap(),
             down_addr.mod_floor(&part_mod).to_u16().unwrap(),
             addr.prefix.num));
@@ -115,7 +116,7 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
         if !last_1.is_some() || !last_2.is_some() {
             return Err(format!("unknown hex mapped format:{}", str));
         }
-        return IPAddress::parse(&format!("::ffff:{}:{}{}", last_2.unwrap(), last_1.unwrap(), netmask));
+        return IPAddress::parse(format!("::ffff:{}:{}{}", last_2.unwrap(), last_1.unwrap(), netmask));
     }
     return Err(format!("unknown mapped format:{}", str));
 }

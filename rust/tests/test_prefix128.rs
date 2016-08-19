@@ -6,13 +6,13 @@ extern crate num;
 
 #[cfg(test)]
 mod tests {
-    use ipaddress::Prefix128;
+    use ipaddress::prefix128;
     use std::collections::HashMap;
     use num::bigint::BigUint;
 
 
     struct Prefix128Test {
-        u128_hash: HashMap<u8, BigUint>,
+        u128_hash: HashMap<usize, BigUint>,
     }
 
     impl Prefix128Test {
@@ -33,8 +33,8 @@ mod tests {
         #[allow(unused_attributes)]
         #[test]
         pub fn test_initialize() {
-            assert!(Prefix128::new(129).is_err());
-            assert!(!Prefix128::new(64).is_ok());
+            assert!(prefix128::new(129).is_err());
+            assert!(!prefix128::new(64).is_ok());
         }
 
         #[allow(dead_code)]
@@ -42,7 +42,7 @@ mod tests {
         #[allow(unused_variables)]
         #[test]
         pub fn test_method_bits() {
-            let prefix = Prefix128::new(64).unwrap();
+            let prefix = prefix128::new(64).unwrap();
             let mut str = String::new();
             for i in 0..63 {
                 str.push_str("1");
@@ -57,7 +57,7 @@ mod tests {
         #[test]
         pub fn test_method_to_u32() {
             for (num, u128) in Prefix128Test::setup().u128_hash {
-                assert_eq!(u128, Prefix128::new(num).unwrap().net_mask())
+                assert_eq!(u128, prefix128::new(num).unwrap().net_mask())
             }
         }
     }

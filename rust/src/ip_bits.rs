@@ -9,6 +9,8 @@ use num_traits::FromPrimitive;
 use core::convert::From;
 //use core::marker::Copy;
 use core::clone::Clone;
+use std::fmt;
+use rle;
 
 #[allow(dead_code)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -18,6 +20,7 @@ pub enum IpVersion { V4, V6 }
 pub struct IpBits {
     pub version: IpVersion,
     pub vt_as_compressed_string: fn(&IpBits, &BigUint) -> String,
+    pub vt_as_uncompressed_string: fn(&IpBits, &BigUint) -> String,
     pub bits: usize,
     pub part_bits: usize,
     pub dns_bits: usize,
@@ -31,6 +34,7 @@ impl Clone for IpBits {
         IpBits {
             version: self.version,
             vt_as_compressed_string: self.vt_as_compressed_string,
+            vt_as_uncompressed_string: self.vt_as_uncompressed_string,
             bits: self.bits,
             part_bits: self.part_bits,
             dns_bits: self.dns_bits,
@@ -40,6 +44,13 @@ impl Clone for IpBits {
         }
     }
 }
+
+impl fmt::Debug for IpBits {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "IpBits: {:?}", self.version)
+    }
+}
+
 
 impl IpBits {
     #[allow(unused_variables)]
@@ -57,6 +68,10 @@ impl IpBits {
 
     pub fn as_compressed_string(&self, bu: &BigUint) -> String {
         return (self.vt_as_compressed_string)(self, bu);
+    }
+    #[allow(dead_code)]
+    pub fn as_uncompressed_string(&self, bu: &BigUint) -> String {
+        return (self.vt_as_uncompressed_string)(self, bu);
     }
 
     //  Returns the IP address in in-addr.arpa format
@@ -110,6 +125,20 @@ fn ipv4_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
 }
 fn ipv6_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
     let mut ret = String::new();
+    let the_colon = String::from(":");
+    let mut colon = &String::from("");
+    for rle in rle::code(&ip_bits.parts(host_address)) {
+       for _ in 0..rle.cnt {
+         if !(rle.part == 0 && rle.max) {
+             ret.push_str(&format!("{}{:x}", colon, rle.part));
+             colon = &the_colon;
+         }
+       }
+    }
+    return ret;
+  }
+fn ipv6_as_uncompressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
+    let mut ret = String::new();
     let mut sep = "";
     for part in ip_bits.parts(host_address) {
         ret.push_str(sep);
@@ -125,6 +154,7 @@ pub fn v4() -> IpBits {
     IpBits {
     version: IpVersion::V4,
     vt_as_compressed_string: ipv4_as_compressed,
+    vt_as_uncompressed_string: ipv4_as_compressed,
     bits: 32,
     part_bits: 8,
     dns_bits: 8,
@@ -138,6 +168,7 @@ pub fn v6() -> IpBits {
     return IpBits {
      version: IpVersion::V6,
      vt_as_compressed_string: ipv6_as_compressed,
+     vt_as_uncompressed_string: ipv6_as_uncompressed,
      bits: 128,
      part_bits: 16,
      dns_bits: 8,

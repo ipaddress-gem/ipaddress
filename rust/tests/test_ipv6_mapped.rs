@@ -1,62 +1,94 @@
-class IPv6MappedTest < Test::Unit::TestCase
+extern crate ipaddress;
+extern crate num;
 
-  def setup
-    @klass = IPAddress::IPv6::Mapped
-    @ip = @klass.new("::172.16.10.1")
-    @s = "::ffff:172.16.10.1"
-    @str = "::ffff:172.16.10.1/128"
-    @string = "0000:0000:0000:0000:0000:ffff:ac10:0a01/128"
-    @u128 = 281473568475649
-    @address = "::ffff:ac10:a01"
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use num::bigint::BigUint;
+    use std::str::FromStr;
+    use ipaddress::ipv6_mapped;
+    use ipaddress::IPAddress;
 
-    @valid_mapped = {'::13.1.68.3' , 281470899930115,
-      '0:0:0:0:0:ffff:129.144.52.38' , 281472855454758,
-      '::ffff:129.144.52.38' , 281472855454758}
+    struct IPv6MappedTest {
+        pub ip: IPAddress,
+        pub s: &'static str,
+        pub sstr: &'static str,
+        pub string: &'static str,
+        pub u128: BigUint,
+        pub address: &'static str,
+        pub valid_mapped: HashMap<&'static str, BigUint>,
+        pub valid_mapped_ipv6: HashMap<&'static str, BigUint>,
+        pub valid_mapped_ipv6_conversion: HashMap<&'static str, &'static str>,
+    }
 
-    @valid_mapped_ipv6 = {'::0d01:4403' , 281470899930115,
-      '0:0:0:0:0:ffff:8190:3426' , 281472855454758,
-      '::ffff:8190:3426' , 281472855454758}
+    pub fn setup() -> IPv6MappedTest {
+        let valid_mapped = HashMap::new();
+        valid_mapped.insert("::13.1.68.3", BigUint::from_str("281470899930115").unwrap());
+        valid_mapped.insert("0:0:0:0:0:ffff:129.144.52.38",
+                            BigUint::from_str("281472855454758").unwrap());
+        valid_mapped.insert("::ffff:129.144.52.38",
+                            BigUint::from_str("281472855454758").unwrap());
+        let valid_mapped_ipv6 = HashMap::new();
+        valid_mapped_ipv6.insert("::0d01:4403", BigUint::from_str("281470899930115").unwrap());
+        valid_mapped_ipv6.insert("0:0:0:0:0:ffff:8190:3426",
+                                 BigUint::from_str("281472855454758").unwrap());
+        valid_mapped_ipv6.insert("::ffff:8190:3426",
+                                 BigUint::from_str("281472855454758").unwrap());
+        let valid_mapped_ipv6_conversion = HashMap::new();
+        valid_mapped_ipv6_conversion.insert("::0d01:4403", "13.1.68.3");
+        valid_mapped_ipv6_conversion.insert("0:0:0:0:0:ffff:8190:3426", "129.144.52.38");
+        valid_mapped_ipv6_conversion.insert("::ffff:8190:3426", "129.144.52.38");
+        return IPv6MappedTest {
+            ip: ipv6_mapped::new("::172.16.10.1").unwrap(),
+            s: "::ffff:172.16.10.1",
+            sstr: "::ffff:172.16.10.1/128",
+            string: "0000:0000:0000:0000:0000:ffff:ac10:0a01/128",
+            u128: BigUint::from_str("281473568475649").unwrap(),
+            address: "::ffff:ac10:a01",
+            valid_mapped: valid_mapped,
+            valid_mapped_ipv6: valid_mapped_ipv6,
+            valid_mapped_ipv6_conversion: valid_mapped_ipv6_conversion,
+        };
+    }
 
-    @valid_mapped_ipv6_conversion = {'::0d01:4403' , "13.1.68.3",
-      '0:0:0:0:0:ffff:8190:3426' , "129.144.52.38",
-      '::ffff:8190:3426' , "129.144.52.38"}
 
-  end
-
-  fn test_initialize() {
-    assert_nothing_raised {@klass.new("::172.16.10.1")}
-    assert_instance_of @klass, @ip
-    @valid_mapped.each do |ip, u128|
-      assert_nothing_raised {@klass.new ip}
-      assert_equal u128, @klass.new(ip).to_u128
-    end
-    @valid_mapped_ipv6.each do |ip, u128|
-      assert_nothing_raised {@klass.new ip}
-      assert_equal u128, @klass.new(ip).to_u128
-    end
+    impl IPv6MappedTest {
+        #[test]
+        pub fn test_initialize() {
+            let s = setup();
+            assert_eq!(true, ipv6_mapped::new("::172.16.10.1").is_ok());
+            for (ip, u128) in s.valid_mapped {
+                assert_eq!(true, ipv6_mapped::new(ip).is_ok());
+                assert_eq!(u128, ipv6_mapped::new(ip).unwrap().host_address);
+            }
+            for (ip, u128) in s.valid_mapped_ipv6 {
+                assert_eq!(true, ipv6_mapped::new(ip).is_ok());
+                assert_eq!(u128, ipv6_mapped::new(ip).unwrap().host_address);
+            }
+        }
+        #[test]
+        pub fn test_mapped_from_ipv6_conversion() {
+            for (ip6, ip4) in setup().valid_mapped_ipv6_conversion {
+                assert_eq!(ip4, IPAddress::parse(ip6).ipv4().to_s());
+            }
+        }
+        #[test]
+        pub fn test_attributes() {
+            let s = setup();
+            assert_eq!(s.address, s.ip.to_stcompressed);
+            assert_eq!(128, s.ip.prefix.num);
+            assert_eq!(s.s, s.ip.to_s());
+            assert_eq!(s.sstr, s.ip.to_string());
+            assert_eq!(s.string, s.ip.to_string_uncompressed());
+            assert_eq!(s.u128, s.ip.host_address);
+        }
+        #[test]
+        fn test_method_ipv6() {
+            assert!(setup().ip.is_ipv6());
+        }
+        #[test]
+        fn test_mapped() {
+            assert!(setup().ip.is_mapped());
+        }
+    } // class IPv6MappedTest
 }
-
-  fn test_mapped_from_ipv6_conversion() {
-    for (ip6, ip4) in setup().valid_mapped_ipv6_conversion {
-      assert_eq!(ip4, IPAddress::parse(ip6).ipv4().to_s())
-  }
-}
-
-  fn test_attributes() {
-    assert_eq!( @address, @ip.compressed
-    assert_eq!( 128, @ip.prefix
-    assert_eq!( @s, @ip.to_s
-    assert_eq!( @str, @ip.to_string
-    assert_eq!( @string, @ip.to_string_uncompressed
-    assert_eq!( @u128, @ip.to_u128
-}
-
-  fn test_method_ipv6() {
-    assert!(setup().ip.is_ipv6)
-}
-
-  fn test_mapped() {
-    assert!(setup().ip.is_mapped())
-  }
-
-} // class IPv6MappedTest

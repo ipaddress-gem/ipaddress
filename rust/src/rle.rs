@@ -2,15 +2,26 @@ use std::collections::HashMap;
 
 #[derive(Debug, Copy, Clone)]
 pub struct Rle {
-    part: u16,
-    pos: u16,
-    cnt: u16,
-    max: bool
+    pub part: u16,
+    pub pos: u16,
+    pub cnt: u16,
+    pub max: bool
+}
+
+impl PartialEq for Rle {
+    fn eq(&self, other: &Self) -> bool {
+        return self.part == other.part && self.pos == other.pos &&
+                self.cnt == other.cnt && self.max == other.max;
+    }
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
+    }
 }
 
 
+
 #[allow(dead_code)]
-pub fn rle_code(parts: &Vec<u16>) -> Vec<Rle> {
+pub fn code(parts: &Vec<u16>) -> Vec<Rle> {
     let mut ret : Vec<Rle> = Vec::new();
     let mut last : Option<Rle> = None;
     let mut max_poses: HashMap<u16, u16> = HashMap::new();

@@ -63,15 +63,16 @@ pub fn new(num: usize) -> Result<::prefix::Prefix, String> {
     return Err(format!("Prefix must be in range 0..32, got: {}", num));
 }
 
-pub fn parse_netmask(netmask: &String) -> Result<::prefix::Prefix, String> {
-    if !IPAddress::is_valid_ipv4(netmask) {
+pub fn parse_netmask<S: Into<String>>(_netmask: S) -> Result<::prefix::Prefix, String> {
+    let netmask = _netmask.into();
+    if !IPAddress::is_valid_ipv4(netmask.clone()) {
         let re = Regex::new(r"^\d{1,2}$").unwrap();
-        if re.is_match(netmask) {
+        if re.is_match(&netmask) {
             return new(netmask.parse::<usize>().unwrap());
         }
         return Err(format!("Error wrong netmask {}", netmask));
     }
-    let res_ip = IPAddress::split_to_u32(netmask);
+    let res_ip = IPAddress::split_to_u32(&netmask);
     if res_ip.is_err() {
         return Err(res_ip.unwrap_err());
     }

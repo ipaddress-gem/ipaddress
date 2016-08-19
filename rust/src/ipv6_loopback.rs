@@ -46,5 +46,5 @@ use ipaddress::IPAddress;
 //
 #[allow(dead_code)]
 pub fn new() -> IPAddress {
-    return IPAddress::parse(&String::from("::1")).unwrap();
+    return IPAddress::parse("::1").unwrap();
 }

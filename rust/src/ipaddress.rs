@@ -16,6 +16,7 @@ use ip_bits::IpBits;
 use prefix::Prefix;
 use regex::Regex;
 use std::f64;
+use std::fmt;
 
 use num_traits::identities::Zero;
 use num_traits::identities::One;
@@ -44,6 +45,13 @@ pub struct IPAddress {
     pub vt_is_loopback: fn(&IPAddress) -> bool,
     pub vt_to_ipv6: fn(&IPAddress) -> IPAddress
 }
+
+impl fmt::Debug for IPAddress {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "IPAddress: {}", self.to_string())
+    }
+}
+
 
 impl Clone for IPAddress {
     fn clone(&self) -> IPAddress {
@@ -90,16 +98,17 @@ impl IPAddress {
     //  ip_mapped.class
     //    //=> IPAddress::IPv6::Mapped
     //
-    pub fn parse(str: &String) -> Result<IPAddress, String> {
+    pub fn parse<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
+        let str = _str.into();
         let re_mapped = Regex::new(r":.+\.").unwrap();
         let re_ipv4 = Regex::new(r"\.").unwrap();
         let re_ipv6 = Regex::new(r":").unwrap();
-        if re_mapped.is_match(str) {
+        if re_mapped.is_match(&str) {
             return ::ipv6_mapped::new(str);
         } else {
-            if re_ipv4.is_match(str) {
+            if re_ipv4.is_match(&str) {
                 return ::ipv4::new(str);
-            } else if re_ipv6.is_match(str) {
+            } else if re_ipv6.is_match(&str) {
                 return ::ipv6::new(str);
             }
         }
@@ -167,8 +176,9 @@ impl IPAddress {
     //     //=> false
     //
     #[allow(dead_code)]
-    pub fn is_valid(addr: &String) -> bool {
-        IPAddress::is_valid_ipv4(addr) || IPAddress::is_valid_ipv6(addr)
+    pub fn is_valid<S: Into<String>>(_addr: S) -> bool {
+        let addr = _addr.into();
+        return IPAddress::is_valid_ipv4(addr.clone()) || IPAddress::is_valid_ipv6(addr);
     }
 
 
@@ -201,8 +211,8 @@ impl IPAddress {
         return Ok(ip);
     }
     #[allow(dead_code)]
-    pub fn is_valid_ipv4(addr: &String) -> bool {
-        return IPAddress::split_to_u32(addr).is_ok();
+    pub fn is_valid_ipv4<S: Into<String>>(addr: S) -> bool {
+        return IPAddress::split_to_u32(&addr.into()).is_ok();
     }
 
     // Checks if the argument is a valid IPv4 netmask
@@ -212,8 +222,8 @@ impl IPAddress {
     //     //=> true
     //
     #[allow(dead_code)]
-    pub fn valid_ipv4_netmask(addr: &String) -> bool {
-        return ::prefix32::parse_netmask(addr).is_ok();
+    pub fn valid_ipv4_netmask<S: Into<String>>(addr: S) -> bool {
+        return ::prefix32::parse_netmask(addr.into()).is_ok();
     }
 
     // Checks if the given string is a valid IPv6 address
@@ -270,8 +280,8 @@ impl IPAddress {
         return ret;
     }
     #[allow(dead_code)]
-    pub fn is_valid_ipv6(addr: &String) -> bool {
-        return IPAddress::split_to_num(addr).is_ok();
+    pub fn is_valid_ipv6<S: Into<String>>(addr: S) -> bool {
+        return IPAddress::split_to_num(&addr.into()).is_ok();
     }
 
 
@@ -325,6 +335,10 @@ impl IPAddress {
              ret.push(*stack[i].clone());
         }
         return ret;
+    }
+
+    pub fn parts(&self) -> Vec<u16> {
+        return self.ip_bits.parts(&self.host_address);
     }
 
     // Summarization (or aggregation) is the process when two or more
@@ -465,7 +479,7 @@ impl IPAddress {
     //  See IPAddress::IPv6::Unspecified for more information
     //
     #[allow(dead_code)]
-    pub fn unspecified(&self) -> bool {
+    pub fn is_unspecified(&self) -> bool {
         return self.host_address == BigUint::zero();
     }
 
@@ -474,16 +488,17 @@ impl IPAddress {
     //  See IPAddress::IPv6::Loopback for more information
     //
     #[allow(dead_code)]
-    pub fn loopback(&self) -> bool {
+    pub fn is_loopback(&self) -> bool {
         return (self.vt_is_loopback)(self);
     }
+
 
     //  Returns true if the address is a mapped address
     //
     //  See IPAddress::IPv6::Mapped for more information
     //
     #[allow(dead_code)]
-    pub fn mapped(&self) -> bool {
+    pub fn is_mapped(&self) -> bool {
         return self.mapped.is_some() &&
             (self.host_address.clone() >> 32) == ((BigUint::one() << 1) - BigUint::one());
     }
@@ -578,11 +593,29 @@ impl IPAddress {
     #[allow(dead_code)]
     pub fn to_string(&self) -> String {
         let mut ret = String::new();
-        ret.push_str(&self.ip_bits.as_compressed_string(&self.host_address));
+        ret.push_str(&self.to_s());
         ret.push_str("/");
         ret.push_str(&self.prefix.to_s());
         return ret;
     }
+
+    pub fn to_s(&self) -> String {
+        return self.ip_bits.as_compressed_string(&self.host_address);
+    }
+
+    #[allow(dead_code)]
+    pub fn to_string_uncompressed(&self) -> String {
+        let mut ret = String::new();
+        ret.push_str(&self.to_s_uncompressed());
+        ret.push_str("/");
+        ret.push_str(&self.prefix.to_s());
+        return ret;
+    }
+    #[allow(dead_code)]
+    pub fn to_s_uncompressed(&self) -> String {
+        return self.ip_bits.as_uncompressed_string(&self.host_address);
+    }
+
 
     //  Returns the prefix as a string in IP format
     //

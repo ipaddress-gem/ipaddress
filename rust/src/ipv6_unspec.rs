@@ -51,6 +51,6 @@ use ipaddress::IPAddress;
 //
 #[allow(dead_code)]
 pub fn new() -> IPAddress {
-    return IPAddress::parse(&String::from("::")).unwrap();
+    return IPAddress::parse("::").unwrap();
 }
 //  class IPv6::Unspecified
