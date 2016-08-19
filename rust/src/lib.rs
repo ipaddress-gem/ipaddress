@@ -19,8 +19,6 @@ mod prefix;
 
 mod ipaddress;
 
-mod ipv4;
-mod prefix32;
 
 mod prefix128;
 mod ipv6;
@@ -28,6 +26,8 @@ mod ipv6_loopback;
 mod ipv6_mapped;
 mod ipv6_unspec;
 
+mod prefix32;
+mod ipv4;
 
 //pub use prefix32::Prefix32;
 //pub use prefix128::Prefix128;

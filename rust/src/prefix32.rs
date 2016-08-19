@@ -15,6 +15,7 @@
 use ipaddress::IPAddress;
 // use ipaddress::IPv4;
 use regex::Regex;
+use core::result::Result;
 //use ip_bits::IpBits;
 
 
@@ -26,7 +27,7 @@ use regex::Regex;
 //
 // impl Prefix32 {
 #[allow(unused_variables)]
-fn from(my: &::prefix::Prefix, num: u8) -> Result<::prefix::Prefix, String> {
+fn from(my: &::prefix::Prefix, num: usize) -> Result<::prefix::Prefix, String> {
     return new(num);
 }
 //  Gives the prefix in IPv4 dotted decimal format,
@@ -46,16 +47,16 @@ fn from(my: &::prefix::Prefix, num: u8) -> Result<::prefix::Prefix, String> {
 // }
 
 #[allow(unused_comparisons)]
-pub fn new(num: u8) -> Result<::prefix::Prefix, String> {
+pub fn new(num: usize) -> Result<::prefix::Prefix, String> {
     if 0 <= num && num <= 32 {
-        static _FROM: &'static (Fn(&::prefix::Prefix, u8) -> Result<::prefix::Prefix, String>) =
+        //static _FROM: &'static (Fn(&::prefix::Prefix, usize) -> Result<::prefix::Prefix, String>) =
             &from;
         //static _TO_IP_STR: &'static (Fn(&Vec<u16>) -> String) = &to_ip_str;
         return Ok(::prefix::Prefix {
             num: num,
-            ip_bits: ::ip_bits::IP_BITS_V4,
+            ip_bits: ::ip_bits::v4(),
             in_mask: ::prefix::Prefix::in_mask(32),
-            vt_from: _FROM,
+            vt_from: from,
             //vt_to_ip_str: _TO_IP_STR,
         });
     }
@@ -66,7 +67,7 @@ pub fn parse_netmask(netmask: &String) -> Result<::prefix::Prefix, String> {
     if !IPAddress::is_valid_ipv4(netmask) {
         let re = Regex::new(r"^\d{1,2}$").unwrap();
         if re.is_match(netmask) {
-            return new(netmask.to_u8());
+            return new(netmask.parse::<usize>().unwrap());
         }
         return Err(format!("Error wrong netmask {}", netmask));
     }
@@ -74,7 +75,7 @@ pub fn parse_netmask(netmask: &String) -> Result<::prefix::Prefix, String> {
     if res_ip.is_err() {
         return Err(res_ip.unwrap_err());
     }
-    let ip = res_ip.unwrap();
+    let mut ip = res_ip.unwrap();
     let mut nulls = 0;
     while nulls < 32 {
         if 0 != (ip & 0x1) {

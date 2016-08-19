@@ -1,5 +1,5 @@
 
-
+// use core::fmt::Debug;
 use prefix::Prefix;
 
 // #[derive(Ord,PartialOrd,Eq,PartialEq,Debug,Copy,Clone)]
@@ -13,23 +13,23 @@ use prefix::Prefix;
 //    prefix = IPAddressPrefix128.new 64
 //      // => 64
 //
-#[allow(unused_comparisons)]
-pub fn new(num: u8) -> Result<Prefix, String> {
-    if 0 <= num && num <= 128 {
-        static _FROM: &'static (Fn(&Prefix, u8) -> Result<Prefix, String>) = &from;
+//#[allow(unused_comparisons)]
+pub fn new(num: usize) -> Result<Prefix, String> {
+    if num <= 128 {
+        //static _FROM: &'static (Fn(&Prefix, usize) -> Result<Prefix, String>) = &from;
         //static _TO_IP_STR: &'static (Fn(&Vec<u16>) -> String) = &Prefix128::to_ip_str;
         return Ok(Prefix {
             num: num,
-            ip_bits: ::ip_bits::IP_BITS_V6,
+            ip_bits: ::ip_bits::v6(),
             in_mask: Prefix::in_mask(128),
-            vt_from: _FROM, // vt_to_ip_str: _TO_IP_STR
+            vt_from: from, // vt_to_ip_str: _TO_IP_STR
         });
     }
     return Err(format!("Prefix must be in range 0..128, got: {}", num));
 }
 
 #[allow(unused_variables)]
-pub fn from(my: &Prefix, num: u8) -> Result<Prefix, String> {
+pub fn from(my: &Prefix, num: usize) -> Result<Prefix, String> {
     return new(num);
 }
 

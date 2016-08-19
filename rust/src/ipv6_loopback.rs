@@ -44,6 +44,7 @@ use ipaddress::IPAddress;
 //    ip.to_string
 //      // => "::1/128"
 //
+#[allow(dead_code)]
 pub fn new() -> IPAddress {
     return IPAddress::parse(&String::from("::1")).unwrap();
 }

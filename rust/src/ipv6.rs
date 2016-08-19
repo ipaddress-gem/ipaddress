@@ -1,9 +1,13 @@
 
-use num::bigint::BigUint;
-use ip_bits::IpBits;
+// use num::bigint::BigUint;
+// use ip_bits::IpBits;
 use ipaddress::IPAddress;
 use core::str::FromStr;
-
+use core::result::Result;
+use num::bigint::BigUint;
+use num_traits::One;
+// use core::fmt::Debug;
+// use ::prefix::Prefix;
 //use core::fmt::Display::fmt;
 //  =Name
 //
@@ -81,37 +85,48 @@ use core::str::FromStr;
 pub fn new(str: &String) -> Result<IPAddress, String> {
     let (ip, o_netmask) = IPAddress::split_at_slash(str);
     if IPAddress::is_valid_ipv6(&ip) {
-        let o_num = IPAddress::split_on_colon(&ip);
+        let (o_num, _) = IPAddress::split_on_colon(&ip);
         if o_num.is_err() {
             return Err(o_num.unwrap_err());
         }
         let mut netmask = 128;
         if o_netmask.is_some() {
-            let num_mask = u8::from_str(o_netmask.unwrap());
+            let network = o_netmask.unwrap();
+            let num_mask = u8::from_str(&network);
             if num_mask.is_err() {
                 return Err(format!("Invalid Netmask {}", str));
             }
-            netmask = o_netmask.unwrap();
+            netmask = network.parse::<usize>().unwrap();
         }
         let prefix = ::prefix128::new(netmask);
         if prefix.is_err() {
             return Err(prefix.unwrap_err());
         }
         return Ok(IPAddress {
-            ip_bits: &::ip_bits::IP_BITS_V6,
+            ip_bits: ::ip_bits::v6(),
             host_address: o_num.unwrap(),
             prefix: prefix.unwrap(),
             mapped: None,
-            vt_is_private: &ipv6_is_private
+            vt_is_private: ipv6_is_private,
+            vt_is_loopback: ipv6_is_loopback,
+            vt_to_ipv6: to_ipv6
         });
     } else {
         return Err(format!("Invalid IP {}", str));
     }
 } //  pub fn initialize
 
+pub fn to_ipv6(ia: &IPAddress) -> IPAddress {
+    return ia.clone();
+}
+
+pub fn ipv6_is_loopback(my: &IPAddress) -> bool {
+    return my.host_address == BigUint::one();
+}
+
 
 pub fn ipv6_is_private(my: &IPAddress) -> bool {
-    return IPAddress::parse(&String::from("fd00::/8")).includes(my);
+    return IPAddress::parse(&String::from("fd00::/8")).unwrap().includes(my);
 }
 
 // //

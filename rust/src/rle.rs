@@ -1,12 +1,15 @@
 use std::collections::HashMap;
 
-struct Rle {
+#[derive(Debug, Copy, Clone)]
+pub struct Rle {
     part: u16,
     pos: u16,
     cnt: u16,
     max: bool
 }
 
+
+#[allow(dead_code)]
 pub fn rle_code(parts: &Vec<u16>) -> Vec<Rle> {
     let mut ret : Vec<Rle> = Vec::new();
     let mut last : Option<Rle> = None;
@@ -20,7 +23,7 @@ pub fn rle_code(parts: &Vec<u16>) -> Vec<Rle> {
                     let mut _last = last.unwrap();
                     let max_pos = max_poses.entry(_last.part).or_insert(_last.pos);
                     if _last.pos != *max_pos {
-                        let prev = ret.get(*max_pos as usize).unwrap();
+                        let ref mut prev = ret[*max_pos as usize];
                         if prev.cnt >= _last.cnt {
                             _last.max = false;
                         } else {

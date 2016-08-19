@@ -49,6 +49,7 @@ use ipaddress::IPAddress;
 //    ip.to_s
 //       // => => "::/128"
 //
+#[allow(dead_code)]
 pub fn new() -> IPAddress {
     return IPAddress::parse(&String::from("::")).unwrap();
 }

@@ -1,13 +1,17 @@
+// use core::fmt::Debug;
 
 use num::bigint::BigUint;
-use ip_bits::IpBits;
+// use ip_bits::IpBits;
 use ipaddress::IPAddress;
-use num_integer::Integer;
+// use num_integer::Integer;
 
-use num_traits::identities::One;
 
-use num_traits::cast::ToPrimitive;
+// use num_traits::identities::One;
+
+// use num_traits::cast::ToPrimitive;
 use num_traits::cast::FromPrimitive;
+
+// use prefix::Prefix;
 // use prefix::Prefix;
 // use prefix::Prefix32;
 // use regex::Regex;
@@ -70,30 +74,50 @@ pub fn new(str: &String) -> Result<IPAddress, String> {
     let mut prefix = ::prefix32::new(32);
     if netmask.is_some() {
         //  netmask is defined
-        prefix = ::prefix32::parse_netmask(netmask.unwrap());
+        prefix = ::prefix32::parse_netmask(&netmask.unwrap());
         if prefix.is_err() {
             return Err(prefix.unwrap_err());
         }
     }
-    let split_u32 = IPAddress::split_to_u32(ip);
+    let split_u32 = IPAddress::split_to_u32(&ip);
     if split_u32.is_err() {
         return Err(split_u32.unwrap_err());
     }
     return Ok(IPAddress {
-        ip_bits: &::ip_bits::IP_BITS_V4,
-        host_address: BigUint::from_u32(split_u32.unwrap()),
+        ip_bits: ::ip_bits::v4(),
+        host_address: BigUint::from_u32(split_u32.unwrap()).unwrap(),
         prefix: prefix.unwrap(),
         mapped: None,
-        vt_is_private: &ipv4_is_private,
+        vt_is_private: ipv4_is_private,
+        vt_is_loopback: ipv4_is_loopback,
+        vt_to_ipv6: to_ipv6,
     });
 }
 
 fn ipv4_is_private(my: &IPAddress) -> bool {
-    [IPAddress::parse(&String::from("10.0.0.0/8")),
-     IPAddress::parse(&String::from("172.16.0.0/12")),
-     IPAddress::parse(&String::from("192.168.0.0/16"))]
-        .find(|i| i.includes(my));
+    return [IPAddress::parse(&String::from("10.0.0.0/8")).unwrap(),
+     IPAddress::parse(&String::from("172.16.0.0/12")).unwrap(),
+     IPAddress::parse(&String::from("192.168.0.0/16")).unwrap()]
+     .iter().find(|i| i.includes(my)).is_some();
 }
+
+fn ipv4_is_loopback(my: &IPAddress) -> bool {
+    return IPAddress::parse(&String::from("127.0.0.0/8"))
+        .unwrap().includes(my);
+}
+
+pub fn to_ipv6(ia: &IPAddress) -> IPAddress {
+        return IPAddress {
+            ip_bits: ::ip_bits::v6(),
+            host_address: ia.host_address.clone(),
+            prefix: ::prefix128::new(ia.prefix.num).unwrap(),
+            mapped: None,
+            vt_is_private: ::ipv6::ipv6_is_private,
+            vt_is_loopback: ::ipv6::ipv6_is_loopback,
+            vt_to_ipv6: ::ipv6::to_ipv6
+        }
+}
+
 
 
 
@@ -750,8 +774,7 @@ fn ipv4_is_private(my: &IPAddress) -> bool {
 //    ip.a?
 //      // => true
 //
-
-
+#[allow(dead_code)]
 pub fn is_class_a(my: &IPAddress) -> bool {
     return my.is_ipv4() && my.host_address < BigUint::from_u32(0x80000000).unwrap();
 }
@@ -767,6 +790,7 @@ pub fn is_class_a(my: &IPAddress) -> bool {
 //    ip.b?
 //      // => true
 //
+#[allow(dead_code)]
 pub fn is_class_b(my: &IPAddress) -> bool {
     return my.is_ipv4() &&
         BigUint::from_u32(0x80000000).unwrap() <= my.host_address &&
@@ -784,10 +808,11 @@ pub fn is_class_b(my: &IPAddress) -> bool {
 //    ip.c?
 //      // => true
 //
+#[allow(dead_code)]
 pub fn is_class_c(my: &IPAddress) -> bool {
     return my.is_ipv4() &&
         BigUint::from_u32(0xc0000000).unwrap() <= my.host_address &&
-        my.host_address <= u32::MAX;
+        my.host_address < BigUint::from_u32(0xe0000000).unwrap();
 }
 
 //  Return the ip address in a format compatible
@@ -800,12 +825,12 @@ pub fn is_class_c(my: &IPAddress) -> bool {
 //    ip.to_ipv6
 //      // => "ac10:0a01"
 //
-pub fn to_ipv6(my: &IPAddress) {
-    let part_mod = BigUint::one() << 16;
-    return format!("{:04x}:{:04x}",
-                   (my.host_address >> 16).mod_floor(&part_mod).to_u16().unwrap(),
-                   my.host_address.mod_floor(&part_mod).to_u16().unwrap());
-}
+// pub fn to_ipv6(my: &IPAddress) {
+//     let part_mod = BigUint::one() << 16;
+//     return format!("{:04x}:{:04x}",
+//                    (my.host_address >> 16).mod_floor(&part_mod).to_u16().unwrap(),
+//                    my.host_address.mod_floor(&part_mod).to_u16().unwrap());
+// }
 
 //  Creates a new IPv4 object from an
 //  unsigned 32bits integer.
@@ -947,11 +972,12 @@ pub fn to_ipv6(my: &IPAddress) {
 //  Note that classes C, D and E will all have a default
 //  prefix of /24 or 255.255.255.0
 //
+#[allow(dead_code)]
 pub fn parse_classful(ip_s: &String) -> Result<IPAddress, String> {
     if IPAddress::is_valid_ipv4(ip_s) {
         return Err(format!("Invalid IP {}", ip_s));
     }
-    let mut o_ip = IPAddress::parse(ip_s);
+    let o_ip = IPAddress::parse(ip_s);
     if o_ip.is_err() {
         return o_ip;
     }
@@ -963,7 +989,7 @@ pub fn parse_classful(ip_s: &String) -> Result<IPAddress, String> {
     } else if ::ipv4::is_class_c(&ip) {
         ip.prefix = ::prefix32::new(24).unwrap();
     }
-    return o_ip;
+    return Ok(ip);
 }
 
 //  private methods
