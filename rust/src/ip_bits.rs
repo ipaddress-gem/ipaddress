@@ -7,16 +7,19 @@ use num_integer::Integer;
 use num_traits::cast::ToPrimitive;
 use num_traits::FromPrimitive;
 use core::convert::From;
-//use core::marker::Copy;
+// use core::marker::Copy;
 use core::clone::Clone;
 use std::fmt;
 use rle;
 
 #[allow(dead_code)]
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
-pub enum IpVersion { V4, V6 }
+pub enum IpVersion {
+    V4,
+    V6,
+}
 
-//#[derive(Debug, Clone)]
+// #[derive(Debug, Clone)]
 pub struct IpBits {
     pub version: IpVersion,
     pub vt_as_compressed_string: fn(&IpBits, &BigUint) -> String,
@@ -26,7 +29,7 @@ pub struct IpBits {
     pub dns_bits: usize,
     pub rev_domain: &'static str,
     pub part_mod: BigUint,
-    pub host_ofs: BigUint // ipv4=1, ipv6=0
+    pub host_ofs: BigUint, // ipv4=1, ipv6=0
 }
 
 impl Clone for IpBits {
@@ -40,7 +43,7 @@ impl Clone for IpBits {
             dns_bits: self.dns_bits,
             rev_domain: self.rev_domain,
             part_mod: self.part_mod.clone(),
-            host_ofs: self.host_ofs.clone()
+            host_ofs: self.host_ofs.clone(),
         }
     }
 }
@@ -82,32 +85,28 @@ impl IpBits {
     //    ip.reverse
     //      // => "50.100.16.172.in-addr.arpa"
     //
-    #[allow(dead_code)]
-    pub fn dns_reverse(&self, bu: &BigUint) -> String {
-        let mut ret = String::new();
-        let part_mod = BigUint::one() << 4;
-        let the_dot = String::from(".");
-        let mut dot = &String::from("");
-        let mut addr = bu.clone();
-        for _ in 0..(self.bits/self.dns_bits) {
-            ret.push_str(dot);
-            let lower = addr.mod_floor(&part_mod).to_usize().unwrap();
-            ret.push_str(self.dns_part_format(lower).as_str());
-            addr = addr >> self.dns_bits;
-            dot = &the_dot;
-        }
-        ret.push_str(self.rev_domain);
-        return ret;
-    }
+    // #[allow(dead_code)]
+    // pub fn dns_reverse(&self, bu: &BigUint) -> String {
+    //     let mut ret = String::new();
+    //     let part_mod = BigUint::one() << 4;
+    //     let the_dot = String::from(".");
+    //     let mut dot = &String::from("");
+    //     let mut addr = bu.clone();
+    //     for _ in 0..(self.bits / self.dns_bits) {
+    //         ret.push_str(dot);
+    //         let lower = addr.mod_floor(&part_mod).to_usize().unwrap();
+    //         ret.push_str(self.dns_part_format(lower).as_str());
+    //         addr = addr >> self.dns_bits;
+    //         dot = &the_dot;
+    //     }
+    //     ret.push_str(self.rev_domain);
+    //     return ret;
+    // }
 
-    pub fn dns_part_format(&self, i: usize) -> String {
+    pub fn dns_part_format(&self, i: u8) -> String {
         match self.version {
-            IpVersion::V4 => {
-                return format!("{}", i)
-            },
-            IpVersion::V6 => {
-                return format!("{:04x}", i)
-            },
+            IpVersion::V4 => return format!("{}", i),
+            IpVersion::V6 => return format!("{:01x}", i),
         }
     }
 }
@@ -124,25 +123,30 @@ fn ipv4_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
     return ret;
 }
 fn ipv6_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
+    println!("ipv6_as_compressed:{}", host_address);
     let mut ret = String::new();
     let the_colon = String::from(":");
     let mut colon = &String::from("");
     for rle in rle::code(&ip_bits.parts(host_address)) {
-       for _ in 0..rle.cnt {
-         if !(rle.part == 0 && rle.max) {
-             ret.push_str(&format!("{}{:x}", colon, rle.part));
-             colon = &the_colon;
-         }
-       }
+        println!(">>{:?}", rle);
+            for _ in 0..rle.cnt {
+                if !(rle.part == 0 && rle.max) {
+                    ret.push_str(&format!("{}{:x}", colon, rle.part));
+                    colon = &the_colon;
+                } else if rle.part == 0 && rle.max {
+                    ret.push_str("::");
+                    break
+                }
+            }
     }
     return ret;
-  }
+}
 fn ipv6_as_uncompressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
     let mut ret = String::new();
     let mut sep = "";
     for part in ip_bits.parts(host_address) {
         ret.push_str(sep);
-        ret.push_str(&format!("{:x}", part));
+        ret.push_str(&format!("{:04x}", part));
         sep = ":";
     }
     return ret;
@@ -152,28 +156,28 @@ fn ipv6_as_uncompressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
 
 pub fn v4() -> IpBits {
     IpBits {
-    version: IpVersion::V4,
-    vt_as_compressed_string: ipv4_as_compressed,
-    vt_as_uncompressed_string: ipv4_as_compressed,
-    bits: 32,
-    part_bits: 8,
-    dns_bits: 8,
-    rev_domain: ".in-addr.arpa",
-    part_mod: BigUint::from_usize(1 << 8).unwrap(),
-    host_ofs: BigUint::one()
+        version: IpVersion::V4,
+        vt_as_compressed_string: ipv4_as_compressed,
+        vt_as_uncompressed_string: ipv4_as_compressed,
+        bits: 32,
+        part_bits: 8,
+        dns_bits: 8,
+        rev_domain: ".in-addr.arpa",
+        part_mod: BigUint::from_usize(1 << 8).unwrap(),
+        host_ofs: BigUint::one(),
     }
 }
 
 pub fn v6() -> IpBits {
     return IpBits {
-     version: IpVersion::V6,
-     vt_as_compressed_string: ipv6_as_compressed,
-     vt_as_uncompressed_string: ipv6_as_uncompressed,
-     bits: 128,
-     part_bits: 16,
-     dns_bits: 8,
-     rev_domain: ".ip6.arpa",
-     part_mod: BigUint::from_usize(1 << 16).unwrap(),
-     host_ofs: BigUint::zero()
-     };
- }
+        version: IpVersion::V6,
+        vt_as_compressed_string: ipv6_as_compressed,
+        vt_as_uncompressed_string: ipv6_as_uncompressed,
+        bits: 128,
+        part_bits: 16,
+        dns_bits: 4,
+        rev_domain: ".ip6.arpa",
+        part_mod: BigUint::from_usize(1 << 16).unwrap(),
+        host_ofs: BigUint::zero(),
+    };
+}

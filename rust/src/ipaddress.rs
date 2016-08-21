@@ -1,11 +1,15 @@
 
 use core::ops::Add;
 use core::ops::Shl;
+use core::ops::Shr;
 use core::ops::Sub;
+use core::ops::Rem;
+// use core::ops::Rem;
 // use core::ops::Range;
 //use core::iter::Step;
 use core::iter::Iterator;
 use core::cmp::Ordering;
+use core::cmp::Ord;
 // use core::fmt::Debug;
 
 use num::bigint::BigUint;
@@ -67,17 +71,45 @@ impl Clone for IPAddress {
     }
 }
 
+
+impl Ord for IPAddress {
+    fn cmp(&self, oth: & IPAddress) -> Ordering {
+            if self.ip_bits.version != oth.ip_bits.version {
+                if self.ip_bits.version == IpVersion::V6 {
+                    return Ordering::Greater;
+                }
+                return Ordering::Less;
+            }
+            //let adr_diff = self.host_address - oth.host_address;
+            if self.host_address < oth.host_address  {
+                return Ordering::Less;
+            } else if self.host_address > oth.host_address {
+                return Ordering::Greater;
+            }
+            return Ordering::Equal;
+    }
+}
+
+impl PartialOrd for IPAddress {
+    fn partial_cmp(&self, other: &IPAddress) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+
+}
+
 impl PartialEq for IPAddress {
     fn eq(&self, other: &Self) -> bool {
         return self.ip_bits.version == other.ip_bits.version &&
             self.prefix == other.prefix &&
-            self.host_address == other.host_address;
+            self.host_address == other.host_address &&
+            self.mapped.eq(&other.mapped)
     }
     fn ne(&self, other: &Self) -> bool {
         !self.eq(other)
     }
 }
 
+impl Eq for IPAddress {}
 
 
 impl IPAddress {
@@ -341,6 +373,61 @@ impl IPAddress {
         return self.ip_bits.parts(&self.host_address);
     }
 
+    pub fn parts_hex_str(&self) -> Vec<String> {
+        let mut ret : Vec<String> = Vec::new();
+        for i in self.parts() {
+            ret.push(format!("{:04x}", i));
+        }
+        return ret;
+    }
+
+
+    pub fn dns_reverse(&self) -> String{
+        let mut ret = String::new();
+        let mut dot = "";
+        for i in self.dns_parts() {
+            ret.push_str(dot);
+            ret.push_str(&self.ip_bits.dns_part_format(i));
+            dot = ".";
+        }
+        ret.push_str(self.ip_bits.rev_domain);
+        return ret;
+    }
+
+
+    pub fn dns_parts(&self) -> Vec<u8> {
+        let mut ret : Vec<u8> = Vec::new();
+        let mut num = self.host_address.clone();
+        let mask = BigUint::one().shl(self.ip_bits.dns_bits);
+        for _ in 0..self.ip_bits.bits/self.ip_bits.dns_bits {
+            let part = num.clone().rem(&mask).to_u8().unwrap();
+            num = num.shr(self.ip_bits.dns_bits);
+            ret.push(part);
+        }
+        return ret;
+    }
+
+    pub fn dns_networks(&self) -> Vec<IPAddress> {
+         let next_bit_mask = ((self.prefix.num+self.ip_bits.dns_bits-1)/self.ip_bits.dns_bits)
+                    *self.ip_bits.dns_bits;
+         if next_bit_mask <= 0 {
+             return vec![self.network()];
+         }
+         let step_bit_net = BigUint::one().shl(self.ip_bits.bits-next_bit_mask);
+         if step_bit_net == BigUint::zero() {
+             return vec![self.network()];
+         }
+         let mut ret: Vec<IPAddress> = Vec::new();
+         let mut step = self.network().host_address;
+         let prefix = self.prefix.from(next_bit_mask).unwrap();
+         while step <= self.broadcast().host_address {
+           ret.push(self.from(&step, &prefix));
+           step = step.add(&step_bit_net);
+         }
+         return ret;
+      }
+
+
     // Summarization (or aggregation) is the process when two or more
     // networks are taken together to check if a supernet, including all
     // and only these networks, exists. If it exists then this supernet
@@ -564,10 +651,13 @@ impl IPAddress {
     //    puts ip
     //      // => 172.16.100.4/22
     //
-    // pub fn set_prefix(&mut self, num: u8) -> Prefix {
-    //     self.prefix = Prefix32::new(num);
-    //     return self.prefix;
-    // }
+    pub fn change_prefix(&self, num: usize) -> Result<IPAddress, String> {
+        let prefix =  self.prefix.from(num);
+        if prefix.is_err() {
+            return Err(prefix.unwrap_err());
+        }
+        return Ok(self.from(&self.host_address, &prefix.unwrap()));
+    }
 
     // //
     // //  Returns the address as an array of decimal values
@@ -716,6 +806,10 @@ impl IPAddress {
     pub fn bits(&self) -> String {
         return self.host_address.to_str_radix(2);
     }
+    #[allow(dead_code)]
+    pub fn to_hex(&self) -> String {
+        return self.host_address.to_str_radix(16);
+    }
 
     //  Returns the broadcast address for the given IP.
     //
@@ -829,10 +923,10 @@ impl IPAddress {
     //      // => "10.0.0.6"
     //
     #[allow(dead_code)]
-    pub fn each_host(&self, func: &Fn(&IPAddress)) {
+    pub fn each_host(&self, func: &Fn(&mut IPAddress)) {
         let mut i = self.first().host_address;
         while i <= self.last().host_address {
-            (func)(&self.from(&i, &self.prefix));
+            (func)(&mut self.from(&i, &self.prefix));
             i = i.add(BigUint::one());
         }
     }
@@ -858,10 +952,10 @@ impl IPAddress {
     //      // => "10.0.0.7"
     //
     #[allow(dead_code)]
-    pub fn each(&self, func: &Fn(&IPAddress)) {
+    pub fn each<F>(&self, func: F) where F : Fn(&IPAddress) {
         let mut i = self.network().host_address;
         while i <= self.broadcast().host_address {
-            (func)(&self.from(&i, &self.prefix));
+            func(&self.from(&i, &self.prefix));
             i = i.add(BigUint::one());
         }
     }
@@ -897,22 +991,6 @@ impl IPAddress {
     //    [ip1,ip2,ip3].sort.map{|i| i.to_string}
     //      // => ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
     //
-    #[allow(dead_code)]
-    pub fn cmp(&self, oth: &IPAddress) -> Ordering  {
-        if self.ip_bits.version != oth.ip_bits.version {
-            if self.ip_bits.version == IpVersion::V6 {
-                return Ordering::Greater;
-            }
-            return Ordering::Less;
-        }
-        //let adr_diff = self.host_address - oth.host_address;
-        if self.host_address < oth.host_address  {
-            return Ordering::Less;
-        } else if self.host_address > oth.host_address {
-            return Ordering::Greater;
-        }
-        return Ordering::Equal;
-    }
 
     //  Returns the number of IP addresses included
     //  in the network. It also counts the network
@@ -996,7 +1074,16 @@ impl IPAddress {
     //    ip.rev_domains
     //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
     //
-    // pub fn rev_domains(&self) -> Vec<String> {
+    pub fn rev_domains(&self) -> Vec<String> {
+        let mut ret: Vec<String> = Vec::new();
+        for net in self.dns_networks() {
+            let mut domain = String::new();
+            domain.push_str(&net.to_s());
+            domain.push_str(self.ip_bits.rev_domain);
+            ret.push(domain);
+        }
+        return ret;
+    }
     //     // let mut net = vec![self.network()];
     //     // let mut cut = 4 - (self.prefix.num / 8);
     //     // if self.prefix.num <= 8 {

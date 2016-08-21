@@ -5,6 +5,8 @@ use num::bigint::BigUint;
 
 use num_traits::identities::Zero;
 use num_traits::identities::One;
+use core::ops::Shl;
+use core::ops::Add;
 // use num_integer::Integer;
 use num_traits::cast::ToPrimitive;
 // use num_traits::cast::FromPrimitive;
@@ -76,7 +78,7 @@ impl Prefix {
     }
 
     #[allow(dead_code)]
-    fn get_prefix(&self) -> usize {
+    pub fn get_prefix(&self) -> usize {
         return self.num
     }
 
@@ -91,7 +93,11 @@ impl Prefix {
     //
     #[allow(dead_code)]
     pub fn host_mask(&self) -> BigUint {
-        return self.in_mask.clone() >> self.get_prefix().to_usize().unwrap()
+        let mut ret = BigUint::zero();
+        for _ in 0..(self.ip_bits.bits-self.num) {
+            ret = ret.shl(1).add(BigUint::one());
+        }
+        return ret;
     }
 
     //#[allow(dead_code)]
@@ -136,7 +142,7 @@ impl Prefix {
 
     #[allow(dead_code)]
     pub fn to_s(&self) -> String {
-        return format!("#{}", self.get_prefix());
+        return format!("{}", self.get_prefix());
     }
     //#[allow(dead_code)]
     // pub fn inspect(&self) -> String {
@@ -157,11 +163,14 @@ impl Prefix {
     }
     #[allow(dead_code)]
     pub fn sub_prefix(&self, other: &Prefix) -> Result<Prefix, String> {
-        self.from(self.get_prefix() + other.get_prefix())
+        return self.sub(other.get_prefix());
     }
     #[allow(dead_code)]
     pub fn sub(&self, other: usize) -> Result<Prefix, String> {
-        self.from(self.get_prefix() + other)
+        if other > self.get_prefix() {
+            return self.from(other-self.get_prefix());
+        }
+        return self.from(self.get_prefix() - other);
     }
 
 }

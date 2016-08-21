@@ -1,16 +1,31 @@
 use std::collections::HashMap;
+use core::hash::Hash;
+use core::cmp::Eq;
+use core::fmt::Display;
+use core::clone::Clone;
+use std::fmt;
 
-#[derive(Debug, Copy, Clone)]
-pub struct Rle {
-    pub part: u16,
-    pub pos: u16,
-    pub cnt: u16,
+#[derive(Copy, Clone)]
+pub struct Rle<T> {
+    pub part: T,
+    pub pos: usize,
+    pub cnt: usize,
     pub max: bool
 }
 
-impl PartialEq for Rle {
-    fn eq(&self, other: &Self) -> bool {
-        return self.part == other.part && self.pos == other.pos &&
+
+
+impl<T: Display> fmt::Debug for Rle<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "<Rle@part:{},pos:{},cnt:{},max:{}>",
+            self.part, self.pos, self.cnt, self.max)
+    }
+}
+
+
+impl<T: PartialEq> PartialEq<Rle<T>> for Rle<T> {
+    fn eq(&self, other: &Rle<T>) -> bool {
+        return self.part.eq(&other.part) && self.pos == other.pos &&
                 self.cnt == other.cnt && self.max == other.max;
     }
     fn ne(&self, other: &Self) -> bool {
@@ -18,39 +33,56 @@ impl PartialEq for Rle {
     }
 }
 
+//impl<T: PartialEq> Eq for Rle<T> {}
+struct Last<T: Eq + Hash + Display + Copy + Clone> {
+    pub val: Option<Rle<T>>,
+    pub max_poses: HashMap<T, Vec<usize>>,
+    pub ret: Vec<Rle<T>>
+}
 
+impl<T: Eq + Hash + Display + Copy + Clone> Last<T> {
+    pub fn handle_last(&mut self) {
+    if self.val.is_none() {
+        return;
+    }
+    let mut _last = self.val.as_mut().unwrap();
+    let mut max_rles = self.max_poses.entry(_last.part.clone()).or_insert(Vec::new());
+    for idx in max_rles.clone() {
+        let mut prev = self.ret[idx];
+        println!("{:?}->{}->{:?}", _last, idx, prev);
+        if prev.cnt > _last.cnt {
+            _last.max = false;
+        } if prev.cnt == _last.cnt {
+            // nothing
+        } else {
+            prev.max = false;
+        }
+    }
+    //println!("push:{}:{:?}", self.ret.len(), _last);
+    max_rles.push(self.ret.len());
+    _last.pos = self.ret.len();
+    self.ret.push(_last.clone());
+    }
+}
 
 #[allow(dead_code)]
-pub fn code(parts: &Vec<u16>) -> Vec<Rle> {
-    let mut ret : Vec<Rle> = Vec::new();
-    let mut last : Option<Rle> = None;
-    let mut max_poses: HashMap<u16, u16> = HashMap::new();
+pub fn code<T: Eq + Hash + Display + Copy + Clone>(parts: &Vec<T>) -> Vec<Rle<T>> {
+    let mut last = Last {
+        val: None,
+        max_poses: HashMap::new(),
+        ret: Vec::new()
+    };
+    // println!("code");
     for i in 0..parts.len() {
-        let part = parts.get(i).unwrap();
-            if last.is_some() && last.unwrap().part == *part {
-                last.unwrap().cnt += 1;
-            } else {
-                if last.is_some() {
-                    let mut _last = last.unwrap();
-                    let max_pos = max_poses.entry(_last.part).or_insert(_last.pos);
-                    if _last.pos != *max_pos {
-                        let ref mut prev = ret[*max_pos as usize];
-                        if prev.cnt >= _last.cnt {
-                            _last.max = false;
-                        } else {
-                            prev.max = false;
-                        }
-                    }
-                    ret.push(_last);
-                }
-                last = Some(Rle { part: *part, pos: i as u16, cnt: 1, max: true });
-            }
+        let ref part = parts[i];
+        // println!("part:{}", part);
+        if last.val.is_some() && last.val.unwrap().part == *part {
+            last.val.as_mut().unwrap().cnt += 1;
+        } else {
+            last.handle_last();
+            last.val = Some(Rle::<T>{ part: part.clone(), pos: 0, cnt: 1, max: true });
+        }
     }
-    if !last.is_none() {
-        ret.push(last.unwrap());
-    }
-    // for rle in ret {
-    //       (*_vec).push(route.clone());
-    // }
-    return ret;
+    last.handle_last();
+    return last.ret;
 }

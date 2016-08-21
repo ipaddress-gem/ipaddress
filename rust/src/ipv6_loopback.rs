@@ -1,5 +1,7 @@
 
 use ipaddress::IPAddress;
+use num::bigint::BigUint;
+use num_traits::One;
 
 //    The loopback  address is a unicast localhost address. If an
 //  application in a host sends packets to this address, the IPv6 stack
@@ -46,5 +48,5 @@ use ipaddress::IPAddress;
 //
 #[allow(dead_code)]
 pub fn new() -> IPAddress {
-    return IPAddress::parse("::1").unwrap();
+    return ::ipv6::from_int(BigUint::one(), 128).unwrap();
 }
