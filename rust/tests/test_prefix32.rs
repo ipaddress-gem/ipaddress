@@ -108,7 +108,7 @@ mod tests {
     pub fn test_method_to_u32() {
         for (num, ip32) in setup().u32_hash {
             assert_eq!(ip32,
-                       prefix32::new(num).unwrap().net_mask().to_u32().unwrap())
+                       prefix32::new(num).unwrap().netmask().to_u32().unwrap())
         }
     }
     #[allow(dead_code)]
@@ -143,7 +143,7 @@ mod tests {
     pub fn test_method_octets() {
         for (arr, pref) in setup().octets_hash {
             let prefix = prefix32::new(pref).unwrap();
-            assert_eq!(prefix.ip_bits.parts(&prefix.net_mask()), arr);
+            assert_eq!(prefix.ip_bits.parts(&prefix.netmask()), arr);
         }
     }
     #[allow(dead_code)]
@@ -154,7 +154,7 @@ mod tests {
             let prefix = prefix32::new(pref).unwrap();
             for index in 0..arr.len() {
                 let oct = arr.get(index);
-                assert_eq!(prefix.ip_bits.parts(&prefix.net_mask()).get(index), oct)
+                assert_eq!(prefix.ip_bits.parts(&prefix.netmask()).get(index), oct)
             }
         }
     }

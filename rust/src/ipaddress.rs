@@ -10,6 +10,7 @@ use core::ops::Rem;
 use core::iter::Iterator;
 use core::cmp::Ordering;
 use core::cmp::Ord;
+use core::convert::From;
 // use core::fmt::Debug;
 
 use num::bigint::BigUint;
@@ -24,6 +25,7 @@ use std::fmt;
 
 use num_traits::identities::Zero;
 use num_traits::identities::One;
+use num_traits::FromPrimitive;
 
 use num_traits::cast::ToPrimitive;
 
@@ -275,28 +277,30 @@ impl IPAddress {
             return (Ok(ip), 0);
         }
         let parts_len = parts.len();
-        let mut shift = (parts_len - 1) * 16;
+        let mut shift : isize = ((parts_len - 1) * 16) as isize;
         for i in parts {
+            //println!("{}={}", addr, i);
             let part = u64::from_str_radix(i, 16);
             if part.is_err() {
-                return (Err(format!("IP must contain hex numbers {}", addr)), 0);
+                return (Err(format!("IP must contain hex numbers {}->{}", addr, i)), 0);
             }
             let part_num = part.unwrap();
             if part_num >= 65536 {
                 return (Err(format!("IP items has to lower than 65536. {}", addr)), 0);
             }
-            ip = ip.add(part_num.to_biguint().unwrap().shl(shift));
+            ip = ip.add(part_num.to_biguint().unwrap().shl(shift as usize));
             shift -= 16;
         }
         return (Ok(ip), parts_len);
     }
-    fn split_to_num(addr: &String) -> Result<BigUint, String> {
+    pub fn split_to_num(addr: &String) -> Result<BigUint, String> {
         //let mut ip = 0;
         let pre_post = addr.trim().split("::").collect::<Vec<&str>>();
         if pre_post.len() > 2 {
             return Err(format!("IPv6 only allow one :: {}", addr));
         }
         if !pre_post.is_empty() {
+            //println!("{}=::={}", pre_post[0], pre_post[1]);
             let (pre, pre_parts) = IPAddress::split_on_colon(&String::from(*pre_post.get(0).unwrap()));
             if pre.is_err() {
                 return pre;
@@ -308,6 +312,7 @@ impl IPAddress {
             return Ok((pre.unwrap() << ((128 - (pre_parts * 16) - (post_parts * 16)))) +
                       post.unwrap());
         }
+        //println!("split_to_num:no double:{}", addr);
         let (ret, _) = IPAddress::split_on_colon(addr);
         return ret;
     }
@@ -659,6 +664,34 @@ impl IPAddress {
         return Ok(self.from(&self.host_address, &prefix.unwrap()));
     }
 
+    pub fn change_netmask<S: Into<String>>(&self, str: S) -> Result<IPAddress, String> {
+        let my_str = str.into();
+        let my = IPAddress::parse(my_str.clone());
+        if my.is_err() {
+            return Err(format!("illegal netmask {}", &my.unwrap_err()));
+        }
+        let my_ip = my.unwrap();
+        if self.ip_bits.version != my_ip.ip_bits.version {
+            return Err(format!("illegal version miss match {} {}", &my_str, self.to_s()));
+        }
+        let mut prefix = 0;
+        let mut addr = self.host_address.clone();
+        let mut in_host_part = true;
+        let two = BigUint::from_u32(2).unwrap();
+        for _ in 0..self.ip_bits.bits {
+            let bit = addr.clone().rem(&two).to_usize().unwrap();
+            if in_host_part && bit == 0 {
+                prefix = prefix + 1;
+            } else if in_host_part && bit == 1 {
+                in_host_part = false;
+            } else if !in_host_part && bit == 0 {
+                return Err(format!("this is not a net mask {}", &my_str));
+            }
+            addr = addr.shr(1);
+        }
+        return self.change_prefix(prefix);
+    }
+
     // //
     // //  Returns the address as an array of decimal values
     // //
@@ -811,6 +844,10 @@ impl IPAddress {
         return self.host_address.to_str_radix(16);
     }
 
+    pub fn netmask(&self) -> IPAddress {
+        self.from(&self.prefix.netmask(), &self.prefix)
+    }
+
     //  Returns the broadcast address for the given IP.
     //
     //    ip = IPAddress("172.16.10.64/24")
@@ -857,6 +894,33 @@ impl IPAddress {
     pub fn to_network(adr: &BigUint, prefix: usize) -> BigUint {
         let u = prefix.to_usize().unwrap();
         return (adr.clone() >> u) << u;
+    }
+
+    pub fn sub(&self, other: &IPAddress) -> BigUint {
+        if self.host_address > other.host_address {
+            return self.host_address.clone().sub(&other.host_address);
+        }
+        return other.host_address.clone().sub(&self.host_address);
+    }
+
+    pub fn add(&self, other: &IPAddress) -> Vec<IPAddress> {
+        return IPAddress::aggregate(&[self.clone(), other.clone()].to_vec());
+    }
+
+    pub fn to_s_vec(vec: &Vec<IPAddress>) -> Vec<String> {
+        let mut ret : Vec<String> = Vec::new();
+        for i in vec {
+            ret.push(i.to_s());
+        }
+        return ret;
+    }
+
+    pub fn to_string_vec(vec: &Vec<IPAddress>) -> Vec<String> {
+        let mut ret : Vec<String> = Vec::new();
+        for i in vec {
+            ret.push(i.to_string());
+        }
+        return ret;
     }
 
     //  Returns a new IPv4 object with the
@@ -923,10 +987,10 @@ impl IPAddress {
     //      // => "10.0.0.6"
     //
     #[allow(dead_code)]
-    pub fn each_host(&self, func: &Fn(&mut IPAddress)) {
+    pub fn each_host<F>(&self, func: F) where F : Fn(&IPAddress) {
         let mut i = self.first().host_address;
         while i <= self.last().host_address {
-            (func)(&mut self.from(&i, &self.prefix));
+            func(&mut self.from(&i, &self.prefix));
             i = i.add(BigUint::one());
         }
     }

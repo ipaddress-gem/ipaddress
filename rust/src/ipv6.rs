@@ -115,7 +115,7 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     let str = _str.into();
     let (ip, o_netmask) = IPAddress::split_at_slash(&str);
     if IPAddress::is_valid_ipv6(ip.clone()) {
-        let (o_num, _) = IPAddress::split_on_colon(&ip);
+        let o_num = IPAddress::split_to_num(&ip);
         if o_num.is_err() {
             return Err(o_num.unwrap_err());
         }

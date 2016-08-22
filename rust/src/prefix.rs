@@ -16,7 +16,7 @@ use std::fmt;
 pub struct Prefix {
     pub num: usize,
     pub ip_bits: ::ip_bits::IpBits,
-    pub in_mask: BigUint,
+    pub net_mask: BigUint,
     pub vt_from: fn(&Prefix, usize) -> Result<Prefix, String>,
     //pub vt_to_ip_str: &'static (Fn(&Vec<u16>) -> String)
 }
@@ -26,7 +26,7 @@ impl Clone for Prefix {
         Prefix {
             num: self.num,
             ip_bits: self.ip_bits.clone(),
-            in_mask: self.in_mask.clone(),
+            net_mask: self.net_mask.clone(),
             vt_from: self.vt_from
         }
     }
@@ -57,7 +57,7 @@ impl Prefix {
 
     #[allow(dead_code)]
     pub fn to_ip_str(&self) -> String {
-        return (self.ip_bits.vt_as_compressed_string)(&self.ip_bits, &self.net_mask())
+        return (self.ip_bits.vt_as_compressed_string)(&self.ip_bits, &self.netmask())
     }
 
     #[allow(dead_code)]
@@ -65,16 +65,18 @@ impl Prefix {
       return BigUint::one() << (self.ip_bits.bits-self.num.to_usize().unwrap())
     }
 
+    pub fn new_netmask(num: usize, bits: usize) -> BigUint {
+        let mut mask = BigUint::zero();
+        for i in 0..(bits-num) {
+            mask = mask + (BigUint::one() << (num+i));
+        }
+        return mask
+    }
 
     #[allow(dead_code)]
     //#[allow(unused_variables)]
-    pub fn in_mask(num: usize) -> BigUint {
-        let mut mask = BigUint::zero();
-        for _ in 1..num {
-            mask = mask + BigUint::one();
-            mask = mask << 1;
-        }
-        return mask
+    pub fn netmask(&self) -> BigUint {
+        self.net_mask.clone()
     }
 
     #[allow(dead_code)]
@@ -133,12 +135,12 @@ impl Prefix {
     //
     #[allow(dead_code)]
     pub fn bits(&self) -> String {
-        return self.net_mask().to_str_radix(2)
+        return self.netmask().to_str_radix(2)
     }
-    #[allow(dead_code)]
-    pub fn net_mask(&self) -> BigUint {
-        return (self.in_mask.clone() >> (self.host_prefix() as usize)) << (self.host_prefix() as usize);
-    }
+    // #[allow(dead_code)]
+    // pub fn net_mask(&self) -> BigUint {
+    //     return (self.in_mask.clone() >> (self.host_prefix() as usize)) << (self.host_prefix() as usize);
+    // }
 
     #[allow(dead_code)]
     pub fn to_s(&self) -> String {

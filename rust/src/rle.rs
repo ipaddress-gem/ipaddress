@@ -3,6 +3,7 @@ use core::hash::Hash;
 use core::cmp::Eq;
 use core::fmt::Display;
 use core::clone::Clone;
+use core::fmt::LowerHex;
 use std::fmt;
 
 #[derive(Copy, Clone)]
@@ -15,9 +16,9 @@ pub struct Rle<T> {
 
 
 
-impl<T: Display> fmt::Debug for Rle<T> {
+impl<T: Display + LowerHex> fmt::Debug for Rle<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "<Rle@part:{},pos:{},cnt:{},max:{}>",
+        write!(f, "<Rle@part:{:x},pos:{},cnt:{},max:{}>",
             self.part, self.pos, self.cnt, self.max)
     }
 }
@@ -49,7 +50,7 @@ impl<T: Eq + Hash + Display + Copy + Clone> Last<T> {
     let mut max_rles = self.max_poses.entry(_last.part.clone()).or_insert(Vec::new());
     for idx in max_rles.clone() {
         let mut prev = self.ret[idx];
-        println!("{:?}->{}->{:?}", _last, idx, prev);
+        // println!("{:?}->{}->{:?}", _last, idx, prev);
         if prev.cnt > _last.cnt {
             _last.max = false;
         } if prev.cnt == _last.cnt {

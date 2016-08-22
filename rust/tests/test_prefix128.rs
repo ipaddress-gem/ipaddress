@@ -64,7 +64,7 @@ mod tests {
     #[test]
     pub fn test_method_to_u32() {
         for (num, u128) in setup().u128_hash {
-            assert_eq!(u128, prefix128::new(num).unwrap().net_mask())
+            assert_eq!(u128, prefix128::new(num).unwrap().netmask())
         }
     }
 }

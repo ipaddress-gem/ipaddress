@@ -3,10 +3,12 @@ use num::bigint::BigUint;
 
 use num_traits::identities::One;
 use num_traits::identities::Zero;
-use num_integer::Integer;
+// use num_integer::Integer;
 use num_traits::cast::ToPrimitive;
 use num_traits::FromPrimitive;
 use core::convert::From;
+use core::ops::Rem;
+use core::ops::Shr;
 // use core::marker::Copy;
 use core::clone::Clone;
 use std::fmt;
@@ -60,10 +62,10 @@ impl IpBits {
     pub fn parts(&self, bu: &BigUint) -> Vec<u16> {
         let mut vec: Vec<u16> = Vec::new();
         let mut my = bu.clone();
-        let part_mod = BigUint::one() << self.part_bits;
+        let part_mod = BigUint::one() << self.part_bits;// - BigUint::one();
         for i in 0..(self.bits / self.part_bits) {
-            vec.push(my.mod_floor(&part_mod).to_u16().unwrap());
-            my = my >> (self.part_bits as usize);
+            vec.push(my.clone().rem(&part_mod).to_u16().unwrap());
+            my = my.shr(self.part_bits);
         }
         vec.reverse();
         return vec;
@@ -129,15 +131,15 @@ fn ipv6_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
     let mut colon = &String::from("");
     for rle in rle::code(&ip_bits.parts(host_address)) {
         println!(">>{:?}", rle);
-            for _ in 0..rle.cnt {
-                if !(rle.part == 0 && rle.max) {
-                    ret.push_str(&format!("{}{:x}", colon, rle.part));
-                    colon = &the_colon;
-                } else if rle.part == 0 && rle.max {
-                    ret.push_str("::");
-                    break
-                }
+        for _ in 0..rle.cnt {
+            if !(rle.part == 0 && rle.max) {
+                ret.push_str(&format!("{}{:x}", colon, rle.part));
+                colon = &the_colon;
+            } else if rle.part == 0 && rle.max {
+                ret.push_str("::");
+                break;
             }
+        }
     }
     return ret;
 }

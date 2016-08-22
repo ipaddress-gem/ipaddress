@@ -18,10 +18,12 @@ pub fn new(num: usize) -> Result<Prefix, String> {
     if num <= 128 {
         //static _FROM: &'static (Fn(&Prefix, usize) -> Result<Prefix, String>) = &from;
         //static _TO_IP_STR: &'static (Fn(&Vec<u16>) -> String) = &Prefix128::to_ip_str;
+        let ip_bits = ::ip_bits::v6();
+        let bits = ip_bits.bits;
         return Ok(Prefix {
             num: num,
-            ip_bits: ::ip_bits::v6(),
-            in_mask: Prefix::in_mask(128),
+            ip_bits: ip_bits,
+            net_mask: Prefix::new_netmask(num, bits),
             vt_from: from, // vt_to_ip_str: _TO_IP_STR
         });
     }

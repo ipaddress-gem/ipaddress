@@ -52,10 +52,12 @@ pub fn new(num: usize) -> Result<::prefix::Prefix, String> {
         //static _FROM: &'static (Fn(&::prefix::Prefix, usize) -> Result<::prefix::Prefix, String>) =
             &from;
         //static _TO_IP_STR: &'static (Fn(&Vec<u16>) -> String) = &to_ip_str;
+        let ip_bits = ::ip_bits::v4();
+        let bits = ip_bits.bits;
         return Ok(::prefix::Prefix {
             num: num,
-            ip_bits: ::ip_bits::v4(),
-            in_mask: ::prefix::Prefix::in_mask(32),
+            ip_bits: ip_bits,
+            net_mask: ::prefix::Prefix::new_netmask(num, bits),
             vt_from: from,
             //vt_to_ip_str: _TO_IP_STR,
         });
