@@ -89,13 +89,18 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     if !IPAddress::is_valid_ipv4(ip.clone()) {
         return Err(format!("Invalid IP {}", str));
     }
-    let mut prefix = ::prefix32::new(32);
+    let mut ip_prefix_num = Ok(32);
     if netmask.is_some() {
         //  netmask is defined
-        prefix = ::prefix32::parse_netmask(netmask.unwrap());
-        if prefix.is_err() {
-            return Err(prefix.unwrap_err());
+        ip_prefix_num = IPAddress::parse_netmask_to_bits(netmask.unwrap());
+        if ip_prefix_num.is_err() {
+            return Err(ip_prefix_num.unwrap_err());
         }
+        //if ip_prefix.ip_bits.version
+    }
+    let ip_prefix = prefix32::new(ip_prefix_num.unwrap());
+    if ip_prefix.is_err() {
+        return Err(ip_prefix.unwrap_err());
     }
     let split_u32 = IPAddress::split_to_u32(&ip);
     if split_u32.is_err() {
@@ -104,7 +109,7 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     return Ok(IPAddress {
         ip_bits: ::ip_bits::v4(),
         host_address: BigUint::from_u32(split_u32.unwrap()).unwrap(),
-        prefix: prefix.unwrap(),
+        prefix: ip_prefix.unwrap(),
         mapped: None,
         vt_is_private: ipv4_is_private,
         vt_is_loopback: ipv4_is_loopback,
@@ -281,7 +286,7 @@ pub fn to_ipv6(ia: &IPAddress) -> IPAddress {
 //      // => 172.16.100.4/22
 //
 // pub fn set_netmask(&self, addr: &String) {
-//   self.prefix = Prefix32::parse_netmask(addr)
+//   self.prefix = Prefix32::parse_netmask_to_bits(addr)
 // }
 //
 //

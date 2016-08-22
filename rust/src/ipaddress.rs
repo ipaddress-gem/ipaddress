@@ -249,16 +249,6 @@ impl IPAddress {
         return IPAddress::split_to_u32(&addr.into()).is_ok();
     }
 
-    // Checks if the argument is a valid IPv4 netmask
-    // expressed in dotted decimal format.
-    //
-    //   IPAddress.valid_ipv4_netmask? "255.255.0.0"
-    //     //=> true
-    //
-    #[allow(dead_code)]
-    pub fn valid_ipv4_netmask<S: Into<String>>(addr: S) -> bool {
-        return ::prefix32::parse_netmask(addr.into()).is_ok();
-    }
 
     // Checks if the given string is a valid IPv6 address
     //
@@ -560,6 +550,13 @@ impl IPAddress {
     pub fn summarize(networks: &Vec<IPAddress>) -> Vec<IPAddress> {
         return IPAddress::aggregate(networks);
     }
+    pub fn summarize_str<S: Into<String>>(netstr: Vec<S>) -> Result<Vec<IPAddress>, String> {
+        let vec = IPAddress::to_ipaddress_vec(netstr);
+        if vec.is_err() {
+            return vec;
+        }
+        return Ok(IPAddress::aggregate(&vec.unwrap()));
+    }
 
     #[allow(dead_code)]
     pub fn ip_same_kind(&self, oth: &IPAddress) -> bool {
@@ -639,57 +636,86 @@ impl IPAddress {
         return &self.prefix;
     }
 
-    //  Set a new prefix number for the object
+
+
+    // Checks if the argument is a valid IPv4 netmask
+    // expressed in dotted decimal format.
     //
-    //  This is useful if you want to change the prefix
-    //  to an object created with IPv4::parse_u32 or
-    //  if the object was created using the classful
-    //  mask.
+    //   IPAddress.valid_ipv4_netmask? "255.255.0.0"
+    //     //=> true
     //
-    //    ip = IPAddress("172.16.100.4")
-    //
-    //    puts ip
-    //      // => 172.16.100.4/16
-    //
-    //    ip.prefix = 22
-    //
-    //    puts ip
-    //      // => 172.16.100.4/22
-    //
-    pub fn change_prefix(&self, num: usize) -> Result<IPAddress, String> {
-        let prefix =  self.prefix.from(num);
-        if prefix.is_err() {
-            return Err(prefix.unwrap_err());
-        }
-        return Ok(self.from(&self.host_address, &prefix.unwrap()));
+    #[allow(dead_code)]
+    pub fn is_valid_netmask<S: Into<String>>(addr: S) -> bool {
+        return IPAddress::parse_netmask_to_bits(addr.into()).is_ok();
     }
 
-    pub fn change_netmask<S: Into<String>>(&self, str: S) -> Result<IPAddress, String> {
-        let my_str = str.into();
-        let my = IPAddress::parse(my_str.clone());
-        if my.is_err() {
-            return Err(format!("illegal netmask {}", &my.unwrap_err()));
-        }
-        let my_ip = my.unwrap();
-        if self.ip_bits.version != my_ip.ip_bits.version {
-            return Err(format!("illegal version miss match {} {}", &my_str, self.to_s()));
-        }
+    pub fn netmask_to_bits(nm: &BigUint, bits: usize) -> Result<usize, String> {
         let mut prefix = 0;
-        let mut addr = self.host_address.clone();
+        let mut addr = nm.clone();
         let mut in_host_part = true;
         let two = BigUint::from_u32(2).unwrap();
-        for _ in 0..self.ip_bits.bits {
+        for _ in 0..bits {
             let bit = addr.clone().rem(&two).to_usize().unwrap();
             if in_host_part && bit == 0 {
                 prefix = prefix + 1;
             } else if in_host_part && bit == 1 {
                 in_host_part = false;
             } else if !in_host_part && bit == 0 {
-                return Err(format!("this is not a net mask {}", &my_str));
+                return Err(format!("this is not a net mask {}", &nm));
             }
             addr = addr.shr(1);
         }
-        return self.change_prefix(prefix);
+        return Ok(prefix);
+    }
+
+
+    pub fn parse_netmask_to_bits<S: Into<String>>(_netmask: S) -> Result<usize, String> {
+        let my_str = _netmask.into();
+        let is_number = my_str.parse();
+        if is_number.is_ok() {
+            return Ok(is_number.unwrap());
+        }
+        let my = IPAddress::parse(my_str.clone());
+        if my.is_err() {
+            return Err(format!("illegal netmask {}", &my.unwrap_err()));
+        }
+        let my_ip = my.unwrap();
+        return IPAddress::netmask_to_bits(&my_ip.host_address, my_ip.ip_bits.bits);
+    }
+
+
+        //  Set a new prefix number for the object
+        //
+        //  This is useful if you want to change the prefix
+        //  to an object created with IPv4::parse_u32 or
+        //  if the object was created using the classful
+        //  mask.
+        //
+        //    ip = IPAddress("172.16.100.4")
+        //
+        //    puts ip
+        //      // => 172.16.100.4/16
+        //
+        //    ip.prefix = 22
+        //
+        //    puts ip
+        //      // => 172.16.100.4/22
+        //
+        pub fn change_prefix(&self, num: usize) -> Result<IPAddress, String> {
+            let prefix =  self.prefix.from(num);
+            if prefix.is_err() {
+                return Err(prefix.unwrap_err());
+            }
+            return Ok(self.from(&self.host_address, &prefix.unwrap()));
+        }
+
+    pub fn change_netmask<S: Into<String>>(&self, str: S) -> Result<IPAddress, String> {
+        let my_str = str.into();
+        let nm = IPAddress::parse_netmask_to_bits(my_str);
+        if nm.is_err() {
+            return Err(nm.unwrap_err());
+        }
+        return self.change_prefix(nm.unwrap());
     }
 
     // //
@@ -766,7 +792,7 @@ impl IPAddress {
     //      // => 172.16.100.4/22
     //
     // pub fn set_netmask(&self, addr: &String) {
-    //     self.prefix = Prefix::parse_netmask(addr)
+    //     self.prefix = Prefix::parse_netmask_to_bits(addr)
     // }
 
     //  Returns the address portion in unsigned
@@ -921,6 +947,18 @@ impl IPAddress {
             ret.push(i.to_string());
         }
         return ret;
+    }
+
+    pub fn to_ipaddress_vec<S: Into<String>>(vec: Vec<S>) -> Result<Vec<IPAddress>, String> {
+        let mut ret = Vec::new();
+        for ipstr in vec {
+            let ipa = IPAddress::parse(ipstr);
+            if ipa.is_err() {
+                return Err(ipa.unwrap_err());
+            }
+            ret.push(ipa.unwrap());
+        }
+        return Ok(ret);
     }
 
     //  Returns a new IPv4 object with the

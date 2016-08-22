@@ -160,8 +160,8 @@ mod tests {
         for (arg, attr) in setup().valid_ipv4 {
             let ip = IPAddress::parse(arg).unwrap();
             assert_eq!(attr.ip, ip.to_s());
-            let ip_c = IPAddress::parse(arg).unwrap();
-            assert_eq!(attr.ip, ip.to_s());
+            // let ip_c = IPAddress::parse(arg).unwrap();
+            // assert_eq!(attr.ip, ip.to_s());
         }
     }
     #[test]
@@ -225,7 +225,7 @@ mod tests {
     #[test]
     pub fn test_method_each_host() {
         let ip = IPAddress::parse("10.0.0.1/29").unwrap();
-        let mut arr = Arc::new(Mutex::new(Vec::new()));
+        let arr = Arc::new(Mutex::new(Vec::new()));
         ip.each_host(|i| arr.lock().unwrap().push(i.to_s()));
         assert_eq!(*arr.lock().unwrap().deref(),
                    ["10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4", "10.0.0.5", "10.0.0.6"]);
@@ -233,7 +233,7 @@ mod tests {
     #[test]
     pub fn test_method_each() {
         let ip = IPAddress::parse("10.0.0.1/29").unwrap();
-        let mut arr = Arc::new(Mutex::new(Vec::new()));
+        let arr = Arc::new(Mutex::new(Vec::new()));
         ip.each(|i| arr.lock().unwrap().push(i.to_s()));
         assert_eq!(*arr.lock().unwrap().deref(),
                    ["10.0.0.0", "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4", "10.0.0.5",
@@ -503,7 +503,7 @@ mod tests {
         assert!(setup().network.subnet(23).is_err());
         assert!(setup().network.subnet(33).is_err());
         assert!(setup().ip.subnet(30).is_ok());
-        let mut arr = assert_eq!(IPAddress::to_string_vec(&setup().network.subnet(26).unwrap()),
+        assert_eq!(IPAddress::to_string_vec(&setup().network.subnet(26).unwrap()),
                                  ["172.16.10.0/26",
                                   "172.16.10.64/26",
                                   "172.16.10.128/26",

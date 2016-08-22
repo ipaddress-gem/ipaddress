@@ -5,6 +5,7 @@ extern crate num_traits;
 
 #[cfg(test)]
 mod tests {
+    use ipaddress::IPAddress;
     use ipaddress::prefix32;
     use ipaddress::ipv4;
     use std::collections::HashMap;
@@ -73,10 +74,10 @@ mod tests {
     #[allow(dead_code)]
     #[allow(unused_attributes)]
     #[test]
-    pub fn test_parse_netmask() {
+    pub fn test_parse_netmask_to_bits() {
         for (netmask, num) in setup().prefix_hash {
-            let prefix = prefix32::parse_netmask(netmask).unwrap();
-            assert_eq!(num, prefix.num);
+            let prefix = IPAddress::parse_netmask_to_bits(netmask).unwrap();
+            assert_eq!(num, prefix);
         }
     }
     #[allow(dead_code)]
