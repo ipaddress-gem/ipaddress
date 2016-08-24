@@ -88,16 +88,25 @@ use core::ops::Shr;
 pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     let str = _str.into();
     let (ip, o_netmask) = IPAddress::split_at_slash(&str);
-    let split_colon = ip.split(':').collect::<Vec<&str>>();
+    let split_colon = ip.split("::").collect::<Vec<&str>>();
+    if split_colon.len() != 2 {
+        println!("---1");
+        return Err(format!("not mapped format: {}", &str));
+    }
+    if split_colon.get(0).unwrap().len() > 0 {
+        println!("---1a");
+        return Err(format!("not mapped format: {}", &str));
+    }
     // let mapped: Option<IPAddress> = None;
     let mut netmask = String::from("");
     if o_netmask.is_some() {
-        netmask = o_netmask.unwrap();
+        netmask = format!("/{}", o_netmask.unwrap());
     }
     let ipv4_str = String::from(*split_colon.iter().last().unwrap());
     if IPAddress::is_valid_ipv4(ipv4_str.clone()) {
         let ipv4 = IPAddress::parse(format!("{}{}", ipv4_str, netmask));
         if ipv4.is_err() {
+            println!("---2");
             return ipv4;
         }
         //mapped = Some(ipv4.unwrap());
@@ -105,19 +114,29 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
         let part_mod = ::ip_bits::v6().part_mod;
         let up_addr = addr.host_address.clone();
         let down_addr = addr.host_address.clone();
-        return IPAddress::parse(format!("::ffff:{}:{}/{}",
+        let ipv6_str = format!("::ffff:{:04x}:{:04x}/{}",
             up_addr.shr(::ip_bits::v6().part_bits).mod_floor(&part_mod).to_u16().unwrap(),
             down_addr.mod_floor(&part_mod).to_u16().unwrap(),
-            addr.prefix.num));
+            addr.prefix.num);
+        let r_ipv6 = IPAddress::parse(ipv6_str.clone());
+        if r_ipv6.is_err() {
+            println!("---3:{}", &ipv6_str);
+            return r_ipv6;
+        }
+        let mut ipv6 = r_ipv6.unwrap();
+        ipv6.mapped = Some(Box::new(addr));
+        return Ok(ipv6);
     } else if split_colon.len() >= 2 {
         //  IPv4 in hex form
         let last_2 = split_colon.get(split_colon.len() - 2);
         let last_1 = split_colon.get(split_colon.len() - 1);
         if !last_1.is_some() || !last_2.is_some() {
+            println!("---4");
             return Err(format!("unknown hex mapped format:{}", str));
         }
         return IPAddress::parse(format!("::ffff:{}:{}{}", last_2.unwrap(), last_1.unwrap(), netmask));
     }
+    println!("---5");
     return Err(format!("unknown mapped format:{}", str));
 }
 

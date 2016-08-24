@@ -74,9 +74,9 @@ mod tests {
     #[allow(dead_code)]
     #[allow(unused_attributes)]
     #[test]
-    pub fn test_parse_netmask_to_bits() {
+    pub fn test_parse_netmask_to_prefix() {
         for (netmask, num) in setup().prefix_hash {
-            let prefix = IPAddress::parse_netmask_to_bits(netmask).unwrap();
+            let prefix = IPAddress::parse_netmask_to_prefix(netmask).unwrap();
             assert_eq!(num, prefix);
         }
     }

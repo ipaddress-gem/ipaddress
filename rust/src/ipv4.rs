@@ -92,7 +92,7 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     let mut ip_prefix_num = Ok(32);
     if netmask.is_some() {
         //  netmask is defined
-        ip_prefix_num = IPAddress::parse_netmask_to_bits(netmask.unwrap());
+        ip_prefix_num = IPAddress::parse_netmask_to_prefix(netmask.unwrap());
         if ip_prefix_num.is_err() {
             return Err(ip_prefix_num.unwrap_err());
         }
@@ -286,7 +286,7 @@ pub fn to_ipv6(ia: &IPAddress) -> IPAddress {
 //      // => 172.16.100.4/22
 //
 // pub fn set_netmask(&self, addr: &String) {
-//   self.prefix = Prefix32::parse_netmask_to_bits(addr)
+//   self.prefix = Prefix32::parse_netmask_to_prefix(addr)
 // }
 //
 //
@@ -998,7 +998,7 @@ pub fn is_class_c(my: &IPAddress) -> bool {
 #[allow(dead_code)]
 pub fn parse_classful<S: Into<String>>(ip_s: S) -> Result<IPAddress, String> {
     let ip_si = ip_s.into();
-    if IPAddress::is_valid_ipv4(ip_si.clone()) {
+    if !IPAddress::is_valid_ipv4(ip_si.clone()) {
         return Err(format!("Invalid IP {}", ip_si));
     }
     let o_ip = IPAddress::parse(ip_si.clone());

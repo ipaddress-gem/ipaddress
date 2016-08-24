@@ -15,7 +15,7 @@ use std::fmt;
 use rle;
 
 #[allow(dead_code)]
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(PartialOrd, PartialEq, Eq, Debug, Clone, Copy)]
 pub enum IpVersion {
     V4,
     V6,
@@ -125,18 +125,20 @@ fn ipv4_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
     return ret;
 }
 fn ipv6_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
-    println!("ipv6_as_compressed:{}", host_address);
+    //println!("ipv6_as_compressed:{}", host_address);
     let mut ret = String::new();
     let the_colon = String::from(":");
-    let mut colon = &String::from("");
+    let the_empty = String::from("");
+    let mut colon = &the_empty;
     for rle in rle::code(&ip_bits.parts(host_address)) {
-        println!(">>{:?}", rle);
+        // println!(">>{:?}", rle);
         for _ in 0..rle.cnt {
             if !(rle.part == 0 && rle.max) {
                 ret.push_str(&format!("{}{:x}", colon, rle.part));
                 colon = &the_colon;
             } else if rle.part == 0 && rle.max {
                 ret.push_str("::");
+                colon = &the_empty;
                 break;
             }
         }

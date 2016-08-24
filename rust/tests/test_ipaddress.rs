@@ -5,31 +5,31 @@ extern crate num;
 mod tests {
     use ipaddress::IPAddress;
 
-    use std::str::FromStr;
+    // use std::str::FromStr;
 
     pub struct IPAddressTest {
-        pub valid_ipv4: String,
-        pub valid_ipv6: String,
-        pub valid_mapped: String,
-        pub invalid_ipv4: String,
-        pub invalid_ipv6: String,
-        pub invalid_mapped: String,
+        pub valid_ipv4: &'static str,
+        pub valid_ipv6: &'static str,
+        pub valid_mapped: &'static str,
+        pub invalid_ipv4: &'static str,
+        pub invalid_ipv6: &'static str,
+        pub invalid_mapped: &'static str,
     }
 
     pub fn setup() -> IPAddressTest {
         return IPAddressTest {
-            valid_ipv4: String::from("172.16.10.1/24"),
-            valid_ipv6: String::from("2001:db8::8:800:200c:417a/64"),
-            valid_mapped: String::from("::13.1.68.3"),
+            valid_ipv4: "172.16.10.1/24",
+            valid_ipv6: "2001:db8::8:800:200c:417a/64",
+            valid_mapped: "::13.1.68.3",
 
-            invalid_ipv4: String::from("10.0.0.256"),
-            invalid_ipv6: String::from(":1:2:3:4:5:6:7"),
-            invalid_mapped: String::from("::1:2.3.4"),
+            invalid_ipv4: "10.0.0.256",
+            invalid_ipv6: ":1:2:3:4:5:6:7",
+            invalid_mapped: "::1:2.3.4",
         };
     }
 
     #[test]
-    pub fn test_method_IPAddress() {
+    pub fn test_method_ipaddress() {
         assert!(IPAddress::parse(setup().valid_ipv4).is_ok());
         assert!(IPAddress::parse(setup().valid_ipv6).is_ok());
         assert!(IPAddress::parse(setup().valid_mapped).is_ok());
@@ -50,10 +50,10 @@ mod tests {
         assert_eq!(true, IPAddress::is_valid("dead:beef:cafe:babe::f0ad"));
         assert_eq!(false, IPAddress::is_valid("10.0.0.256"));
         assert_eq!(false, IPAddress::is_valid("10.0.0.0.0"));
-        assert_eq!(false, IPAddress::is_valid("10.0.0"));
-        assert_eq!(false, IPAddress::is_valid("10.0"));
-        assert_eq!(false, IPAddress::is_valid("2002:::1"));
+        assert_eq!(true, IPAddress::is_valid("10.0.0"));
+        assert_eq!(true, IPAddress::is_valid("10.0"));
         assert_eq!(false, IPAddress::is_valid("2002:516:2:200"));
+        assert_eq!(false, IPAddress::is_valid("2002:::1"));
     }
     #[test]
     pub fn test_module_method_valid_ipv4_netmark() {
@@ -63,7 +63,7 @@ mod tests {
     #[test]
     pub fn test_summarize() {
         let mut netstr: Vec<String> = Vec::new();
-        for range in vec![(1..9), (11..126), (128..168), (170..171), (173..191), (193..223)] {
+        for range in vec![(1..10), (11..127), (128..169), (170..172), (173..192), (193..224)] {
             for i in range {
                 netstr.push(format!("{}.0.0.0/8", i));
             }
@@ -143,7 +143,12 @@ mod tests {
                    ["10.0.0.0/16"]);
 
 
-        for i in 0..100 {
+        let mut cnt = 10;
+        // geht nicht
+        if cfg!(debug_assertions) {
+            cnt = 10;
+        }
+        for _ in 0..cnt {
             assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize(&ip_addresses)),
                        vec!["1.0.0.0/8",
                         "2.0.0.0/7",
@@ -172,7 +177,6 @@ mod tests {
                         "169.255.0.0/16",
                         "170.0.0.0/7",
                         "172.0.0.0/12",
-                        "172.31.0.0/16",
                         "172.32.0.0/11",
                         "172.64.0.0/10",
                         "172.128.0.0/9",

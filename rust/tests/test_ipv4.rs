@@ -12,6 +12,7 @@ mod tests {
     use std::sync::{Arc, Mutex};
     use std::ops::Deref;
 
+    #[derive(Debug)]
     struct IPv4Prefix {
         pub ip: String,
         pub prefix: usize,
@@ -68,9 +69,9 @@ mod tests {
                                     ip: String::from_str("10.0.0.1").unwrap(),
                                     prefix: 24,
                                 });
-        ipv4t.valid_ipv4.insert("10.0.0.1/255.255.255.0",
+        ipv4t.valid_ipv4.insert("10.0.0.9/255.255.255.0",
                                 IPv4Prefix {
-                                    ip: String::from_str("10.0.0.1").unwrap(),
+                                    ip: String::from_str("10.0.0.9").unwrap(),
                                     prefix: 24,
                                 });
 
@@ -139,6 +140,7 @@ mod tests {
     pub fn test_attributes() {
         for (arg, attr) in setup().valid_ipv4 {
             let ip = IPAddress::parse(arg).unwrap();
+            println!("test_attributes:{}:{:?}", arg, attr);
             assert_eq!(attr.ip, ip.to_s());
             assert_eq!(attr.prefix, ip.prefix.num);
         }
@@ -342,7 +344,7 @@ mod tests {
     }
     #[test]
     pub fn test_method_to_ipv6() {
-        assert_eq!("ac10:0a01", setup().ip.to_ipv6().to_string());
+        assert_eq!("::ac10:a01", setup().ip.to_ipv6().to_s());
     }
     #[test]
     pub fn test_method_reverse() {
@@ -548,7 +550,7 @@ mod tests {
         let mut ip1 = IPAddress::parse("172.16.10.1/24").unwrap();
         let mut ip2 = IPAddress::parse("172.16.11.2/24").unwrap();
         assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize(&vec![ip1, ip2])),
-                   ["172.16.10.1/23"]);
+                   ["172.16.10.0/23"]);
 
         {
             let ip1 = IPAddress::parse("10.0.0.1/24").unwrap();

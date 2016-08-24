@@ -7,6 +7,8 @@ use num_traits::identities::Zero;
 use num_traits::identities::One;
 use core::ops::Shl;
 use core::ops::Add;
+use core::cmp::Ordering;
+use core::cmp::Ord;
 // use num_integer::Integer;
 use num_traits::cast::ToPrimitive;
 // use num_traits::cast::FromPrimitive;
@@ -49,6 +51,33 @@ impl fmt::Debug for Prefix {
     }
 }
 
+
+impl Eq for Prefix {}
+
+impl Ord for Prefix {
+    fn cmp(&self, oth: & Prefix) -> Ordering {
+        if self.ip_bits.version < oth.ip_bits.version {
+            Ordering::Less
+        } else if self.ip_bits.version > oth.ip_bits.version {
+            Ordering::Greater
+        } else {
+            if self.num < oth.num {
+                Ordering::Less
+            } else if self.num > oth.num {
+                Ordering::Greater
+            } else {
+                Ordering::Equal
+            }
+        }
+    }
+}
+impl PartialOrd for Prefix {
+    fn partial_cmp(&self, other: &Prefix) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+
+}
+
 impl Prefix {
     //#[allow(dead_code)]
     pub fn from(&self, num: usize) -> Result<Prefix, String>{
@@ -65,10 +94,11 @@ impl Prefix {
       return BigUint::one() << (self.ip_bits.bits-self.num.to_usize().unwrap())
     }
 
-    pub fn new_netmask(num: usize, bits: usize) -> BigUint {
+    pub fn new_netmask(prefix: usize, bits: usize) -> BigUint {
         let mut mask = BigUint::zero();
-        for i in 0..(bits-num) {
-            mask = mask + (BigUint::one() << (num+i));
+        let host_prefix = bits-prefix;
+        for i in 0..prefix {
+            mask = mask + (BigUint::one() << (host_prefix+i));
         }
         return mask
     }
