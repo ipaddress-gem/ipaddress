@@ -657,10 +657,10 @@ pub fn to_ipv6(ia: &IPAddress) -> IPAddress {
 //
 //    ip = IPAddress("172.17.100.50/15")
 //
-//    ip.rev_domains
+//    ip.dns_rev_domains
 //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
 //
-// pub fn rev_domains(&self) {
+// pub fn dns_rev_domains(&self) {
 //   let mut net = [ self.network ]
 //   let mut cut = 4 - (self.prefix.num/8)
 //   if (self.prefix.num <= 8) { //  edge case class a

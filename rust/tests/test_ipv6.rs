@@ -239,15 +239,15 @@ mod tests {
                    IPAddress::parse("3ffe:505:2::f").unwrap().dns_reverse());
     }
     #[test]
-    fn test_method_rev_domains() {
-        assert_eq!(IPAddress::parse("f000:f100::/3").unwrap().rev_domains(),
+    fn test_method_dns_rev_domains() {
+        assert_eq!(IPAddress::parse("f000:f100::/3").unwrap().dns_rev_domains(),
                    ["e.ip6.arpa", "f.ip6.arpa"]);
-        assert_eq!(IPAddress::parse("fea3:f120::/15").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("fea3:f120::/15").unwrap().dns_rev_domains(),
                    ["2.a.e.f.ip6.arpa", "3.a.e.f.ip6.arpa"]);
-        assert_eq!(IPAddress::parse("3a03:2f80:f::/48").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("3a03:2f80:f::/48").unwrap().dns_rev_domains(),
                    ["f.0.0.0.0.8.f.2.3.0.a.3.ip6.arpa"]);
 
-        assert_eq!(IPAddress::parse("f000:f100::1234/125").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("f000:f100::1234/125").unwrap().dns_rev_domains(),
                    ["0.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",
                     "1.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",
                     "2.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",

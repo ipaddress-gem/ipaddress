@@ -36,7 +36,8 @@ mod tests {
     fn setup() -> IPv4Test {
         let mut ipv4t = IPv4Test {
             valid_ipv4: HashMap::new(),
-            invalid_ipv4: vec!["10.0.0.256", "10.0.0.0.0", "10.0.0", "10.0"],
+            // , "10.0.0", "10.0"
+            invalid_ipv4: vec!["10.0.0.256", "10.0.0.0.0"],
             valid_ipv4_range: vec!["10.0.0.1-254", "10.0.1-254.0", "10.1-254.0.0"],
             netmask_values: HashMap::new(),
             decimal_values: HashMap::new(),
@@ -49,6 +50,16 @@ mod tests {
             class_c: ipv4::new("192.168.0.1/24").unwrap(),
             classful: HashMap::new(),
         };
+        ipv4t.valid_ipv4.insert("9.9/17",
+                                IPv4Prefix {
+                                    ip: String::from_str("9.0.0.9").unwrap(),
+                                    prefix: 17,
+                                });
+        ipv4t.valid_ipv4.insert("100.1.100",
+                                IPv4Prefix {
+                                    ip: String::from_str("100.1.0.100").unwrap(),
+                                    prefix: 32,
+                                });
         ipv4t.valid_ipv4.insert("0.0.0.0/0",
                                 IPv4Prefix {
                                     ip: String::from_str("0.0.0.0").unwrap(),
@@ -351,24 +362,24 @@ mod tests {
         assert_eq!(setup().ip.dns_reverse(), "1.10.16.172.in-addr.arpa");
     }
     #[test]
-    pub fn test_method_rev_domains() {
-        assert_eq!(IPAddress::parse("173.17.5.1/23").unwrap().rev_domains(),
+    pub fn test_method_dns_rev_domains() {
+        assert_eq!(IPAddress::parse("173.17.5.1/23").unwrap().dns_rev_domains(),
                    ["4.17.173.in-addr.arpa", "5.17.173.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("173.17.1.1/15").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("173.17.1.1/15").unwrap().dns_rev_domains(),
                    ["16.173.in-addr.arpa", "17.173.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("173.17.1.1/7").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("173.17.1.1/7").unwrap().dns_rev_domains(),
                    ["172.in-addr.arpa", "173.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("173.17.1.1/29").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("173.17.1.1/29").unwrap().dns_rev_domains(),
                    ["1.17.173.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("174.17.1.1/24").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("174.17.1.1/24").unwrap().dns_rev_domains(),
                    ["1.17.174.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("175.17.1.1/16").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("175.17.1.1/16").unwrap().dns_rev_domains(),
                    ["17.175.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("176.17.1.1/8").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("176.17.1.1/8").unwrap().dns_rev_domains(),
                    ["176.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("177.17.1.1/0").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("177.17.1.1/0").unwrap().dns_rev_domains(),
                    ["0.in-addr.arpa"]);
-        assert_eq!(IPAddress::parse("178.17.1.1/32").unwrap().rev_domains(),
+        assert_eq!(IPAddress::parse("178.17.1.1/32").unwrap().dns_rev_domains(),
                    ["1.17.178.in-addr.arpa"]);
     }
     #[test]
@@ -457,7 +468,7 @@ mod tests {
         assert!(setup().ip.split(0).is_err());
         assert!(setup().ip.split(257).is_err());
 
-        assert_eq!(setup().ip.network(), setup().ip.split(1).unwrap()[0]);
+        assert_eq!(setup().ip.split(1).unwrap(), [setup().ip.network()]);
 
         assert_eq!(IPAddress::to_string_vec(&setup().network.split(8).unwrap()),
                    ["172.16.10.0/27",

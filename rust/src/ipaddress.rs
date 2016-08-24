@@ -230,24 +230,40 @@ impl IPAddress {
     //   IPAddress::valid_ipv4? "172.16.10.1"
     //     //=> true
     //
+    pub fn parse_ipv4_part(i: &str, addr: &String) -> Result<u32, String> {
+        let part = i.parse::<u32>();
+        if part.is_err() {
+            return Err(format!("IP must contain numbers {} ", addr));
+        }
+        let part_num = part.unwrap();
+        if part_num >= 256 {
+            return Err(format!("IP items has to lower than 256. {} ", addr));
+        }
+        return Ok(part_num);
+    }
     pub fn split_to_u32(addr: &String) -> Result<u32, String> {
         let mut ip : u32 = 0;
         let mut shift = 24;
-        let split_addr = addr.split(".").collect::<Vec<&str>>();
+        let mut split_addr = addr.split(".").collect::<Vec<&str>>();
         if split_addr.len() > 4 {
             return Err(format!("IP has not the right format:{}", &addr));
         }
-        for i in split_addr {
-            let part = i.parse::<u32>();
+        let split_addr_len = split_addr.len();
+        if 0 < split_addr.len() && split_addr_len < 4 {
+            let part = IPAddress::parse_ipv4_part(split_addr[split_addr_len-1], addr);
             if part.is_err() {
-                return Err(format!("IP must contain numbers {} ", &addr));
+                return part;
             }
-            let part_num = part.unwrap();
-            if part_num >= 256 {
-                return Err(format!("IP items has to lower than 256. {} ", &addr));
+            ip = part.unwrap();
+            split_addr.remove(split_addr_len-1);
+        }
+        for i in split_addr {
+            let part = IPAddress::parse_ipv4_part(i, addr);
+            if part.is_err() {
+                return part;
             }
             //println!("{}-{}", part_num, shift);
-            ip = ip | (part_num << shift);
+            ip = ip | (part.unwrap() << shift);
             shift -= 8;
         }
         return Ok(ip);
@@ -331,9 +347,9 @@ impl IPAddress {
 
     fn pos_to_idx(pos: isize, len: usize) -> usize {
         let ilen = len as isize;
-        let ret = pos % ilen;
+        // let ret = pos % ilen;
         let rem = ((pos % ilen) + ilen) % ilen;
-        println!("pos_to_idx:{}:{}=>{}:{}", pos, len, ret, rem);
+        // println!("pos_to_idx:{}:{}=>{}:{}", pos, len, ret, rem);
         return rem as usize;
     }
     #[allow(dead_code)]
@@ -347,29 +363,29 @@ impl IPAddress {
         let mut stack = networks.iter().map(|i| Box::new(i.network()) )
             .collect::<Vec<_>>();
         stack.sort_by(|a, b| a.cmp(b));
-        for i in 0..networks.len() {
-            println!("{}==={}", &networks[i].to_string_uncompressed(),
-                &stack[i].to_string_uncompressed());
-        }
+        // for i in 0..networks.len() {
+        //     println!("{}==={}", &networks[i].to_string_uncompressed(),
+        //         &stack[i].to_string_uncompressed());
+        // }
         let mut pos : isize = 0;
         loop {
             if pos < 0 {
                 pos = 0
             }
             let stack_len = stack.len(); // borrow checker
-            println!("loop:{}:{}", pos, stack_len);
+            // println!("loop:{}:{}", pos, stack_len);
             // if stack_len == 1 {
             //     println!("exit 1");
             //     break;
             // }
             if pos >= (stack_len as isize) {
-                println!("exit first:{}:{}", stack_len, pos);
+                // println!("exit first:{}:{}", stack_len, pos);
                 break;
             }
             let first = IPAddress::pos_to_idx(pos, stack_len);
             pos = pos + 1;
             if pos >= (stack_len as isize) {
-                println!("exit second:{}:{}", stack_len, pos);
+                // println!("exit second:{}:{}", stack_len, pos);
                 break;
             }
             let second = IPAddress::pos_to_idx(pos, stack_len);
@@ -377,29 +393,29 @@ impl IPAddress {
             //let mut firstUnwrap = first.unwrap();
             if stack[first].includes(&stack[second]) {
                 pos = pos - 2;
-                println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
+                // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
                 stack.remove(IPAddress::pos_to_idx(pos + 1, stack_len));
             } else {
                 stack[first].prefix = stack[first].prefix.sub(1).unwrap();
-                println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
-                    first, second,
-                    stack[first].to_string(), stack[second].to_string());
+                // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
+                // first, second,
+                // stack[first].to_string(), stack[second].to_string());
                 if (stack[first].prefix.num+1) == stack[second].prefix.num &&
                    stack[first].includes(&stack[second]) {
                     pos = pos - 2;
                     let idx = IPAddress::pos_to_idx(pos, stack_len);
                     stack[idx] = stack[first].clone(); // kaputt
                     stack.remove(IPAddress::pos_to_idx(pos + 1, stack_len));
-                    println!("remove-2:{}:{}", pos + 1, stack_len);
+                    // println!("remove-2:{}:{}", pos + 1, stack_len);
                     pos = pos - 1; // backtrack
                 } else {
                     stack[first].prefix = stack[first].prefix.add(1).unwrap(); //reset prefix
-                    println!("easy:{}:{}=>{}", pos, stack_len, stack[first].to_string());
+                    // println!("easy:{}:{}=>{}", pos, stack_len, stack[first].to_string());
                     pos = pos - 1; // do it with second as first
                 }
             }
         }
-        println!("agg={}:{}", pos, stack.len());
+        // println!("agg={}:{}", pos, stack.len());
         let mut ret = Vec::new();
         for i in 0..stack.len() {
              ret.push(stack[i].network());
@@ -419,13 +435,31 @@ impl IPAddress {
         return ret;
     }
 
+    //  Returns the IP address in in-addr.arpa format
+    //  for DNS Domain definition entries like SOA Records
+    //
+    //    ip = IPAddress("172.17.100.50/15")
+    //
+    //    ip.dns_rev_domains
+    //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
+    //
+    pub fn dns_rev_domains(&self) -> Vec<String> {
+        let mut ret: Vec<String> = Vec::new();
+        for net in self.dns_networks() {
+            // println!("dns_rev_domains:{}", net.to_string);
+            ret.push(net.dns_reverse());
+        }
+        return ret;
+    }
+
 
     pub fn dns_reverse(&self) -> String{
         let mut ret = String::new();
         let mut dot = "";
-        for i in self.dns_parts() {
+        let dns_parts = self.dns_parts();
+        for i in (self.prefix.host_prefix()/self.ip_bits.dns_bits)..dns_parts.len() {
             ret.push_str(dot);
-            ret.push_str(&self.ip_bits.dns_part_format(i));
+            ret.push_str(&self.ip_bits.dns_part_format(dns_parts[i]));
             dot = ".";
         }
         ret.push_str(self.ip_bits.rev_domain);
@@ -950,7 +984,8 @@ impl IPAddress {
     //
     #[allow(dead_code)]
     pub fn is_network(&self) -> bool {
-        return self.host_address == self.network().host_address;
+        return self.prefix.num != self.ip_bits.bits &&
+            self.host_address == self.network().host_address;
     }
 
     //  Returns a new IPv4 object with the network number
@@ -1180,7 +1215,7 @@ impl IPAddress {
         let ret = self.is_same_kind(oth) &&
         self.prefix.num <= oth.prefix.num &&
         self.network().host_address == IPAddress::to_network(&oth.host_address, self.prefix.host_prefix());
-        println!("includes:{}=={}=>{}", self.to_string(), oth.to_string(), ret);
+        // println!("includes:{}=={}=>{}", self.to_string(), oth.to_string(), ret);
         return ret
     }
 
@@ -1219,24 +1254,6 @@ impl IPAddress {
     }
 
 
-    //  Returns the IP address in in-addr.arpa format
-    //  for DNS Domain definition entries like SOA Records
-    //
-    //    ip = IPAddress("172.17.100.50/15")
-    //
-    //    ip.rev_domains
-    //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
-    //
-    pub fn rev_domains(&self) -> Vec<String> {
-        let mut ret: Vec<String> = Vec::new();
-        for net in self.dns_networks() {
-            let mut domain = String::new();
-            domain.push_str(&net.to_s());
-            domain.push_str(self.ip_bits.rev_domain);
-            ret.push(domain);
-        }
-        return ret;
-    }
     //     // let mut net = vec![self.network()];
     //     // let mut cut = 4 - (self.prefix.num / 8);
     //     // if self.prefix.num <= 8 {
@@ -1288,17 +1305,34 @@ impl IPAddress {
     //  Returns an array of IPv4 objects
     //
     #[allow(dead_code)]
+    fn sum_first_found(&self, arr: &Vec<IPAddress>) -> Vec<IPAddress> {
+        let mut dup = arr.clone();
+        if dup.len() < 2 {
+            return dup;
+        }
+        for i in (0..dup.len()-1).rev() {
+            let a = IPAddress::summarize(&vec![dup[i].clone(), dup[i + 1].clone()]);
+            // println!("dup:{}:{}:{}", dup.len(), i, a.len());
+            if a.len() == 1 {
+                dup[i] = a[0].clone();
+                dup.remove(i+1);
+                break;
+            }
+        }
+        return dup;
+    }
+    #[allow(dead_code)]
     pub fn split(&self, subnets: usize) -> Result<Vec<IPAddress>, String> {
-        if subnets <= 1 || (1 << self.prefix.host_prefix()) <= subnets {
+        if subnets == 0 || (1 << self.prefix.host_prefix()) <= subnets {
             return Err(format!("Value {} out of range", subnets));
         }
         let networks = self.subnet(self.newprefix(subnets).unwrap().num);
         if networks.is_err() {
             return networks;
         }
-        let net = networks.unwrap();
-        if net.len() != (subnets as usize) {
-            return Ok(self.sum_first_found(&net));
+        let mut net = networks.unwrap();
+        while net.len() != subnets {
+            net = self.sum_first_found(&net);
         }
         return Ok(net);
     }
@@ -1334,11 +1368,11 @@ impl IPAddress {
                                new_prefix,
                                self.prefix.num));
         }
-        let mut new_ip = self.host_address.clone();
-        for _ in new_prefix..self.prefix.num {
-            new_ip = new_ip << 1;
-        }
-        return Ok(self.from(&new_ip, &self.prefix));
+        // let mut new_ip = self.host_address.clone();
+        // for _ in new_prefix..self.prefix.num {
+        //     new_ip = new_ip << 1;
+        // }
+        return Ok(self.from(&self.host_address, &self.prefix.from(new_prefix).unwrap()).network());
     }
 
     //  This method implements the subnetting function
@@ -1589,22 +1623,6 @@ impl IPAddress {
             }
         }
         return Err(format!("newprefix not found {}:{}", num, self.ip_bits.bits));
-    }
-    #[allow(dead_code)]
-    fn sum_first_found(&self, arr: &Vec<IPAddress>) -> Vec<IPAddress> {
-        let mut dup = arr.clone();
-        dup.reverse();
-        for i in 0..dup.len() {
-            let a = IPAddress::summarize(&vec![dup[i].clone(), dup[i + 1].clone()]);
-            if a.len() == 1 {
-                for j in i..(i+1) {
-                    dup[j] = a[j-i].clone();
-                }
-                break;
-            }
-        }
-        dup.reverse();
-        return dup;
     }
 
 
