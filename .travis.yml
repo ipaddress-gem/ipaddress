@@ -6,13 +6,15 @@ rust:
 #before_install:
 #    - sudo apt-get -qq update
 #    - sudo apt-get install -y ruby
+#    - gem install rbtree
 install:
     - rvm use ruby-2.0.0-p598
-    - gem install rbtree
     - gem install construqt-ipaddress
+    - nvm install 6
 
 script:
     - rvm use ruby-2.0.0-p598
     - (cd ruby && rake test)
-    - (cd rust && cargo build --verbose)
-    - (cd rust && cargo test --verbose)
+    - (cd rust && cargo build --release --verbose)
+    - (cd rust && cargo test --release --verbose)
+    - (cd js && npm install)
