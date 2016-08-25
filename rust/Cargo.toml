@@ -4,7 +4,7 @@ description = "an library to handle ipv4 and ipv6 numbers"
 repository = "https://github.com/mabels/ipaddress"
 readme = "../README.md"
 keywords = ["ip","network"]
-license = "../LICENSE"
+license = "MIT"
 version = "0.1.0"
 authors = ["Meno Abels <meno.abels@adviser.com>"]
 
