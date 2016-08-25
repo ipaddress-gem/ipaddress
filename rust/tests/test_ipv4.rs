@@ -151,7 +151,7 @@ mod tests {
     pub fn test_attributes() {
         for (arg, attr) in setup().valid_ipv4 {
             let ip = IPAddress::parse(arg).unwrap();
-            println!("test_attributes:{}:{:?}", arg, attr);
+            // println!("test_attributes:{}:{:?}", arg, attr);
             assert_eq!(attr.ip, ip.to_s());
             assert_eq!(attr.prefix, ip.prefix.num);
         }
@@ -359,7 +359,7 @@ mod tests {
     }
     #[test]
     pub fn test_method_reverse() {
-        assert_eq!(setup().ip.dns_reverse(), "1.10.16.172.in-addr.arpa");
+        assert_eq!(setup().ip.dns_reverse(), "10.16.172.in-addr.arpa");
     }
     #[test]
     pub fn test_method_dns_rev_domains() {
@@ -370,7 +370,16 @@ mod tests {
         assert_eq!(IPAddress::parse("173.17.1.1/7").unwrap().dns_rev_domains(),
                    ["172.in-addr.arpa", "173.in-addr.arpa"]);
         assert_eq!(IPAddress::parse("173.17.1.1/29").unwrap().dns_rev_domains(),
-                   ["1.17.173.in-addr.arpa"]);
+                   [
+                       "0.1.17.173.in-addr.arpa",
+                       "1.1.17.173.in-addr.arpa",
+                       "2.1.17.173.in-addr.arpa",
+                       "3.1.17.173.in-addr.arpa",
+                       "4.1.17.173.in-addr.arpa",
+                       "5.1.17.173.in-addr.arpa",
+                       "6.1.17.173.in-addr.arpa",
+                       "7.1.17.173.in-addr.arpa"
+                    ]);
         assert_eq!(IPAddress::parse("174.17.1.1/24").unwrap().dns_rev_domains(),
                    ["1.17.174.in-addr.arpa"]);
         assert_eq!(IPAddress::parse("175.17.1.1/16").unwrap().dns_rev_domains(),
@@ -378,9 +387,9 @@ mod tests {
         assert_eq!(IPAddress::parse("176.17.1.1/8").unwrap().dns_rev_domains(),
                    ["176.in-addr.arpa"]);
         assert_eq!(IPAddress::parse("177.17.1.1/0").unwrap().dns_rev_domains(),
-                   ["0.in-addr.arpa"]);
+                   ["in-addr.arpa"]);
         assert_eq!(IPAddress::parse("178.17.1.1/32").unwrap().dns_rev_domains(),
-                   ["1.17.178.in-addr.arpa"]);
+                   ["1.1.17.178.in-addr.arpa"]);
     }
     #[test]
     pub fn test_method_compare() {

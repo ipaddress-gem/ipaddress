@@ -95,5 +95,39 @@ mod tests {
                            max: true,
                        }]);
 
+
+       assert_eq!(rle::code(&vec![0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0]), [Rle {
+                       part: 0x2001,
+                       pos: 0,
+                       cnt: 1,
+                       max: true,
+                   },
+                   Rle {
+                       part: 0x888,
+                       pos: 1,
+                       cnt: 1,
+                       max: true,
+                   },
+                   Rle {
+                       part: 0,
+                       pos: 2,
+                       cnt: 1,
+                       max: false,
+                   },
+                   Rle {
+                       part: 0x6630,
+                       pos: 3,
+                       cnt: 1,
+                       max: true,
+                   },
+                   Rle {
+                       part: 0,
+                       pos: 4,
+                       cnt: 4,
+                       max: true,
+                   }
+       ]);
+
+
     }
 }

@@ -14,8 +14,6 @@ pub struct Rle<T> {
     pub max: bool
 }
 
-
-
 impl<T: Display + LowerHex> fmt::Debug for Rle<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "<Rle@part:{:x},pos:{},cnt:{},max:{}>",
@@ -41,21 +39,23 @@ struct Last<T: Eq + Hash + Display + Copy + Clone> {
     pub ret: Vec<Rle<T>>
 }
 
-impl<T: Eq + Hash + Display + Copy + Clone> Last<T> {
+impl<T: Eq + Hash + Display + Copy + Clone + LowerHex> Last<T> {
     pub fn handle_last(&mut self) {
     if self.val.is_none() {
         return;
     }
-    let mut _last = self.val.as_mut().unwrap();
+    let ref mut _last = self.val.as_mut().unwrap();
     let mut max_rles = self.max_poses.entry(_last.part.clone()).or_insert(Vec::new());
     for idx in max_rles.clone() {
-        let mut prev = self.ret[idx];
-        // println!("{:?}->{}->{:?}", _last, idx, prev);
+        let ref mut prev = self.ret[idx];
         if prev.cnt > _last.cnt {
+            // println!(">>>>> last={:?}->{}->prev={:?}", _last, idx, prev);
             _last.max = false;
         } if prev.cnt == _last.cnt {
             // nothing
-        } else {
+        } else if prev.cnt < _last.cnt {
+            // println!("<<<<< last={:?}->{}->prev={:?}", _last, idx, prev);
+            //self.ret[idx].max = false;
             prev.max = false;
         }
     }
@@ -67,7 +67,7 @@ impl<T: Eq + Hash + Display + Copy + Clone> Last<T> {
 }
 
 #[allow(dead_code)]
-pub fn code<T: Eq + Hash + Display + Copy + Clone>(parts: &Vec<T>) -> Vec<Rle<T>> {
+pub fn code<T: Eq + Hash + Display + Copy + Clone + LowerHex>(parts: &Vec<T>) -> Vec<Rle<T>> {
     let mut last = Last {
         val: None,
         max_poses: HashMap::new(),

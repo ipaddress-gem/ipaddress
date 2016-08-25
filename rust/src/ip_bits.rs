@@ -166,7 +166,7 @@ pub fn v4() -> IpBits {
         bits: 32,
         part_bits: 8,
         dns_bits: 8,
-        rev_domain: ".in-addr.arpa",
+        rev_domain: "in-addr.arpa",
         part_mod: BigUint::from_usize(1 << 8).unwrap(),
         host_ofs: BigUint::one(),
     }
@@ -180,7 +180,7 @@ pub fn v6() -> IpBits {
         bits: 128,
         part_bits: 16,
         dns_bits: 4,
-        rev_domain: ".ip6.arpa",
+        rev_domain: "ip6.arpa",
         part_mod: BigUint::from_usize(1 << 16).unwrap(),
         host_ofs: BigUint::zero(),
     };

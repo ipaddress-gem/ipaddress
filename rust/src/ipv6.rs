@@ -7,7 +7,15 @@ use num::bigint::BigUint;
 use core::str::FromStr;
 use num_traits::One;
 use num_traits::Num;
+use core::ops::Rem;
+use core::ops::Shl;
+use core::ops::Shr;
+use num_traits::Zero;
+// use core::convert::From;
+use num_traits::FromPrimitive;
+use num_traits::ToPrimitive;
 use prefix128;
+use ipv4;
 // use core::fmt::Display;
 //use core::fmt::Display::fmt;
 // use core::fmt::Debug;
@@ -79,12 +87,41 @@ pub fn from_str<S: Into<String>>(_str: S, radix: u32, prefix: usize) -> Result<I
     return from_int(num.unwrap(), prefix);
 }
 
+pub fn enhance_if_mapped(mut ip: IPAddress) -> Result<IPAddress, String> {
+    // println!("real mapped {:x} {:x}", &ip.host_address, ip.host_address.clone().shr(32));
+    if ip.is_mapped() {
+        return Ok(ip);
+    }
+    let ipv6_top_96bit = ip.host_address.clone().shr(32);
+    if ipv6_top_96bit == BigUint::from_u32(0xffff).unwrap() {
+        // println!("enhance_if_mapped-1:{}", );
+        let num = ip.host_address.clone().rem(BigUint::one().shl(32));
+        if num == BigUint::zero() {
+            return Ok(ip);
+        }
+        println!("ip:{},{:x}", ip.to_string(), num);
+        let ipv4_bits = ::ip_bits::v4();
+        if ipv4_bits.bits < ip.prefix.host_prefix() {
+            println!("enhance_if_mapped-2:{}:{}", ip.to_string(), ip.prefix.host_prefix());
+            return Err(format!("enhance_if_mapped prefix not ipv4 compatible {}", ip.prefix.host_prefix()));
+        }
+        let mapped = ipv4::from_u32(num.to_u32().unwrap(), ipv4_bits.bits-ip.prefix.host_prefix());
+        if mapped.is_err() {
+            println!("enhance_if_mapped-3");
+            return mapped;
+        }
+        // println!("real mapped!!!!!={}", mapped.clone().unwrap().to_string());
+        ip.mapped = Some(Box::new(mapped.unwrap()));
+    }
+    return Ok(ip);
+}
+
 pub fn from_int(adr: BigUint, prefix: usize) -> Result<IPAddress, String> {
     let prefix = prefix128::new(prefix);
     if prefix.is_err() {
         return Err(prefix.unwrap_err());
     }
-    return Ok(IPAddress {
+    return enhance_if_mapped(IPAddress {
         ip_bits: ::ip_bits::v6(),
         host_address: adr.clone(),
         prefix: prefix.unwrap(),
@@ -132,7 +169,7 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
         if prefix.is_err() {
             return Err(prefix.unwrap_err());
         }
-        return Ok(IPAddress {
+        return enhance_if_mapped(IPAddress {
             ip_bits: ::ip_bits::v6(),
             host_address: o_num.unwrap(),
             prefix: prefix.unwrap(),

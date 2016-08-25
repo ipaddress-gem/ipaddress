@@ -446,7 +446,7 @@ impl IPAddress {
     pub fn dns_rev_domains(&self) -> Vec<String> {
         let mut ret: Vec<String> = Vec::new();
         for net in self.dns_networks() {
-            // println!("dns_rev_domains:{}", net.to_string);
+            // println!("dns_rev_domains:{}:{}", self.to_string(), net.to_string());
             ret.push(net.dns_reverse());
         }
         return ret;
@@ -457,11 +457,12 @@ impl IPAddress {
         let mut ret = String::new();
         let mut dot = "";
         let dns_parts = self.dns_parts();
-        for i in (self.prefix.host_prefix()/self.ip_bits.dns_bits)..dns_parts.len() {
+        for i in ((self.prefix.host_prefix()+(self.ip_bits.dns_bits-1))/self.ip_bits.dns_bits)..dns_parts.len() {
             ret.push_str(dot);
             ret.push_str(&self.ip_bits.dns_part_format(dns_parts[i]));
             dot = ".";
         }
+        ret.push_str(dot);
         ret.push_str(self.ip_bits.rev_domain);
         return ret;
     }
@@ -480,11 +481,14 @@ impl IPAddress {
     }
 
     pub fn dns_networks(&self) -> Vec<IPAddress> {
-         let next_bit_mask = ((self.prefix.num+self.ip_bits.dns_bits-1)/self.ip_bits.dns_bits)
-                    *self.ip_bits.dns_bits;
+        // +self.ip_bits.dns_bits-1
+         let next_bit_mask = self.ip_bits.bits -
+            (((self.prefix.host_prefix())/self.ip_bits.dns_bits)*self.ip_bits.dns_bits);
          if next_bit_mask <= 0 {
              return vec![self.network()];
          }
+        //  println!("dns_networks:{}:{}", self.to_string(), next_bit_mask);
+         // dns_bits
          let step_bit_net = BigUint::one().shl(self.ip_bits.bits-next_bit_mask);
          if step_bit_net == BigUint::zero() {
              return vec![self.network()];
@@ -840,6 +844,24 @@ impl IPAddress {
     #[allow(dead_code)]
     pub fn to_s_uncompressed(&self) -> String {
         return self.ip_bits.as_uncompressed_string(&self.host_address);
+    }
+
+    #[allow(dead_code)]
+    pub fn to_s_mapped(&self) -> String {
+        if self.is_mapped() {
+            return format!("{}{}", "::ffff:", self.mapped.clone().unwrap().to_s());
+        }
+        return self.to_s();
+    }
+    #[allow(dead_code)]
+    pub fn to_string_mapped(&self) -> String {
+        if self.is_mapped() {
+            let mapped = self.mapped.clone().unwrap();
+            return format!("{}/{}",
+                self.to_s_mapped(),
+                mapped.prefix.num);
+        }
+        return self.to_string();
     }
 
 
