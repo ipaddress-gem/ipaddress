@@ -14,7 +14,7 @@
 
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
-require 'rbtree'
+#require 'rbtree'
 
 module IPAddress
 
