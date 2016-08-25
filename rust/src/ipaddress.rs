@@ -20,7 +20,7 @@ use num::bigint::ToBigUint;
 use ip_bits::IpBits;
 use prefix::Prefix;
 use regex::Regex;
-use std::f64;
+// use std::f64;
 use std::fmt;
 
 use num_traits::identities::Zero;

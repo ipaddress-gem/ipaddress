@@ -1,0 +1,5 @@
+test
+.git*
+Makefile
+bower.json
+.travis.yml
