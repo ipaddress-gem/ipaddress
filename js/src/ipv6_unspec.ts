@@ -1,5 +1,5 @@
 
-use ipaddress::IPAddress;
+class Ipv6Unspec {
 //  The address with all zero bits is called the +unspecified+ address
 //  (corresponding to 0.0.0.0 in IPv4). It should be something like this:
 //
@@ -49,8 +49,8 @@ use ipaddress::IPAddress;
 //    ip.to_s
 //       // => => "::/128"
 //
-#[allow(dead_code)]
-pub fn new() -> IPAddress {
-    return IPAddress::parse("::").unwrap();
+public create() : IPAddress {
+    return IPAddress.parse("::");
 }
 //  class IPv6::Unspecified
+}

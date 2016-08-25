@@ -1,7 +1,3 @@
-extern crate ipaddress;
-extern crate num;
-
-#[cfg(test)]
 mod tests {
     use ipaddress::IPAddress;
 

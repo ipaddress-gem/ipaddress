@@ -1,18 +1,13 @@
-use std::collections::HashMap;
-use core::hash::Hash;
-use core::cmp::Eq;
-use core::fmt::Display;
-use core::clone::Clone;
-use core::fmt::LowerHex;
-use std::fmt;
 
-#[derive(Copy, Clone)]
-pub struct Rle<T> {
-    pub part: T,
-    pub pos: usize,
-    pub cnt: usize,
-    pub max: bool
+interface RleType {
+
 }
+
+class Rle {
+    pub part: RleType;
+    pub pos: number;
+    pub cnt: number;
+    pub max: boolean;
 
 impl<T: Display + LowerHex> fmt::Debug for Rle<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

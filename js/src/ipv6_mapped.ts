@@ -1,16 +1,5 @@
 
-// use num::bigint::BigUint;
-// use ip_bits::IpBits;
-use ipaddress::IPAddress;
-
-use num_integer::Integer;
-// use core::fmt::Display;
-
-use num_traits::cast::ToPrimitive;
-use core::ops::Shr;
-use num::bigint::BigUint;
-use num_traits::Zero;
-
+class Ipv6Mapped {
 //  Ac
 //  It is usually identified as a IPv4 mapped IPv6 address, a particular
 //  IPv6 address which aids the transition from IPv4 to IPv6. The
@@ -87,8 +76,7 @@ use num_traits::Zero;
 //    ip6.to_string
 //      // => "::ffff:13.1.68.3"
 //
-pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
-    let str = _str.into();
+public static create(str: String) -> Result<IPAddress, String> {
     let (ip, o_netmask) = IPAddress::split_at_slash(&str);
     let split_colon = ip.split(":").collect::<Vec<&str>>();
     if split_colon.len() <= 1 {
@@ -156,39 +144,4 @@ pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     }
     return Err(format!("unknown mapped format:{}", str));
 }
-
-//  Similar to IPv6// to_s, but prints out the IPv4 address
-//  in dotted decimal format
-//
-//    ip6 = IPAddress "::ffff:172.16.10.1/128"
-//
-//    ip6.to_s
-//      // => "::ffff:172.16.10.1"
-//
-//  pub fn to_s
-//    "::ffff:// {@ipv4.address}"
-//  end
-
-//  Similar to IPv6// to_string, but prints out the IPv4 address
-//  in dotted decimal format
-//
-//
-//    ip6 = IPAddress "::ffff:172.16.10.1/128"
-//
-//    ip6.to_string
-//      // => "::ffff:172.16.10.1/128"
-//
-//  pub fn to_string
-//    "::ffff:// {@ipv4.address}/// @prefix"
-//  end
-
-//  Checks if the IPv6 address is IPv4 mapped
-//
-//    ip6 = IPAddress "::ffff:172.16.10.1/128"
-//
-//    ip6.mapped?
-//      // => true
-//
-//  pub fn mapped?
-//    true
-//  end
+}

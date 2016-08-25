@@ -1,8 +1,5 @@
 
-use ipaddress::IPAddress;
-use num::bigint::BigUint;
-use num_traits::One;
-
+class Ipv6Loopback {
 //    The loopback  address is a unicast localhost address. If an
 //  application in a host sends packets to this address, the IPv6 stack
 //  will loop these packets back on the same virtual interface.
@@ -46,7 +43,7 @@ use num_traits::One;
 //    ip.to_string
 //      // => "::1/128"
 //
-#[allow(dead_code)]
-pub fn new() -> IPAddress {
-    return ::ipv6::from_int(BigUint::one(), 128).unwrap();
+public create() : IPAddress {
+    return ipv6.from_int(Crunch.parse(1), 128);
+}
 }

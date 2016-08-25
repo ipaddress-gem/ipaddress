@@ -6,3 +6,4 @@ pkg
 server.rb
 ipaddr.html
 Gemfile.lock
+**/node_modules
