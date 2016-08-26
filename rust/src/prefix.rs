@@ -37,7 +37,7 @@ impl Clone for Prefix {
 impl PartialEq for Prefix {
     fn eq(&self, other: &Self) -> bool {
         return self.ip_bits.version == other.ip_bits.version &&
-          self.num == self.num;
+          self.num == other.num;
     }
     fn ne(&self, other: &Self) -> bool {
         !self.eq(other)
@@ -114,15 +114,15 @@ impl Prefix {
         return self.num
     }
 
-    //  The hostmask is the contrary of the subnet mask,
-    //  as it shows the bits that can change within the
-    //  hosts
-    //
-    //    prefix = IPAddress::Prefix32.new 24
-    //
-    //    prefix.hostmask
-    //      // => "0.0.0.255"
-    //
+    ///  The hostmask is the contrary of the subnet mask,
+    ///  as it shows the bits that can change within the
+    ///  hosts
+    ///
+    ///    prefix = IPAddress::Prefix32.new 24
+    ///
+    ///    prefix.hostmask
+    ///      /// => "0.0.0.255"
+    ///
     #[allow(dead_code)]
     pub fn host_mask(&self) -> BigUint {
         let mut ret = BigUint::zero();
@@ -132,54 +132,38 @@ impl Prefix {
         return ret;
     }
 
-    //#[allow(dead_code)]
-    // pub fn host_mask_str(&self) -> String {
-//        return (self.vt_to_ip_str)(&self.ip_bits.parts(&self.host_mask()))
-    // }
-
-
-
-    //
-    //  Returns the length of the host portion
-    //  of a netmask.
-    //
-    //    prefix = Prefix128.new 96
-    //
-    //    prefix.host_prefix
-    //      // => 128
-    //
+    ///
+    ///  Returns the length of the host portion
+    ///  of a netmask.
+    ///
+    ///    prefix = Prefix128.new 96
+    ///
+    ///    prefix.host_prefix
+    ///      /// => 128
+    ///
     #[allow(dead_code)]
     pub fn host_prefix(&self) -> usize {
         return (self.ip_bits.bits) - self.num;
     }
 
-    //
-    //  Transforms the prefix into a string of bits
-    //  representing the netmask
-    //
-    //    prefix = IPAddress::Prefix128.new 64
-    //
-    //    prefix.bits
-    //      // => "1111111111111111111111111111111111111111111111111111111111111111"
-    //          "0000000000000000000000000000000000000000000000000000000000000000"
-    //
+    ///
+    ///  Transforms the prefix into a string of bits
+    ///  representing the netmask
+    ///
+    ///    prefix = IPAddress::Prefix128.new 64
+    ///
+    ///    prefix.bits
+    ///      /// => "1111111111111111111111111111111111111111111111111111111111111111"
+    ///          "0000000000000000000000000000000000000000000000000000000000000000"
+    ///
     #[allow(dead_code)]
     pub fn bits(&self) -> String {
         return self.netmask().to_str_radix(2)
     }
-    // #[allow(dead_code)]
-    // pub fn net_mask(&self) -> BigUint {
-    //     return (self.in_mask.clone() >> (self.host_prefix() as usize)) << (self.host_prefix() as usize);
-    // }
-
     #[allow(dead_code)]
     pub fn to_s(&self) -> String {
         return format!("{}", self.get_prefix());
     }
-    //#[allow(dead_code)]
-    // pub fn inspect(&self) -> String {
-    //     return self.to_s();
-    // }
     #[allow(dead_code)]
     pub fn to_i(&self) -> usize {
         return self.get_prefix();

@@ -1,73 +1,87 @@
 
+import IpBits from './ip_bits';
+import * as Crunch from 'number-crunch';
+
+type Crunchy = number[];
+
+
+interface From {
+    (source: Prefix, num: number): Prefix;
+}
+
+
 class Prefix {
     num: number;
     ip_bits: IpBits;
     net_mask: Crunchy;
-    vt_from: fn(&Prefix, usize) -> Result<Prefix, String>,
+    vt_from: From;
 
-    public clone(&self) -> Prefix {
-        Prefix {
-            num: self.num,
-            ip_bits: self.ip_bits.clone(),
-            net_mask: self.net_mask.clone(),
-            vt_from: self.vt_from
-        }
+    constructor(obj: {[id:string] : any}) {
+       this.num = obj['num']; 
+       this.ip_bits = obj['ip_bits']; 
+       this.net_mask = obj['net']; 
+       this.vt_from = obj['vt_from']; 
     }
-    fn eq(&self, other: &Self) -> bool {
-        return self.ip_bits.version == other.ip_bits.version &&
-          self.num == self.num;
+
+    public clone() : Prefix {
+        return new Prefix({
+            num: this.num,
+            ip_bits: this.ip_bits,
+            net_mask: this.net_mask,
+            vt_from: this.vt_from
+        });
     }
-    fn ne(&self, other: &Self) -> bool {
-        !self.eq(other)
+
+    public eq(other: Prefix) : boolean {
+        return this.ip_bits.version == other.ip_bits.version &&
+          this.num == other.num;
     }
-    fn cmp(&self, oth: & Prefix) -> Ordering {
-        if self.ip_bits.version < oth.ip_bits.version {
-            Ordering::Less
-        } else if self.ip_bits.version > oth.ip_bits.version {
-            Ordering::Greater
+    public ne(other: Prefix) : boolean {
+        return !this.eq(other);
+    }
+    public cmp(oth: Prefix) : number {
+        if (this.ip_bits.version < oth.ip_bits.version) {
+            return -1;
+        } else if (this.ip_bits.version > oth.ip_bits.version) {
+            return 1;
         } else {
-            if self.num < oth.num {
-                Ordering::Less
-            } else if self.num > oth.num {
-                Ordering::Greater
+            if (this.num < oth.num) {
+                return -1;
+            } else if (this.num > oth.num) {
+                return 1;
             } else {
-                Ordering::Equal
+                return 0;
             }
         }
     }
     //#[allow(dead_code)]
-    public from(&self, num: usize) -> Result<Prefix, String>{
-        return (self.vt_from)(self, num)
+    public from(num: number) : Prefix {
+        return (this.vt_from)(this, num);
     }
 
-    #[allow(dead_code)]
-    public to_ip_str(&self) -> String {
-        return (self.ip_bits.vt_as_compressed_string)(&self.ip_bits, &self.netmask())
+    public to_ip_str() : string {
+        return this.ip_bits.vt_as_compressed_string(this.ip_bits, this.net_mask);
     }
 
-    #[allow(dead_code)]
-    public size(&self) -> BigUint {
-      return BigUint::one() << (self.ip_bits.bits-self.num.to_usize().unwrap())
+    public size() : Crunchy {
+      return Crunch.parse(1).leftShift(this.ip_bits.bits-this.num);
     }
 
-    public new_netmask(prefix: usize, bits: usize) -> BigUint {
-        let mut mask = BigUint::zero();
+    public static new_netmask(prefix: number, bits: number) : Crunchy {
+        let mask = Crunch.parse(0);
         let host_prefix = bits-prefix;
-        for i in 0..prefix {
-            mask = mask + (BigUint::one() << (host_prefix+i));
+        for (let i=0; i < prefix; ++i) {
+            mask = mask.add(Crunch.parse(1).leftShift(host_prefix+i));
         }
         return mask
     }
 
-    #[allow(dead_code)]
-    //#[allow(unused_variables)]
-    public netmask(&self) -> BigUint {
-        self.net_mask.clone()
+    public netmask() : Crunchy {
+        return this.net_mask;
     }
 
-    #[allow(dead_code)]
-    public get_prefix(&self) -> usize {
-        return self.num
+    public get_prefix() : number {
+        return this.num;
     }
 
     //  The hostmask is the contrary of the subnet mask,
@@ -79,11 +93,10 @@ class Prefix {
     //    prefix.hostmask
     //      // => "0.0.0.255"
     //
-    #[allow(dead_code)]
-    public host_mask(&self) -> BigUint {
-        let mut ret = BigUint::zero();
-        for _ in 0..(self.ip_bits.bits-self.num) {
-            ret = ret.shl(1).add(BigUint::one());
+    public host_mask() : Crunchy {
+        let ret = Crunch.parse(0);
+        for(let _ = 0; _ < (this.ip_bits.bits-this.num); _++) {
+            ret = ret.shl(1).add(Crunch.parse(1));
         }
         return ret;
     }
@@ -98,9 +111,8 @@ class Prefix {
     //    prefix.host_prefix
     //      // => 128
     //
-    #[allow(dead_code)]
-    public host_prefix(&self) -> usize {
-        return (self.ip_bits.bits) - self.num;
+    public host_prefix() : number {
+        return this.ip_bits.bits - this.num;
     }
 
     //
@@ -113,46 +125,44 @@ class Prefix {
     //      // => "1111111111111111111111111111111111111111111111111111111111111111"
     //          "0000000000000000000000000000000000000000000000000000000000000000"
     //
-    #[allow(dead_code)]
-    public bits(&self) -> String {
-        return self.netmask().to_str_radix(2)
+    public bits() : string {
+        return this.netmask().toString(2);
     }
     // #[allow(dead_code)]
     // public net_mask(&self) -> BigUint {
     //     return (self.in_mask.clone() >> (self.host_prefix() as usize)) << (self.host_prefix() as usize);
     // }
 
-    #[allow(dead_code)]
-    public to_s(&self) -> String {
-        return format!("{}", self.get_prefix());
+    public to_s() : string {
+        return this.get_prefix().toString();
     }
     //#[allow(dead_code)]
     // public inspect(&self) -> String {
     //     return self.to_s();
     // }
-    #[allow(dead_code)]
-    public to_i(&self) -> usize {
-        return self.get_prefix();
+    public to_i() : number {
+        return this.get_prefix();
     }
 
-    #[allow(dead_code)]
-    public add_prefix(&self, other: &Prefix) -> Result<Prefix, String> {
-        self.from(self.get_prefix() + other.get_prefix())
+    public add_prefix(other: Prefix) : Prefix {
+        return this.from(this.get_prefix() + other.get_prefix());
     }
-    #[allow(dead_code)]
-    public add(&self, other: usize) -> Result<Prefix, String> {
-        self.from(self.get_prefix() + other)
+
+    public add(other: number) : Prefix {
+        return this.from(this.get_prefix() + other)
     }
-    #[allow(dead_code)]
-    public sub_prefix(&self, other: &Prefix) -> Result<Prefix, String> {
-        return self.sub(other.get_prefix());
+
+    public sub_prefix(other: Prefix) : Prefix {
+        return this.sub(other.get_prefix());
     }
-    #[allow(dead_code)]
-    public sub(&self, other: usize) -> Result<Prefix, String> {
-        if other > self.get_prefix() {
-            return self.from(other-self.get_prefix());
+
+    public sub(other: number) : Prefix {
+        if (other > this.get_prefix()) {
+            return this.from(other-this.get_prefix());
         }
-        return self.from(self.get_prefix() - other);
+        return this.from(this.get_prefix() - other);
     }
 
 }
+
+export default Prefix;

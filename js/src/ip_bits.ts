@@ -1,6 +1,7 @@
+
 import * as Crunch from 'node-crunch';
 
-import Rle from 'rle';
+import Rle from './rle';
 
 type Crunchy = number[];
 enum IpVersion {
@@ -8,11 +9,15 @@ enum IpVersion {
     V6 = 6
 }
 
+interface ToString {
+    (source: IpBits, num: Crunchy): string;
+}
+
 // #[derive(Debug, Clone)]
 class IpBits {
     version: IpVersion;
-    //pub vt_as_compressed_string: fn(&IpBits,this.Crunchy) -> String,
-    //pub vt_as_uncompressed_string: fn(&IpBits,this.Crunchy) -> String,
+    vt_as_compressed_string: ToString;
+    vt_as_uncompressed_string: ToString;
     bits: number;
     part_bits: number;
     dns_bits: number;
@@ -20,7 +25,7 @@ class IpBits {
     part_mod: number;
     host_ofs: number; // ipv4=1, ipv6=0
 
-    public clone() : IpBits {
+    public clone(): IpBits {
         let my = new IpBits();
         my.version = this.version;
         my.vt_as_compressed_string = this.vt_as_compressed_string;
@@ -34,36 +39,36 @@ class IpBits {
         return my;
     }
 
-    public parts(bu: Crunchy) : Crunchy {
+    public parts(bu: Crunchy): Crunchy {
         let vec: number[] = [];
         let my = bu.slice();
         let part_mod = Crunch.leftShift([1], this.part_bits);// - Crunchy::one();
-        for(let i = 0; i < (this.bits / this.part_bits); ++i) {
-            vec.push(0+Crunch.stringify(Crunch.mod(my, part_mod)));
+        for (let i = 0; i < (this.bits / this.part_bits); ++i) {
+            vec.push(0 + Crunch.stringify(Crunch.mod(my, part_mod)));
             my = Crunch.rightShift(my, this.part_bits);
         }
         return vec.reverse();
     }
 
-    public as_compressed_string(bu: Crunchy) : String {
+    public as_compressed_string(bu: Crunchy): String {
         return (this.vt_as_compressed_string)(this, bu);
     }
-    public as_uncompressed_string(bu:this.Crunchy) : String {
+    public as_uncompressed_string(bu: Crunchy): String {
         return (this.vt_as_uncompressed_string)(this, bu);
     }
 
-    public dns_part_format(i: number) : String {
-        switch(this.version) {
+    public dns_part_format(i: number): String {
+        switch (this.version) {
             case IpVersion.V4: return `${i}`;
             case IpVersion.V6: return `${i.toString(16)}`;
         }
     }
 
-    public static v4() : IpBits {
+    public static v4(): IpBits {
         let my = new IpBits();
         my.version = IpVersion.V4;
-        my.vt_as_compressed_string = ipv4_as_compressed;
-        my.vt_as_uncompressed_string = ipv4_as_compressed;
+        my.vt_as_compressed_string = IpBits.ipv4_as_compressed;
+        my.vt_as_uncompressed_string = IpBits.ipv4_as_compressed;
         my.bits = 32;
         my.part_bits = 8;
         my.dns_bits = 8;
@@ -73,11 +78,11 @@ class IpBits {
         return my;
     }
 
-    public static v6() : IpBits {
+    public static v6(): IpBits {
         let my = new IpBits();
-        my.version: IpVersion.V6;
-        my.vt_as_compressed_string = ipv6_as_compressed;
-        my.vt_as_uncompressed_string = ipv6_as_uncompressed;
+        my.version = IpVersion.V6;
+        my.vt_as_compressed_string = IpBits.ipv6_as_compressed;
+        my.vt_as_uncompressed_string = IpBits.ipv6_as_uncompressed;
         my.bits = 128;
         my.part_bits = 16;
         my.dns_bits = 4;
@@ -87,8 +92,7 @@ class IpBits {
         return my;
     }
 
-
-    public static ipv4_as_compressed(ip_bits: IpBits, host_address: Crunchy) : string {
+    public static ipv4_as_compressed(ip_bits: IpBits, host_address: Crunchy): string {
         let ret = "";
         let sep = "";
         for (let part in ip_bits.parts(host_address)) {
@@ -98,35 +102,37 @@ class IpBits {
         }
         return ret;
     }
-    public static ipv6_as_compressed(ip_bits:IpBits, host_address:Crunchy) : string {
+
+    public static ipv6_as_compressed(ip_bits: IpBits, host_address: Crunchy): string {
         //println!("ipv6_as_compressed:{}", host_address);
         let ret = "";
         let colon = "";
-        for (let rle in Rle.code(ip_bits.parts(host_address))) {
+        for (let rle of Rle.code(ip_bits.parts(host_address))) {
             // println!(">>{:?}", rle);
             for (let _ = 0; _ < rle.cnt; _++) {
-               if (!(rle.part == 0 && rle.max)) {
-                ret += &format!("{}{:x}", colon, rle.part));
-                colon = &the_colon;
-            } else if rle.part == 0 && rle.max {
-                ret.push_str("::");
-                colon = &the_empty;
-                break;
-            }
+                if (!(rle.part == 0 && rle.max)) {
+                    ret += `${colon}${rle.part.toString(16)}`;
+                    colon = ":";
+                } else if (rle.part == 0 && rle.max) {
+                    ret += "::";
+                    colon = "";
+                    break;
+                }
             }
         }
         return ret;
     }
-    public static ipv6_as_uncompressed(ip_bits:this.IpBits, host_address:this.Crunchy) -> String {
-        let ret = String::new();
+    public static ipv6_as_uncompressed(ip_bits: IpBits, host_address: Crunchy): String {
+        let ret = "";
         let sep = "";
-        for part in ip_bits.parts(host_address) {
-            ret.push_str(sep);
-            ret.push_str(&format!("{:04x}", part));
+        for (let part of ip_bits.parts(host_address)) {
+            ret += sep;
+            ret += part.toString(16);
             sep = ":";
         }
         return ret;
     }
 
-
 }
+
+export default IpBits;

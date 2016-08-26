@@ -172,7 +172,7 @@ mod tests {
     fn test_method_network_u128() {
         assert_eq!(ipv6::from_int(BigUint::from_str("42540766411282592856903984951653826560")
                                       .unwrap(),
-                                  128)
+                                  64)
                        .unwrap(),
                    setup().ip.network());
     }
@@ -180,7 +180,7 @@ mod tests {
     fn test_method_broadcast_u128() {
         assert_eq!(ipv6::from_int(BigUint::from_str("42540766411282592875350729025363378175")
                                       .unwrap(),
-                                  128)
+                                  64)
                        .unwrap(),
                    setup().ip.broadcast());
     }
@@ -331,8 +331,8 @@ mod tests {
                 let ret = net_adr.dns_networks();
                 assert_eq!(ret.first().unwrap().prefix.num % 4, 0);
                 assert_eq!(ret.len(), nr_networks);
-                assert_eq!(net_adr.network(), ret.first().unwrap().network());
-                assert_eq!(net_adr.broadcast(), ret.last().unwrap().broadcast());
+                assert_eq!(net_adr.network().to_s(), ret.first().unwrap().network().to_s());
+                assert_eq!(net_adr.broadcast().to_s(), ret.last().unwrap().broadcast().to_s());
                 //        puts "//{adr}///{prefix} //{nr_networks} //{ret}"
             }
         }

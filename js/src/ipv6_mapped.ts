@@ -1,4 +1,6 @@
 
+import IPAddress from './ipaddress';
+
 class Ipv6Mapped {
 //  Ac
 //  It is usually identified as a IPv4 mapped IPv6 address, a particular
@@ -76,8 +78,8 @@ class Ipv6Mapped {
 //    ip6.to_string
 //      // => "::ffff:13.1.68.3"
 //
-public static create(str: String) -> Result<IPAddress, String> {
-    let (ip, o_netmask) = IPAddress::split_at_slash(&str);
+public static create(str: String) : IPAddress {
+    let (ip, o_netmask) = IPAddress.split_at_slash(&str);
     let split_colon = ip.split(":").collect::<Vec<&str>>();
     if split_colon.len() <= 1 {
         // println!("---1");

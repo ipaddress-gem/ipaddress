@@ -3,7 +3,7 @@
 
 class Last {
     val: Rle = null;
-    max_poses: { [id: string] : any } = {};
+    max_poses: { [id: string]: any } = {};
     ret: Rle[] = [];
 
     constructor() {
@@ -13,27 +13,27 @@ class Last {
             return;
         }
         let _last = this.val;
-        let max_rles = this.max_poses[_last.part]; 
+        let max_rles = this.max_poses[_last.part];
         if (max_rles == null) {
             max_rles = this.max_poses[_last.part] = [];
         }
+        // console.log(_last.part, this.max_poses);
         for (let idx in max_rles) {
-            let prev = this.ret[idx];
-            if (prev.cnt > _last.cnt) {
-                console.log(`>>>>> last=${_last}->${idx}->prev=${prev}`);
-                _last.max = false;
-            } else if (prev.cnt == _last.cnt) {
-                // nothing
-            } else if (prev.cnt < _last.cnt) {
-                console.log(`<<<<< last=${_last}->${idx}->prev=${prev}`);
-                //self.ret[idx].max = false;
-                prev.max = false;
-            }
+            let prev = this.ret[max_rles[idx]];
+        if (prev.cnt > _last.cnt) {
+            // console.log(`>>>>> last=${_last}->${idx}->prev=${prev}`);
+            _last.max = false;
+        } else if (prev.cnt == _last.cnt) {
+            // nothing
+        } else if (prev.cnt < _last.cnt) {
+            // console.log(`<<<<< last=${_last}->${idx}->prev=${prev}`);
+            prev.max = false;
         }
-        //println!("push:{}:{:?}", self.ret.len(), _last);
-        max_rles.push(this.ret.length);
-        _last.pos = this.ret.length;
-        this.ret.push(_last);
+    }
+    //println!("push:{}:{:?}", self.ret.len(), _last);
+    max_rles.push(this.ret.length);
+_last.pos = this.ret.length;
+this.ret.push(_last);
     }
 }
 
@@ -65,9 +65,9 @@ class Rle {
     public static code(parts: any[]): Rle[] {
         let last = new Last();
         // println!("code");
-        for (let i=0; i < parts.length; ++i) {
+        for (let i = 0; i < parts.length; ++i) {
             let part = parts[i];
-            // println!("part:{}", part);
+            // console.log(`part:${part}`);
             if (last.val && last.val.part == part) {
                 last.val.cnt += 1;
             } else {
