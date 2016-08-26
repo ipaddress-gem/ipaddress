@@ -51,7 +51,7 @@ impl<T: Eq + Hash + Display + Copy + Clone + LowerHex> Last<T> {
         if prev.cnt > _last.cnt {
             // println!(">>>>> last={:?}->{}->prev={:?}", _last, idx, prev);
             _last.max = false;
-        } if prev.cnt == _last.cnt {
+        } else if prev.cnt == _last.cnt {
             // nothing
         } else if prev.cnt < _last.cnt {
             // println!("<<<<< last={:?}->{}->prev={:?}", _last, idx, prev);

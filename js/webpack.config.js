@@ -5,7 +5,7 @@ const node_modules = fs.readdirSync('node_modules').filter(x => x !== '.bin');
 const globby = require('globby');
 
 fs.writeFileSync('test/all.ts',
-  globby.sync(['test/**/*-test.ts', 'test/**/*-test.tsx'])
+  globby.sync(['test/**/test_*.ts', 'test/**/*-test.tsx'])
     .map(file => file.replace('test/', '').replace(/\.tsx?$/, ''))
     .map(file => `import './${file}';`)
     .join('\n'));

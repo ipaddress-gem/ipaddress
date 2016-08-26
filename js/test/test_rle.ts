@@ -1,124 +1,145 @@
+
+import { assert } from 'chai';
+
+import Rle from '../src/rle';
+
+function assert_rle(left: Rle[], right: Rle[]) {
+    assert.equal(left.length, right.length, "array length missmatch");
+    for (let i = 0; i < left.length; ++i) {
+        assert.isOk(left[i].eq(right[i]), 
+            `left:${left[i].toString()} right:${right[i].toString()}`);
+    }
+}
+
 describe("rle", () => {
     it("test_rle", () => {
         let empty : number[] = [];
-        assert_eq!(rle::code(empty), []);
-        assert_eq!(rle::code([4711]), [Rle {
+        assert_rle(Rle.code(empty), []);
+        assert_rle(Rle.code([4711]), [
+                new Rle({
                         part: 4711,
                         pos: 0,
                         cnt: 1,
                         max: true,
-                    }]);
-        assert_eq!(rle::code([4711, 4711]), [Rle {
+                    })]);
+        assert_rle(Rle.code([4711, 4711]), [
+                new Rle({
                         part: 4711,
                         pos: 0,
                         cnt: 2,
                         max: true,
-                    }]);
-        assert_eq!(rle::code([4711, 4711, 4811]), [Rle {
+                    })]);
+        assert_rle(Rle.code([4711, 4711, 4811]), [
+                    new Rle({
                         part: 4711,
                         pos: 0,
                         cnt: 2,
                         max: true,
-                    },
-                    Rle {
+                    }),
+                    new Rle({
                         part: 4811,
                         pos: 1,
                         cnt: 1,
                         max: true,
-                    }]);
-        assert_eq!(rle::code([4711, 4711, 4811, 4711, 4711]), [Rle {
+                    })]);
+        assert_rle(Rle.code([4711, 4711, 4811, 4711, 4711]), [
+                    new Rle({
                         part: 4711,
                         pos: 0,
                         cnt: 2,
                         max: true,
-                    },
-                    Rle {
+                    }),
+                    new Rle({
                         part: 4811,
                         pos: 1,
                         cnt: 1,
                         max: true,
-                    },
-                    Rle {
+                    }),
+                    new Rle({
                         part: 4711,
                         pos: 2,
                         cnt: 2,
                         max: true,
-                    }]);
-        assert_eq!(rle::code([4711, 4711, 4711, 4811, 4711, 4711]), [Rle {
+                    })]);
+              assert_rle(Rle.code([4711, 4711, 4711, 4811, 4711, 4711]), [
+                    new Rle({
                         part: 4711,
                         pos: 0,
                         cnt: 3,
                         max: true,
-                    },
-                    Rle {
+                    }),
+                    new Rle({
                         part: 4811,
                         pos: 1,
                         cnt: 1,
                         max: true,
-                    },
-                    Rle {
+                    }),
+                    new Rle({
                         part: 4711,
                         pos: 2,
                         cnt: 2,
                         max: false,
-                    }]
+                    })]
                    );
-           assert_eq!(rle::code([4711, 4711, 4711, 4811, 4711, 4711, 4911, 4911, 4911]), [Rle {
+                   assert_rle(Rle.code([4711, 4711, 4711, 4811, 4711, 4711, 4911, 4911, 4911]), 
+                       [
+                        new Rle({
                            part: 4711,
                            pos: 0,
                            cnt: 3,
                            max: true,
-                       },
-                       Rle {
+                       }),
+                       new Rle({
                            part: 4811,
                            pos: 1,
                            cnt: 1,
                            max: true,
-                       },
-                       Rle {
+                       }),
+                       new Rle({
                            part: 4711,
                            pos: 2,
                            cnt: 2,
                            max: false,
-                       },
-                       Rle {
+                       }),
+                       new Rle({
                            part: 4911,
                            pos: 3,
                            cnt: 3,
                            max: true,
-                       }]);
+                       })]);
 
 
-       assert_eq!(rle::code([0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0]), [Rle {
+              assert_rle(Rle.code([0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0]), [
+                   new Rle({
                        part: 0x2001,
                        pos: 0,
                        cnt: 1,
                        max: true,
-                   },
-                   Rle {
+                   }),
+                   new Rle({
                        part: 0x888,
                        pos: 1,
                        cnt: 1,
                        max: true,
-                   },
-                   Rle {
+                   }),
+                   new Rle({
                        part: 0,
                        pos: 2,
                        cnt: 1,
                        max: false,
-                   },
-                   Rle {
+                   }),
+                   new Rle({
                        part: 0x6630,
                        pos: 3,
                        cnt: 1,
                        max: true,
-                   },
-                   Rle {
+                   }),
+                   new Rle({
                        part: 0,
                        pos: 4,
                        cnt: 4,
                        max: true,
-                   }
+                   })
        ]);
     });
 });
