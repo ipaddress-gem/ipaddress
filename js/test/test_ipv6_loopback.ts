@@ -1,22 +1,12 @@
-extern crate ipaddress;
-extern crate num;
-
-#[cfg(test)]
-mod tests {
-    use num::bigint::BigUint;
-    use num::One;
-    use ipaddress::ipv6_loopback;
-    use ipaddress::IPAddress;
-
-    struct IPv6LoopbackTest {
+describe("ipv6_loopback", () => {
+    class IPv6LoopbackTest {
         ip: IPAddress,
-        s: &'static str,
-        n: &'static str,
-        string: &'static str,
-        one: BigUint,
+        s: string,
+        n: string,
+        string: string,
+        one: Crunchy
     }
-    #[allow(dead_code)]
-    fn setup() -> IPv6LoopbackTest {
+    function setup() : IPv6LoopbackTest {
         return IPv6LoopbackTest {
             ip: ipv6_loopback::new(),
             s: "::1",
@@ -26,9 +16,7 @@ mod tests {
         };
     }
 
-    #[test]
-    #[allow(dead_code)]
-    fn test_attributes() {
+    it("test_attributes", () => {
         let s = setup();
         assert_eq!(128, s.ip.prefix.num);
         assert_eq!(true, s.ip.is_loopback());
@@ -36,10 +24,8 @@ mod tests {
         assert_eq!(s.n, s.ip.to_string());
         assert_eq!(s.string, s.ip.to_string_uncompressed());
         assert_eq!(s.one, s.ip.host_address);
-    }
-    #[test]
-    #[allow(dead_code)]
-    fn test_method_ipv6() {
+    });
+    it("test_method_ipv6", () => {
         assert_eq!(true, setup().ip.is_ipv6());
-    }
-}
+    });
+});

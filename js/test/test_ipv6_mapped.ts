@@ -1,28 +1,17 @@
-extern crate ipaddress;
-extern crate num;
-
-#[cfg(test)]
-mod tests {
-    use std::collections::HashMap;
-    use num::bigint::BigUint;
-    use std::str::FromStr;
-    use ipaddress::ipv6_mapped;
-    // use ipaddress::ipv6;
-    use ipaddress::IPAddress;
-
-    pub struct IPv6MappedTest {
-        pub ip: IPAddress,
-        pub s: &'static str,
-        pub sstr: &'static str,
-        pub string: &'static str,
-        pub u128: BigUint,
-        pub address: &'static str,
-        pub valid_mapped: HashMap<&'static str, BigUint>,
-        pub valid_mapped_ipv6: HashMap<&'static str, BigUint>,
-        pub valid_mapped_ipv6_conversion: HashMap<&'static str, &'static str>,
+describe("ipv6_mapped", () => {
+    class IPv6MappedTest {
+        ip: IPAddress,
+        s: string,
+        sstr: string,
+        string: string,
+        u128: BigUint,
+        address: string,
+        valid_mapped: HashMap<string, BigUint>,
+        valid_mapped_ipv6: HashMap<string, BigUint>,
+        valid_mapped_ipv6_conversion: HashMap<string, string>,
     }
 
-    pub fn setup() -> IPv6MappedTest {
+    function setup() : IPv6MappedTest {
         let mut valid_mapped = HashMap::new();
         valid_mapped.insert("::13.1.68.3", BigUint::from_str("281470899930115").unwrap());
         valid_mapped.insert("0:0:0:0:0:ffff:129.144.52.38",
@@ -52,9 +41,7 @@ mod tests {
         };
     }
 
-
-    #[test]
-    pub fn test_initialize() {
+    it("test_initialize", () => {
         let s = setup();
         assert_eq!(true, IPAddress::parse("::172.16.10.1").is_ok());
         for (ip, u128) in s.valid_mapped {
@@ -70,16 +57,14 @@ mod tests {
             assert_eq!(true, IPAddress::parse(ip).is_ok());
             assert_eq!(u128, IPAddress::parse(ip).unwrap().host_address);
         }
-    }
-    #[test]
-    pub fn test_mapped_from_ipv6_conversion() {
+    });
+    it("test_mapped_from_ipv6_conversion", () => {
         for (ip6, ip4) in setup().valid_mapped_ipv6_conversion {
             println!("+{}--{}", ip6, ip4);
             assert_eq!(ip4, IPAddress::parse(ip6).unwrap().mapped.unwrap().to_s());
         }
-    }
-    #[test]
-    pub fn test_attributes() {
+    });
+    it("test_attributes", () => {
         let s = setup();
         assert_eq!(s.address, s.ip.to_string());
         assert_eq!(128, s.ip.prefix.num);
@@ -87,13 +72,11 @@ mod tests {
         assert_eq!(s.sstr, s.ip.to_string_mapped());
         assert_eq!(s.string, s.ip.to_string_uncompressed());
         assert_eq!(s.u128, s.ip.host_address);
-    }
-    #[test]
-    fn test_method_ipv6() {
+    });
+    it("test_method_ipv6", () => {
         assert!(setup().ip.is_ipv6());
-    }
-    #[test]
-    fn test_mapped() {
+    });
+    it("test_mapped", () => {
         assert!(setup().ip.is_mapped());
-    }
-}
+    });
+});

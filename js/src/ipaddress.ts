@@ -4,11 +4,11 @@ class IPAddress {
     host_address: BigUint,
     prefix: Prefix;
     mapped: Option<Box<IPAddress>>;
-    vt_is_private: fn(&IPAddress) : bool;
-    vt_is_loopback: fn(&IPAddress) : bool;
-    vt_to_ipv6: fn(&IPAddress) : IPAddress;
+    vt_is_private: fn(IPAddress) : bool;
+    vt_is_loopback: fn(IPAddress) : bool;
+    vt_to_ipv6: fn(IPAddress) : IPAddress;
 
-    public clone(&self) : IPAddress {
+    public clone(self) : IPAddress {
         IPAddress {
             ip_bits: self.ip_bits.clone(),
             host_address: self.host_address.clone(),
@@ -20,82 +20,82 @@ class IPAddress {
         }
     }
 
-    public cmp(&self, oth: & IPAddress) : Ordering {
+    public cmp(self, oth:  IPAddress) : Ordering {
             if self.ip_bits.version != oth.ip_bits.version {
-                if self.ip_bits.version == IpVersion::V6 {
-                    return Ordering::Greater;
+                if self.ip_bits.version == IpVersion.V6 {
+                    return Ordering.Greater;
                 }
-                return Ordering::Less;
+                return Ordering.Less;
             }
             //let adr_diff = self.host_address - oth.host_address;
             if self.host_address < oth.host_address  {
-                return Ordering::Less;
+                return Ordering.Less;
             } else if self.host_address > oth.host_address {
-                return Ordering::Greater;
+                return Ordering.Greater;
             }
-            return self.prefix.cmp(&oth.prefix);
+            return self.prefix.cmp(oth.prefix);
     }
 
-    public eq(&self, other: &Self) : bool {
+    public eq(self, other: Self) : bool {
         return self.ip_bits.version == other.ip_bits.version &&
             self.prefix == other.prefix &&
             self.host_address == other.host_address &&
-            self.mapped.eq(&other.mapped)
+            self.mapped.eq(other.mapped)
     }
-    public ne(&self, other: &Self) : bool {
+    public ne(self, other: Self) : bool {
         !self.eq(other)
     }
     // Parse the argument string to create a new
     // IPv4, IPv6 or Mapped IP object
     //
     //   ip  = IPAddress.parse "172.16.10.1/24"
-    //   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
-    //   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
+    //   ip6 = IPAddress.parse "2001:db8.8:800:200c:417a/64"
+    //   ip_mapped = IPAddress.parse ".ffff:172.16.10.1/128"
     //
     // All the object created will be instances of the
     // correct class:
     //
     //  ip.class
-    //    //=> IPAddress::IPv4
+    //    //=> IPAddress.IPv4
     //  ip6.class
-    //    //=> IPAddress::IPv6
+    //    //=> IPAddress.IPv6
     //  ip_mapped.class
-    //    //=> IPAddress::IPv6::Mapped
+    //    //=> IPAddress.IPv6.Mapped
     //
-     public parse<S: Into<String>>(_str: S) : Result<IPAddress, String> {
+     public parse(_str: S) : Result<IPAddress, String> {
         let str = _str.into();
-        let re_mapped = Regex::new(r":.+\.");
-        let re_ipv4 = Regex::new(r"\.");
-        let re_ipv6 = Regex::new(r":");
-        if re_mapped.is_match(&str) {
+        let re_mapped = new Regex(":.+\.");
+        let re_ipv4 = new Regex("\.");
+        let re_ipv6 = new Regex(":");
+        if re_mapped.is_match(str) {
             // println!("mapped:{}", &str);
-            return ::ipv6_mapped::new(str);
+            return Ipv6Mapped.create(str);
         } else {
-            if re_ipv4.is_match(&str) {
+            if re_ipv4.is_match(str) {
                 // println!("ipv4:{}", &str);
-                return ::ipv4::new(str);
-            } else if re_ipv6.is_match(&str) {
+                return Ipv4.create(str);
+            } else if re_ipv6.is_match(str) {
                 // println!("ipv6:{}", &str);
-                return ::ipv6::new(str);
+                return Ipv6.create(str);
             }
         }
         return Err(format!("Unknown IP Address {}", str));
     }
 
-     public split_at_slash(str: &String) : (String, Option<String>) {
-        let slash : Vec<&str> = str.trim().split("/").collect();
-        let mut addr = String::new();
+     public split_at_slash(str: String) : (String, Option<String>) {
+          let slash : string[] = str.trim().split("/").collect();
+        let mut addr = "";
         if slash.get(0).is_some() {
             addr.push_str(slash.get(0).to_string().trim());
         }
         if slash.get(1).is_some() {
-            return (addr, Some(String::from(slash.get(1).to_string().trim())));
+            return (addr, Some(String.from(slash.get(1).to_string().trim())));
         } else {
             return (addr, None);
         }
     }
     #[allow(dead_code)]
-     public from(&self, addr: &BigUint, prefix: &Prefix) : IPAddress {
+     public from(self, addr: BigUint, prefix: Prefix) : IPAddress {
         return IPAddress {
             ip_bits: self.ip_bits.clone(),
             host_address: addr.clone(),
@@ -115,8 +115,8 @@ class IPAddress {
     //     //-> true
     //
     #[allow(dead_code)]
-     public is_ipv4(&self) : bool {
-        return self.ip_bits.version == IpVersion::V4
+     public is_ipv4(self) : bool {
+        return self.ip_bits.version == IpVersion.V4
     }
 
     // True if the object is an IPv6 address
@@ -127,8 +127,8 @@ class IPAddress {
     //     //-> false
     //
     #[allow(dead_code)]
-     public is_ipv6(&self) : bool {
-      return self.ip_bits.version == IpVersion::V6
+     public is_ipv6(self) : bool {
+      return self.ip_bits.version == IpVersion.V6
     }
 
     // Checks if the given string is a valid IP address,
@@ -136,16 +136,16 @@ class IPAddress {
     //
     // Example:
     //
-    //   IPAddress::valid? "2002::1"
+    //   IPAddress.valid? "2002.1"
     //     //=> true
     //
-    //   IPAddress::valid? "10.0.0.256"
+    //   IPAddress.valid? "10.0.0.256"
     //     //=> false
     //
     #[allow(dead_code)]
-     public is_valid<S: Into<String>>(_addr: S) : bool {
+     public is_valid(_addr: S) : bool {
         let addr = _addr.into();
-        return IPAddress::is_valid_ipv4(addr.clone()) || IPAddress::is_valid_ipv6(addr);
+        return IPAddress.is_valid_ipv4(addr.clone()) || IPAddress.is_valid_ipv6(addr);
     }
 
 
@@ -154,14 +154,14 @@ class IPAddress {
     //
     // Example:
     //
-    //   IPAddress::valid_ipv4? "2002::1"
+    //   IPAddress.valid_ipv4? "2002.1"
     //     //=> false
     //
-    //   IPAddress::valid_ipv4? "172.16.10.1"
+    //   IPAddress.valid_ipv4? "172.16.10.1"
     //     //=> true
     //
-     public parse_ipv4_part(i: &str, addr: &String) : Result<u32, String> {
-        let part = i.parse::<u32>();
+     public parse_ipv4_part(i: str, addr: String) : Result<u32, String> {
+        let part = i.parse.<u32>();
         if part.is_err() {
             return Err(format!("IP must contain numbers {} ", addr));
         }
@@ -171,16 +171,16 @@ class IPAddress {
         }
         return Ok(part_num);
     }
-     public split_to_u32(addr: &String) : Result<u32, String> {
+     public split_to_u32(addr: String) : Result<u32, String> {
         let mut ip : u32 = 0;
         let mut shift = 24;
-        let mut split_addr = addr.split(".").collect::<Vec<&str>>();
+        let mut split_addr = addr.split(".").collect.<string[]>();
         if split_addr.len() > 4 {
             return Err(format!("IP has not the right format:{}", &addr));
         }
         let split_addr_len = split_addr.len();
         if 0 < split_addr.len() && split_addr_len < 4 {
-            let part = IPAddress::parse_ipv4_part(split_addr[split_addr_len-1], addr);
+            let part = IPAddress.parse_ipv4_part(split_addr[split_addr_len-1], addr);
             if part.is_err() {
                 return part;
             }
@@ -188,7 +188,7 @@ class IPAddress {
             split_addr.remove(split_addr_len-1);
         }
         for i in split_addr {
-            let part = IPAddress::parse_ipv4_part(i, addr);
+            let part = IPAddress.parse_ipv4_part(i, addr);
             if part.is_err() {
                 return part;
             }
@@ -199,8 +199,8 @@ class IPAddress {
         return Ok(ip);
     }
     #[allow(dead_code)]
-     public is_valid_ipv4<S: Into<String>>(addr: S) : bool {
-        return IPAddress::split_to_u32(&addr.into()).is_ok();
+     public is_valid_ipv4(addr: S) : bool {
+        return IPAddress.split_to_u32(addr.into()).is_ok();
     }
 
 
@@ -208,15 +208,15 @@ class IPAddress {
     //
     // Example:
     //
-    //   IPAddress::valid_ipv6? "2002::1"
+    //   IPAddress.valid_ipv6? "2002.1"
     //     //=> true
     //
-    //   IPAddress::valid_ipv6? "2002::DEAD::BEEF"
+    //   IPAddress.valid_ipv6? "2002.DEAD.BEEF"
     //     //=> false
     //
-     public split_on_colon(addr: &String) : (Result<BigUint, String>, usize) {
-        let parts = addr.trim().split(":").collect::<Vec<&str>>();
-        let mut ip = BigUint::zero();
+     public split_on_colon(addr: String) : (Result<BigUint, String>, usize) {
+        let parts = addr.trim().split(":").collect.<string[]>();
+        let mut ip = BigUint.zero();
         if parts.len() == 1 && parts.get(0).is_empty() {
             return (Ok(ip), 0);
         }
@@ -224,7 +224,7 @@ class IPAddress {
         let mut shift : isize = ((parts_len - 1) * 16) as isize;
         for i in parts {
             //println!("{}={}", addr, i);
-            let part = u64::from_str_radix(i, 16);
+            let part = u64.from_str_radix(i, 16);
             if part.is_err() {
                 return (Err(format!("IP must contain hex numbers {}->{}", addr, i)), 0);
             }
@@ -237,19 +237,19 @@ class IPAddress {
         }
         return (Ok(ip), parts_len);
     }
-     public split_to_num(addr: &String) : Result<BigUint, String> {
+     public split_to_num(addr: String) : Result<BigUint, String> {
         //let mut ip = 0;
-        let pre_post = addr.trim().split("::").collect::<Vec<&str>>();
+        let pre_post = addr.trim().split(".").collect.<string[]>();
         if pre_post.len() > 2 {
-            return Err(format!("IPv6 only allow one :: {}", addr));
+            return Err(format!("IPv6 only allow one . {}", addr));
         }
         if pre_post.len() == 2 {
-            //println!("{}=::={}", pre_post[0], pre_post[1]);
-            let (pre, pre_parts) = IPAddress::split_on_colon(&String::from(*pre_post.get(0)));
+            //println!("{}=.={}", pre_post[0], pre_post[1]);
+            let (pre, pre_parts) = IPAddress.split_on_colon(String.from(*pre_post.get(0)));
             if pre.is_err() {
                 return pre;
             }
-            let (post, _) = IPAddress::split_on_colon(&String::from(*pre_post.get(1)));
+            let (post, _) = IPAddress.split_on_colon(String.from(*pre_post.get(1)));
             if post.is_err() {
                 return post;
             }
@@ -258,15 +258,15 @@ class IPAddress {
                       post);
         }
         //println!("split_to_num:no double:{}", addr);
-        let (ret, parts) = IPAddress::split_on_colon(addr);
+        let (ret, parts) = IPAddress.split_on_colon(addr);
         if parts != 128/16 {
             return Err(format!("incomplete IPv6"));
         }
         return ret;
     }
     #[allow(dead_code)]
-     public is_valid_ipv6<S: Into<String>>(addr: S) : bool {
-        return IPAddress::split_to_num(&addr.into()).is_ok();
+     public is_valid_ipv6(addr: S) : bool {
+        return IPAddress.split_to_num(addr.into()).is_ok();
     }
 
 
@@ -283,15 +283,15 @@ class IPAddress {
         return rem as usize;
     }
     #[allow(dead_code)]
-     public aggregate(networks: &Vec<IPAddress>) : Vec<IPAddress> {
+     public aggregate(networks: IPAddress[]) : IPAddress[] {
         if networks.len() == 0 {
             return vec![];
         }
         if networks.len() == 1 {
             return vec![networks[0].network()];
         }
-        let mut stack = networks.iter().map(|i| Box::new(i.network()) )
-            .collect::<Vec<_>>();
+        let mut stack = networks.iter().map(|i| Box.new(i.network()) )
+            .collect.<Vec<_>>();
         stack.sort_by(|a, b| a.cmp(b));
         // for i in 0..networks.len() {
         //     println!("{}==={}", &networks[i].to_string_uncompressed(),
@@ -312,30 +312,30 @@ class IPAddress {
                 // println!("exit first:{}:{}", stack_len, pos);
                 break;
             }
-            let first = IPAddress::pos_to_idx(pos, stack_len);
+            let first = IPAddress.pos_to_idx(pos, stack_len);
             pos = pos + 1;
             if pos >= (stack_len as isize) {
                 // println!("exit second:{}:{}", stack_len, pos);
                 break;
             }
-            let second = IPAddress::pos_to_idx(pos, stack_len);
+            let second = IPAddress.pos_to_idx(pos, stack_len);
             pos = pos + 1;
             //let mut firstUnwrap = first;
-            if stack[first].includes(&stack[second]) {
+            if stack[first].includes(stack[second]) {
                 pos = pos - 2;
                 // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
-                stack.remove(IPAddress::pos_to_idx(pos + 1, stack_len));
+                stack.remove(IPAddress.pos_to_idx(pos + 1, stack_len));
             } else {
                 stack[first].prefix = stack[first].prefix.sub(1);
                 // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
                 // first, second,
                 // stack[first].to_string(), stack[second].to_string());
                 if (stack[first].prefix.num+1) == stack[second].prefix.num &&
-                   stack[first].includes(&stack[second]) {
+                   stack[first].includes(stack[second]) {
                     pos = pos - 2;
-                    let idx = IPAddress::pos_to_idx(pos, stack_len);
+                    let idx = IPAddress.pos_to_idx(pos, stack_len);
                     stack[idx] = stack[first].clone(); // kaputt
-                    stack.remove(IPAddress::pos_to_idx(pos + 1, stack_len));
+                    stack.remove(IPAddress.pos_to_idx(pos + 1, stack_len));
                     // println!("remove-2:{}:{}", pos + 1, stack_len);
                     pos = pos - 1; // backtrack
                 } else {
@@ -346,19 +346,19 @@ class IPAddress {
             }
         }
         // println!("agg={}:{}", pos, stack.len());
-        let mut ret = Vec::new();
+        let mut ret = Vec.new();
         for i in 0..stack.len() {
              ret.push(stack[i].network());
         }
         return ret;
     }
 
-     public parts(&self) : Vec<u16> {
-        return self.ip_bits.parts(&self.host_address);
+     public parts(self) : number[] {
+        return self.ip_bits.parts(self.host_address);
     }
 
-     public parts_hex_str(&self) : Vec<String> {
-        let mut ret : Vec<String> = Vec::new();
+     public parts_hex_str(self) : string[] {
+        let mut ret : string[] = Vec.new();
         for i in self.parts() {
             ret.push(format!("{:04x}", i));
         }
@@ -373,8 +373,8 @@ class IPAddress {
     //    ip.dns_rev_domains
     //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
     //
-     public dns_rev_domains(&self) : Vec<String> {
-        let mut ret: Vec<String> = Vec::new();
+     public dns_rev_domains(self) : string[] {
+        let mut ret: string[] = Vec.new();
         for net in self.dns_networks() {
             // println!("dns_rev_domains:{}:{}", self.to_string(), net.to_string());
             ret.push(net.dns_reverse());
@@ -383,13 +383,13 @@ class IPAddress {
     }
 
 
-     public dns_reverse(&self) : String{
-        let mut ret = String::new();
+     public dns_reverse(self) : String{
+        let mut ret = "";
         let mut dot = "";
         let dns_parts = self.dns_parts();
         for i in ((self.prefix.host_prefix()+(self.ip_bits.dns_bits-1))/self.ip_bits.dns_bits)..dns_parts.len() {
             ret.push_str(dot);
-            ret.push_str(&self.ip_bits.dns_part_format(dns_parts[i]));
+            ret.push_str(self.ip_bits.dns_part_format(dns_parts[i]));
             dot = ".";
         }
         ret.push_str(dot);
@@ -398,19 +398,19 @@ class IPAddress {
     }
 
 
-     public dns_parts(&self) : Vec<u8> {
-        let mut ret : Vec<u8> = Vec::new();
+     public dns_parts(self) : number[] {
+        let mut ret : number[] = Vec.new();
         let mut num = self.host_address.clone();
-        let mask = BigUint::one().shl(self.ip_bits.dns_bits);
+        let mask = BigUint.one().shl(self.ip_bits.dns_bits);
         for _ in 0..self.ip_bits.bits/self.ip_bits.dns_bits {
-            let part = num.clone().rem(&mask).to_u8();
+            let part = num.clone().rem(mask).to_u8();
             num = num.shr(self.ip_bits.dns_bits);
             ret.push(part);
         }
         return ret;
     }
 
-     public dns_networks(&self) : Vec<IPAddress> {
+     public dns_networks(self) : IPAddress[] {
         // +self.ip_bits.dns_bits-1
          let next_bit_mask = self.ip_bits.bits -
             (((self.prefix.host_prefix())/self.ip_bits.dns_bits)*self.ip_bits.dns_bits);
@@ -419,16 +419,16 @@ class IPAddress {
          }
         //  println!("dns_networks:{}:{}", self.to_string(), next_bit_mask);
          // dns_bits
-         let step_bit_net = BigUint::one().shl(self.ip_bits.bits-next_bit_mask);
-         if step_bit_net == BigUint::zero() {
+         let step_bit_net = BigUint.one().shl(self.ip_bits.bits-next_bit_mask);
+         if step_bit_net == BigUint.zero() {
              return vec![self.network()];
          }
-         let mut ret: Vec<IPAddress> = Vec::new();
+         let mut ret: IPAddress[] = Vec.new();
          let mut step = self.network().host_address;
          let prefix = self.prefix.from(next_bit_mask);
          while step <= self.broadcast().host_address {
-           ret.push(self.from(&step, &prefix));
-           step = step.add(&step_bit_net);
+           ret.push(self.from(step, &prefix));
+           step = step.add(step_bit_net);
          }
          return ret;
       }
@@ -458,7 +458,7 @@ class IPAddress {
     // These two networks can be expressed using only one IP address
     // network if we change the prefix. Let Ruby do the work:
     //
-    //   IPAddress::IPv4::summarize(ip1,ip2).to_s
+    //   IPAddress.IPv4.summarize(ip1,ip2).to_s
     //     //=> "172.16.10.0/23"
     //
     // We note how the network "172.16.10.0/23" includes all the addresses
@@ -482,7 +482,7 @@ class IPAddress {
     //   ip3 = IPAddress("10.0.2.1/24")
     //   ip4 = IPAddress("10.0.3.1/24")
     //
-    //   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_string
+    //   IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).to_string
     //     //=> "10.0.0.0/22",
     //
     // But the following networks can't be summarized in a single network:
@@ -492,7 +492,7 @@ class IPAddress {
     //   ip3 = IPAddress("10.0.3.1/24")
     //   ip4 = IPAddress("10.0.4.1/24")
     //
-    //   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //   IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
     //     //=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
     //
     //
@@ -514,24 +514,24 @@ class IPAddress {
     //  A few examples will help clarify the above. Let's consider for
     //  instance the following two networks:
     //
-    //    ip1 = IPAddress("2000:0::4/32")
-    //    ip2 = IPAddress("2000:1::6/32")
+    //    ip1 = IPAddress("2000:0.4/32")
+    //    ip2 = IPAddress("2000:1.6/32")
     //
     //  These two networks can be expressed using only one IP address
     //  network if we change the prefix. Let Ruby do the work:
     //
-    //    IPAddress::IPv6::summarize(ip1,ip2).to_s
-    //      // => "2000:0::/31"
+    //    IPAddress.IPv6.summarize(ip1,ip2).to_s
+    //      // => "2000:0./31"
     //
-    //  We note how the network "2000:0::/31" includes all the addresses
+    //  We note how the network "2000:0./31" includes all the addresses
     //  specified in the above networks, and (more important) includes
     //  ONLY those addresses.
     //
     //  If we summarized +ip1+ and +ip2+ with the following network:
     //
-    //    "2000::/16"
+    //    "2000./16"
     //
-    //  we would have satisfied rule // 1 above, but not rule // 2. So "2000::/16"
+    //  we would have satisfied rule // 1 above, but not rule // 2. So "2000./16"
     //  is not an aggregate network for +ip1+ and +ip2+.
     //
     //  If it's not possible to compute a single aggregated network for all the
@@ -539,68 +539,68 @@ class IPAddress {
     //  networks found. For example, the following four networks can be
     //  aggregated in a single /22:
     //
-    //    ip1 = IPAddress("2000:0::/32")
-    //    ip2 = IPAddress("2000:1::/32")
-    //    ip3 = IPAddress("2000:2::/32")
-    //    ip4 = IPAddress("2000:3::/32")
+    //    ip1 = IPAddress("2000:0./32")
+    //    ip2 = IPAddress("2000:1./32")
+    //    ip3 = IPAddress("2000:2./32")
+    //    ip4 = IPAddress("2000:3./32")
     //
-    //    IPAddress::IPv6::summarize(ip1,ip2,ip3,ip4).to_string
-    //      // => ""2000:3::/30",
+    //    IPAddress.IPv6.summarize(ip1,ip2,ip3,ip4).to_string
+    //      // => ""2000:3./30",
     //
     //  But the following networks can't be summarized in a single network:
     //
-    //    ip1 = IPAddress("2000:1::/32")
-    //    ip2 = IPAddress("2000:2::/32")
-    //    ip3 = IPAddress("2000:3::/32")
-    //    ip4 = IPAddress("2000:4::/32")
+    //    ip1 = IPAddress("2000:1./32")
+    //    ip2 = IPAddress("2000:2./32")
+    //    ip3 = IPAddress("2000:3./32")
+    //    ip4 = IPAddress("2000:4./32")
     //
-    //    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
-    //      // => ["2000:1::/32","2000:2::/31","2000:4::/32"]
+    //    IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //      // => ["2000:1./32","2000:2./31","2000:4./32"]
     //
     #[allow(dead_code)]
-     public summarize(networks: &Vec<IPAddress>) : Vec<IPAddress> {
-        return IPAddress::aggregate(networks);
+     public summarize(networks: IPAddress[]) : IPAddress[] {
+        return IPAddress.aggregate(networks);
     }
-     public summarize_str<S: Into<String>>(netstr: Vec<S>) : Result<Vec<IPAddress>, String> {
-        let vec = IPAddress::to_ipaddress_vec(netstr);
+     public summarize_str(netstr: Vec<S>) : Result<IPAddress[], String> {
+        let vec = IPAddress.to_ipaddress_vec(netstr);
         if vec.is_err() {
             return vec;
         }
-        return Ok(IPAddress::aggregate(&vec));
+        return Ok(IPAddress.aggregate(vec));
     }
 
     #[allow(dead_code)]
-     public ip_same_kind(&self, oth: &IPAddress) : bool {
+     public ip_same_kind(self, oth: IPAddress) : bool {
         return self.ip_bits.version == oth.ip_bits.version
     }
 
     //  Returns true if the address is an unspecified address
     //
-    //  See IPAddress::IPv6::Unspecified for more information
+    //  See IPAddress.IPv6.Unspecified for more information
     //
     #[allow(dead_code)]
-     public is_unspecified(&self) : bool {
-        return self.host_address == BigUint::zero();
+     public is_unspecified(self) : bool {
+        return self.host_address == BigUint.zero();
     }
 
     //  Returns true if the address is a loopback address
     //
-    //  See IPAddress::IPv6::Loopback for more information
+    //  See IPAddress.IPv6.Loopback for more information
     //
     #[allow(dead_code)]
-     public is_loopback(&self) : bool {
+     public is_loopback(self) : bool {
         return (self.vt_is_loopback)(self);
     }
 
 
     //  Returns true if the address is a mapped address
     //
-    //  See IPAddress::IPv6::Mapped for more information
+    //  See IPAddress.IPv6.Mapped for more information
     //
     #[allow(dead_code)]
-     public is_mapped(&self) : bool {
+     public is_mapped(self) : bool {
         return self.mapped.is_some() &&
-            (self.host_address.clone() >> 32) == ((BigUint::one() << 16) - BigUint::one());
+            (self.host_address.clone() >> 32) == ((BigUint.one() << 16) - BigUint.one());
     }
 
     // //
@@ -612,8 +612,8 @@ class IPAddress {
     // //    ip.address
     // //      // => "172.16.100.4"
     // //
-    //  public address(&self) : String {
-    //   return (self.to_ip_str)(&self.host_address)
+    //  public address(self) : String {
+    //   return (self.to_ip_str)(self.host_address)
     // }
 
     //  Returns a string with the address portion of
@@ -624,15 +624,15 @@ class IPAddress {
     //    ip.to_s
     //      // => "172.16.100.4"
     //
-    //  public to_s(&self) : String {
+    //  public to_s(self) : String {
     //   return self.address()
     // }
-    //  public compressed(&self) : String {
-    //   return (self.to_ip_str_compressed)(&self.host_address)
+    //  public compressed(self) : String {
+    //   return (self.to_ip_str_compressed)(self.host_address)
     // }
 
     //  Returns the prefix portion of the IPv4 object
-    //  as a IPAddress::Prefix32 object
+    //  as a IPAddress.Prefix32 object
     //
     //    ip = IPAddress("172.16.100.4/22")
     //
@@ -640,10 +640,10 @@ class IPAddress {
     //      // => 22
     //
     //    ip.prefix.class
-    //      // => IPAddress::Prefix32
+    //      // => IPAddress.Prefix32
     //
     #[allow(dead_code)]
-     public prefix(&self) : &Prefix {
+     public prefix(self) : Prefix {
         return &self.prefix;
     }
 
@@ -656,17 +656,17 @@ class IPAddress {
     //     //=> true
     //
     #[allow(dead_code)]
-     public is_valid_netmask<S: Into<String>>(addr: S) : bool {
-        return IPAddress::parse_netmask_to_prefix(addr.into()).is_ok();
+     public is_valid_netmask(addr: S) : bool {
+        return IPAddress.parse_netmask_to_prefix(addr.into()).is_ok();
     }
 
-     public netmask_to_prefix(nm: &BigUint, bits: usize) : Result<usize, String> {
+     public netmask_to_prefix(nm: BigUint, bits: usize) : Result<usize, String> {
         let mut prefix = 0;
         let mut addr = nm.clone();
         let mut in_host_part = true;
-        let two = BigUint::from_u32(2);
+        let two = BigUint.from_u32(2);
         for _ in 0..bits {
-            let bit = addr.clone().rem(&two).to_usize();
+            let bit = addr.clone().rem(two).to_usize();
             if in_host_part && bit == 0 {
                 prefix = prefix + 1;
             } else if in_host_part && bit == 1 {
@@ -680,25 +680,25 @@ class IPAddress {
     }
 
 
-     public parse_netmask_to_prefix<S: Into<String>>(_netmask: S) : Result<usize, String> {
+     public parse_netmask_to_prefix(_netmask: S) : Result<usize, String> {
         let my_str = _netmask.into();
         let is_number = my_str.parse();
         if is_number.is_ok() {
             return Ok(is_number);
         }
-        let my = IPAddress::parse(my_str.clone());
+        let my = IPAddress.parse(my_str.clone());
         if my.is_err() {
             return Err(format!("illegal netmask {}", &my.unwrap_err()));
         }
         let my_ip = my;
-        return IPAddress::netmask_to_prefix(&my_ip.host_address, my_ip.ip_bits.bits);
+        return IPAddress.netmask_to_prefix(my_ip.host_address, my_ip.ip_bits.bits);
     }
 
 
         //  Set a new prefix number for the object
         //
         //  This is useful if you want to change the prefix
-        //  to an object created with IPv4::parse_u32 or
+        //  to an object created with IPv4.parse_u32 or
         //  if the object was created using the classful
         //  mask.
         //
@@ -712,17 +712,17 @@ class IPAddress {
         //    puts ip
         //      // => 172.16.100.4/22
         //
-         public change_prefix(&self, num: usize) : Result<IPAddress, String> {
+         public change_prefix(self, num: usize) : Result<IPAddress, String> {
             let prefix =  self.prefix.from(num);
             if prefix.is_err() {
                 return Err(prefix.unwrap_err());
             }
-            return Ok(self.from(&self.host_address, &prefix));
+            return Ok(self.from(self.host_address, &prefix));
         }
 
-     public change_netmask<S: Into<String>>(&self, str: S) : Result<IPAddress, String> {
+     public change_netmask(self, str: S) : Result<IPAddress, String> {
         let my_str = str.into();
-        let nm = IPAddress::parse_netmask_to_prefix(my_str);
+        let nm = IPAddress.parse_netmask_to_prefix(my_str);
         if nm.is_err() {
             return Err(nm.unwrap_err());
         }
@@ -737,7 +737,7 @@ class IPAddress {
     // //    ip.octets
     // //      // => [172, 16, 100, 4]
     // //
-    //  public octets(&self) {
+    //  public octets(self) {
     //   self.octets
     // }
 
@@ -751,40 +751,40 @@ class IPAddress {
     //      // => "172.16.100.4/22"
     //
     #[allow(dead_code)]
-     public to_string(&self) : String {
-        let mut ret = String::new();
-        ret.push_str(&self.to_s());
+     public to_string(self) : String {
+        let mut ret = "";
+        ret.push_str(self.to_s());
         ret.push_str("/");
-        ret.push_str(&self.prefix.to_s());
+        ret.push_str(self.prefix.to_s());
         return ret;
     }
 
-     public to_s(&self) : String {
-        return self.ip_bits.as_compressed_string(&self.host_address);
+     public to_s(self) : String {
+        return self.ip_bits.as_compressed_string(self.host_address);
     }
 
     #[allow(dead_code)]
-     public to_string_uncompressed(&self) : String {
-        let mut ret = String::new();
-        ret.push_str(&self.to_s_uncompressed());
+     public to_string_uncompressed(self) : String {
+        let mut ret = "";
+        ret.push_str(self.to_s_uncompressed());
         ret.push_str("/");
-        ret.push_str(&self.prefix.to_s());
+        ret.push_str(self.prefix.to_s());
         return ret;
     }
     #[allow(dead_code)]
-     public to_s_uncompressed(&self) : String {
-        return self.ip_bits.as_uncompressed_string(&self.host_address);
+     public to_s_uncompressed(self) : String {
+        return self.ip_bits.as_uncompressed_string(self.host_address);
     }
 
     #[allow(dead_code)]
-     public to_s_mapped(&self) : String {
+     public to_s_mapped(self) : String {
         if self.is_mapped() {
-            return format!("{}{}", "::ffff:", self.mapped.clone().to_s());
+            return format!("{}{}", ".ffff:", self.mapped.clone().to_s());
         }
         return self.to_s();
     }
     #[allow(dead_code)]
-     public to_string_mapped(&self) : String {
+     public to_string_mapped(self) : String {
         if self.is_mapped() {
             let mapped = self.mapped.clone();
             return format!("{}/{}",
@@ -802,8 +802,8 @@ class IPAddress {
     //    ip.netmask
     //      // => "255.255.252.0"
     //
-    //  public netmask(&self) : String {
-    //   return (self.to_ip_str_compressed)(&self.prefix.net_mask())
+    //  public netmask(self) : String {
+    //   return (self.to_ip_str_compressed)(self.prefix.net_mask())
     // }
 
     //  Like IPv4// prefix=, this method allow you to
@@ -820,8 +820,8 @@ class IPAddress {
     //    puts ip
     //      // => 172.16.100.4/22
     //
-    //  public set_netmask(&self, addr: &String) {
-    //     self.prefix = Prefix::parse_netmask_to_prefix(addr)
+    //  public set_netmask(self, addr: String) {
+    //     self.prefix = Prefix.parse_netmask_to_prefix(addr)
     // }
 
     //  Returns the address portion in unsigned
@@ -858,7 +858,7 @@ class IPAddress {
     //    //  Send binary data
     //    a.puts binary_data
     //
-    //  public data(&self) {
+    //  public data(self) {
     //   self.ip32
     // }
 
@@ -875,10 +875,10 @@ class IPAddress {
     //    ip[3]
     //      // => 50
     //
-    //  public get(&self, index: u8) {
+    //  public get(self, index: u8) {
     //   self.octets.get(index)
     // }
-    //  public octet(&self, index: u8) {
+    //  public octet(self, index: u8) {
     //   self.octets.get(index)
     // }
 
@@ -891,22 +891,22 @@ class IPAddress {
     //      // => "01111111000000000000000000000001"
     //
     #[allow(dead_code)]
-     public bits(&self) : String {
+     public bits(self) : String {
         let num = self.host_address.to_str_radix(2);
-        let mut ret = String::new();
+        let mut ret = "";
         for _ in num.len()..self.ip_bits.bits {
             ret.push_str("0");
         }
-        ret.push_str(&num);
+        ret.push_str(num);
         return ret;
     }
     #[allow(dead_code)]
-     public to_hex(&self) : String {
+     public to_hex(self) : String {
         return self.host_address.to_str_radix(16);
     }
 
-     public netmask(&self) : IPAddress {
-        self.from(&self.prefix.netmask(), &self.prefix)
+     public netmask(self) : IPAddress {
+        self.from(self.prefix.netmask(), &self.prefix)
     }
 
     //  Returns the broadcast address for the given IP.
@@ -917,9 +917,9 @@ class IPAddress {
     //      // => "172.16.10.255"
     //
     #[allow(dead_code)]
-     public broadcast(&self) : IPAddress {
-        return self.from(&self.network().host_address.add(self.size().sub(BigUint::one())), &self.prefix);
-        // IPv4::parse_u32(self.broadcast_u32, self.prefix)
+     public broadcast(self) : IPAddress {
+        return self.from(self.network().host_address.add(self.size().sub(BigUint.one())), &self.prefix);
+        // IPv4.parse_u32(self.broadcast_u32, self.prefix)
     }
 
     //  Checks if the IP address is actually a network
@@ -935,7 +935,7 @@ class IPAddress {
     //      // => true
     //
     #[allow(dead_code)]
-     public is_network(&self) : bool {
+     public is_network(self) : bool {
         return self.prefix.num != self.ip_bits.bits &&
             self.host_address == self.network().host_address;
     }
@@ -949,45 +949,45 @@ class IPAddress {
     //      // => "172.16.10.0"
     //
     #[allow(dead_code)]
-     public network(&self) : IPAddress {
-        return self.from(&IPAddress::to_network(&self.host_address, self.prefix.host_prefix()), &self.prefix);
+     public network(self) : IPAddress {
+        return self.from(IPAddress.to_network(self.host_address, self.prefix.host_prefix()), &self.prefix);
     }
     #[allow(dead_code)]
-     public to_network(adr: &BigUint, host_prefix: usize) : BigUint {
+     public to_network(adr: BigUint, host_prefix: usize) : BigUint {
         return (adr.clone() >> host_prefix) << host_prefix;
     }
 
-     public sub(&self, other: &IPAddress) : BigUint {
+     public sub(self, other: IPAddress) : BigUint {
         if self.host_address > other.host_address {
-            return self.host_address.clone().sub(&other.host_address);
+            return self.host_address.clone().sub(other.host_address);
         }
-        return other.host_address.clone().sub(&self.host_address);
+        return other.host_address.clone().sub(self.host_address);
     }
 
-     public add(&self, other: &IPAddress) : Vec<IPAddress> {
-        return IPAddress::aggregate(&[self.clone(), other.clone()].to_vec());
+     public add(self, other: IPAddress) : IPAddress[] {
+        return IPAddress.aggregate([self.clone(), other.clone()].to_vec());
     }
 
-     public to_s_vec(vec: &Vec<IPAddress>) : Vec<String> {
-        let mut ret : Vec<String> = Vec::new();
+     public to_s_vec(vec: IPAddress[]) : string[] {
+        let mut ret : string[] = Vec.new();
         for i in vec {
             ret.push(i.to_s());
         }
         return ret;
     }
 
-     public to_string_vec(vec: &Vec<IPAddress>) : Vec<String> {
-        let mut ret : Vec<String> = Vec::new();
+     public to_string_vec(vec: IPAddress[]) : string[] {
+        let mut ret : string[] = Vec.new();
         for i in vec {
             ret.push(i.to_string());
         }
         return ret;
     }
 
-     public to_ipaddress_vec<S: Into<String>>(vec: Vec<S>) : Result<Vec<IPAddress>, String> {
-        let mut ret = Vec::new();
+     public to_ipaddress_vec(vec: Vec<S>) : Result<IPAddress[], String> {
+        let mut ret = Vec.new();
         for ipstr in vec {
-            let ipa = IPAddress::parse(ipstr);
+            let ipa = IPAddress.parse(ipstr);
             if ipa.is_err() {
                 return Err(ipa.unwrap_err());
             }
@@ -1015,8 +1015,8 @@ class IPAddress {
     //    ip.first.to_s
     //      // => "192.168.100.1"
     //
-     public first(&self) : IPAddress {
-        return self.from(&self.network().host_address.add(&self.ip_bits.host_ofs), &self.prefix);
+     public first(self) : IPAddress {
+        return self.from(self.network().host_address.add(self.ip_bits.host_ofs), &self.prefix);
     }
 
     //  Like its sibling method IPv4// first, this method
@@ -1040,8 +1040,8 @@ class IPAddress {
     //      // => "192.168.100.254"
     //
     #[allow(dead_code)]
-     public last(&self) : IPAddress {
-        return self.from(&self.broadcast().host_address.sub(&self.ip_bits.host_ofs), &self.prefix);
+     public last(self) : IPAddress {
+        return self.from(self.broadcast().host_address.sub(self.ip_bits.host_ofs), &self.prefix);
     }
 
     //  Iterates over all the hosts IP addresses for the given
@@ -1060,11 +1060,11 @@ class IPAddress {
     //      // => "10.0.0.6"
     //
     #[allow(dead_code)]
-     public each_host<F>(&self, func: F) where F : Fn(&IPAddress) {
+     public each_host<F>(self, func: F) where F : Fn(IPAddress) {
         let mut i = self.first().host_address;
         while i <= self.last().host_address {
-            func(&mut self.from(&i, &self.prefix));
-            i = i.add(BigUint::one());
+            func(mut self.from(i, &self.prefix));
+            i = i.add(BigUint.one());
         }
     }
 
@@ -1089,11 +1089,11 @@ class IPAddress {
     //      // => "10.0.0.7"
     //
     #[allow(dead_code)]
-     public each<F>(&self, func: F) where F : Fn(&IPAddress) {
+     public each<F>(self, func: F) where F : Fn(IPAddress) {
         let mut i = self.network().host_address;
         while i <= self.broadcast().host_address {
-            func(&self.from(&i, &self.prefix));
-            i = i.add(BigUint::one());
+            func(self.from(i, &self.prefix));
+            i = i.add(BigUint.one());
         }
     }
 
@@ -1139,18 +1139,18 @@ class IPAddress {
     //      // => 8
     //
     #[allow(dead_code)]
-     public size(&self) : BigUint {
-        return BigUint::one() << (self.prefix.host_prefix() as usize);
+     public size(self) : BigUint {
+        return BigUint.one() << (self.prefix.host_prefix() as usize);
     }
     #[allow(dead_code)]
-     public is_same_kind(&self, oth: &IPAddress) : bool {
+     public is_same_kind(self, oth: IPAddress) : bool {
         return self.is_ipv4() == oth.is_ipv4() &&
         self.is_ipv6() == oth.is_ipv6();
     }
 
     //  Checks whether a subnet includes the given IP address.
     //
-    //  Accepts an IPAddress::IPv4 object.
+    //  Accepts an IPAddress.IPv4 object.
     //
     //    ip = IPAddress("192.168.10.100/24")
     //
@@ -1163,10 +1163,10 @@ class IPAddress {
     //      // => false
     //
     #[allow(dead_code)]
-     public includes(&self, oth: &IPAddress) : bool {
+     public includes(self, oth: IPAddress) : bool {
         let ret = self.is_same_kind(oth) &&
         self.prefix.num <= oth.prefix.num &&
-        self.network().host_address == IPAddress::to_network(&oth.host_address, self.prefix.host_prefix());
+        self.network().host_address == IPAddress.to_network(oth.host_address, self.prefix.host_prefix());
         // println!("includes:{}=={}=>{}", self.to_string(), oth.to_string(), ret);
         return ret
     }
@@ -1183,9 +1183,9 @@ class IPAddress {
     //      // => true
     //
     #[allow(dead_code)]
-     public includes_all(&self, oths: &[IPAddress]) : bool {
+     public includes_all(self, oths: [IPAddress]) : bool {
         for oth in oths {
-            if !self.includes(&oth) {
+            if !self.includes(oth) {
                 return false;
             }
         }
@@ -1201,7 +1201,7 @@ class IPAddress {
     //      // => true
     //
     #[allow(dead_code)]
-     public is_private(&self) : bool {
+     public is_private(self) : bool {
         return (self.vt_is_private)(self);
     }
 
@@ -1257,13 +1257,13 @@ class IPAddress {
     //  Returns an array of IPv4 objects
     //
     #[allow(dead_code)]
-    fn sum_first_found(&self, arr: &Vec<IPAddress>) : Vec<IPAddress> {
+    fn sum_first_found(self, arr: IPAddress[]) : IPAddress[] {
         let mut dup = arr.clone();
         if dup.len() < 2 {
             return dup;
         }
         for i in (0..dup.len()-1).rev() {
-            let a = IPAddress::summarize(&vec![dup[i].clone(), dup[i + 1].clone()]);
+            let a = IPAddress.summarize(vec![dup[i].clone(), dup[i + 1].clone()]);
             // println!("dup:{}:{}:{}", dup.len(), i, a.len());
             if a.len() == 1 {
                 dup[i] = a[0].clone();
@@ -1274,7 +1274,7 @@ class IPAddress {
         return dup;
     }
     #[allow(dead_code)]
-     public split(&self, subnets: usize) : Result<Vec<IPAddress>, String> {
+     public split(self, subnets: usize) : Result<IPAddress[], String> {
         if subnets == 0 || (1 << self.prefix.host_prefix()) <= subnets {
             return Err(format!("Value {} out of range", subnets));
         }
@@ -1284,7 +1284,7 @@ class IPAddress {
         }
         let mut net = networks;
         while net.len() != subnets {
-            net = self.sum_first_found(&net);
+            net = self.sum_first_found(net);
         }
         return Ok(net);
     }
@@ -1314,7 +1314,7 @@ class IPAddress {
     //  If +new_prefix+ is less than 1, returns 0.0.0.0/0
     //
     #[allow(dead_code)]
-     public supernet(&self, new_prefix: usize) : Result<IPAddress, String> {
+     public supernet(self, new_prefix: usize) : Result<IPAddress, String> {
         if new_prefix >= self.prefix.num {
             return Err(format!("New prefix must be smaller than existing prefix: {} >= {}",
                                new_prefix,
@@ -1324,7 +1324,7 @@ class IPAddress {
         // for _ in new_prefix..self.prefix.num {
         //     new_ip = new_ip << 1;
         // }
-        return Ok(self.from(&self.host_address, &self.prefix.from(new_prefix)).network());
+        return Ok(self.from(self.host_address, &self.prefix.from(new_prefix)).network());
     }
 
     //  This method implements the subnetting function
@@ -1341,7 +1341,7 @@ class IPAddress {
     //
     //  we can calculate the subnets with a /26 prefix
     //
-    //    ip.subnets(26).map(&:to_string)
+    //    ip.subnets(26).map(:to_string)
     //      // => ["172.16.10.0/26", "172.16.10.64/26",
     //           "172.16.10.128/26", "172.16.10.192/26"]
     //
@@ -1350,19 +1350,19 @@ class IPAddress {
     //
 
     #[allow(dead_code)]
-     public subnet(&self, subprefix: usize) : Result<Vec<IPAddress>, String> {
+     public subnet(self, subprefix: usize) : Result<IPAddress[], String> {
         if subprefix < self.prefix.num || self.ip_bits.bits < subprefix {
             return Err(format!("New prefix must be between prefix{} {} and {}",
                                self.prefix.num,
                                subprefix,
                                self.ip_bits.bits));
         }
-        let mut ret = Vec::new();
+        let mut ret = Vec.new();
         let mut net = self.network();
         net.prefix = net.prefix.from(subprefix);
         for _ in 0..(1 << (subprefix - self.prefix.num)) {
             ret.push(net.clone());
-            net = net.from(&net.host_address, &net.prefix);
+            net = net.from(net.host_address, &net.prefix);
             let size = net.size();
             net.host_address = net.host_address + size;
         }
@@ -1381,7 +1381,7 @@ class IPAddress {
     //    ip.a?
     //      // => true
     //
-    //  public is_class_a(&self) {
+    //  public is_class_a(self) {
     //   return self.bits == 8 && 0 <= self.to_u32() && self.to_u32() < 0x80000000
     // }
 
@@ -1396,7 +1396,7 @@ class IPAddress {
     //    ip.b?
     //      // => true
     //
-    //  public is_class_b(&self) {
+    //  public is_class_b(self) {
     //   return self.bits == 16 && 0x80000000 <= self.to_u32() && self.to_u32() < 0xc0000000
     // }
 
@@ -1411,8 +1411,8 @@ class IPAddress {
     //    ip.c?
     //      // => true
     //
-    //  public is_class_c(&self) {
-    //   return self.bits == 24 && 0xc0000000 <= self.to_u32() && self.to_u32() <= u32::MAX
+    //  public is_class_c(self) {
+    //   return self.bits == 24 && 0xc0000000 <= self.to_u32() && self.to_u32() <= u32.MAX
     // }
 
     //  Return the ip address in a format compatible
@@ -1426,14 +1426,14 @@ class IPAddress {
     //      // => "ac10:0a01"
     //
     #[allow(dead_code)]
-     public to_ipv6(&self) : IPAddress {
+     public to_ipv6(self) : IPAddress {
         return (self.vt_to_ipv6)(self);
     }
 
     //  Creates a new IPv4 object from an
     //  unsigned 32bits integer.
     //
-    //    ip = IPAddress::IPv4::parse_u32(167772160)
+    //    ip = IPAddress.IPv4.parse_u32(167772160)
     //
     //    ip.prefix = 8
     //    ip.to_string
@@ -1441,13 +1441,13 @@ class IPAddress {
     //
     //  The +prefix+ parameter is optional:
     //
-    //    ip = IPAddress::IPv4::parse_u32(167772160, 8)
+    //    ip = IPAddress.IPv4.parse_u32(167772160, 8)
     //
     //    ip.to_string
     //      // => "10.0.0.0/8"
     //
     //  public parse_u32(ip32: u32, prefix: u8) {
-    //   IPv4::new(format!("{}/{}", IPv4::to_ipv4_str(ip32), prefix))
+    //   IPv4.new(format!("{}/{}", IPv4.to_ipv4_str(ip32), prefix))
     // }
 
     //  Creates a new IPv4 object from binary data,
@@ -1456,7 +1456,7 @@ class IPAddress {
     //  For example, on a network stream the IP 172.16.0.1
     //  is represented with the binary "\254\020\n\001".
     //
-    //    ip = IPAddress::IPv4::parse_data "\254\020\n\001"
+    //    ip = IPAddress.IPv4.parse_data "\254\020\n\001"
     //    ip.prefix = 24
     //
     //    ip.to_string
@@ -1491,7 +1491,7 @@ class IPAddress {
     //  These two networks can be expressed using only one IP address
     //  network if we change the prefix. Let Ruby do the work:
     //
-    //    IPAddress::IPv4::summarize(ip1,ip2).to_s
+    //    IPAddress.IPv4.summarize(ip1,ip2).to_s
     //      // => "172.16.10.0/23"
     //
     //  We note how the network "172.16.10.0/23" includes all the addresses
@@ -1515,7 +1515,7 @@ class IPAddress {
     //    ip3 = IPAddress("10.0.2.1/24")
     //    ip4 = IPAddress("10.0.3.1/24")
     //
-    //    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_string
+    //    IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).to_string
     //      // => "10.0.0.0/22",
     //
     //  But the following networks can't be summarized in a single network:
@@ -1525,7 +1525,7 @@ class IPAddress {
     //    ip3 = IPAddress("10.0.3.1/24")
     //    ip4 = IPAddress("10.0.4.1/24")
     //
-    //    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //    IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
     //      // => ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
     //
     //  public self.summarize(args)
@@ -1544,7 +1544,7 @@ class IPAddress {
     //
     //  Example:
     //
-    //    ip = IPAddress::IPv4.parse_classful "10.0.0.1"
+    //    ip = IPAddress.IPv4.parse_classful "10.0.0.1"
     //
     //    ip.netmask
     //      // => "255.0.0.0"
@@ -1555,7 +1555,7 @@ class IPAddress {
     //  prefix of /24 or 255.255.255.0
     //
     //  public self.parse_classful(ip: String) {
-    //   if (IPAddress::valid_ipv4?(ip)) {
+    //   if (IPAddress.valid_ipv4?(ip)) {
     //     address = ip.strip
     //   }
     //     raise ArgumentError, "Invalid IP // {ip.inspect}"
@@ -1567,7 +1567,7 @@ class IPAddress {
     //  private methods
     //
     #[allow(dead_code)]
-    fn newprefix(&self, num: usize) : Result<Prefix, String> {
+    fn newprefix(self, num: usize) : Result<Prefix, String> {
         for i in num..self.ip_bits.bits {
             let a = ((i as f64).log2() as usize) as f64;
             if a == (i as f64).log2() {
@@ -1589,28 +1589,28 @@ class IPAddress {
 // For example, instead of creating the three types
 // of IP addresses using their own contructors
 //
-//   ip  = IPAddress::IPv4.new "172.16.10.1/24"
-//   ip6 = IPAddress::IPv6.new "2001:db8::8:800:200c:417a/64"
-//   ip_mapped = IPAddress::IPv6::Mapped "::ffff:172.16.10.1/128"
+//   ip  = IPAddress.IPv4.new "172.16.10.1/24"
+//   ip6 = IPAddress.IPv6.new "2001:db8.8:800:200c:417a/64"
+//   ip_mapped = IPAddress.IPv6.Mapped ".ffff:172.16.10.1/128"
 //
 // you can just use the IPAddress wrapper:
 //
 //   ip  = IPAddress "172.16.10.1/24"
-//   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
-//   ip_mapped = IPAddress "::ffff:172.16.10.1/128"
+//   ip6 = IPAddress "2001:db8.8:800:200c:417a/64"
+//   ip_mapped = IPAddress ".ffff:172.16.10.1/128"
 //
 // All the object created will be instances of the
 // correct class:
 //
 //  ip.class
-//    //=> IPAddress::IPv4
+//    //=> IPAddress.IPv4
 //  ip6.class
-//    //=> IPAddress::IPv6
+//    //=> IPAddress.IPv6
 //  ip_mapped.class
-//    //=> IPAddress::IPv6::Mapped
+//    //=> IPAddress.IPv6.Mapped
 //
 // def IPAddress(str)
-//   IPAddress::parse str
+//   IPAddress.parse str
 // end
 
 // Compatibility with Ruby 1.8

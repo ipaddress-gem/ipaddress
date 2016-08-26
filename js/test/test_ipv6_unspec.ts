@@ -1,22 +1,13 @@
-extern crate ipaddress;
-extern crate num;
-
-#[cfg(test)]
-mod tests {
-    use ipaddress::IPAddress;
-    use ipaddress::ipv6_unspec;
-    use num::bigint::BigUint;
-    use num::Zero;
-
-    pub struct IPv6UnspecifiedTest {
-        pub ip: IPAddress,
-        pub to_s: String,
-        pub to_string: String,
-        pub to_string_uncompressed: String,
-        pub num: BigUint,
+describe("ipv6_unspec", () => {
+    class IPv6UnspecifiedTest {
+        ip: IPAddress,
+        to_s: String,
+        to_string: String,
+        to_string_uncompressed: String,
+        num: BigUint,
     }
 
-    fn setup() -> IPv6UnspecifiedTest {
+    function setup() : IPv6UnspecifiedTest {
         return IPv6UnspecifiedTest {
             ip: ipv6_unspec::new(),
             to_s: String::from("::"),
@@ -26,8 +17,7 @@ mod tests {
         };
     }
 
-    #[test]
-    pub fn test_attributes() {
+    it("test_attributes", () => {
         assert_eq!(setup().ip.host_address, setup().num);
         assert_eq!(128, setup().ip.prefix().get_prefix());
         assert_eq!(true, setup().ip.is_unspecified());
@@ -35,9 +25,8 @@ mod tests {
         assert_eq!(setup().to_string, setup().ip.to_string());
         assert_eq!(setup().to_string_uncompressed,
                    setup().ip.to_string_uncompressed());
-    }
-    #[test]
-    pub fn test_method_ipv6() {
+    });
+    it("test_method_ipv6", () => {
         assert_eq!(true, setup().ip.is_ipv6());
-    }
-}
+    });
+});

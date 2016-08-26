@@ -1,27 +1,20 @@
-
-extern crate ipaddress;
-
-#[cfg(test)]
-mod tests {
-    use ipaddress::rle;
-    use ipaddress::rle::Rle;
-    #[test]
-    pub fn test_rle() {
-        let empty : Vec<u16> = Vec::new();
-        assert_eq!(rle::code(&empty), []);
-        assert_eq!(rle::code(&vec![4711]), [Rle {
+describe("rle", () => {
+    it("test_rle", () => {
+        let empty : number[] = [];
+        assert_eq!(rle::code(empty), []);
+        assert_eq!(rle::code([4711]), [Rle {
                         part: 4711,
                         pos: 0,
                         cnt: 1,
                         max: true,
                     }]);
-        assert_eq!(rle::code(&vec![4711, 4711]), [Rle {
+        assert_eq!(rle::code([4711, 4711]), [Rle {
                         part: 4711,
                         pos: 0,
                         cnt: 2,
                         max: true,
                     }]);
-        assert_eq!(rle::code(&vec![4711, 4711, 4811]), [Rle {
+        assert_eq!(rle::code([4711, 4711, 4811]), [Rle {
                         part: 4711,
                         pos: 0,
                         cnt: 2,
@@ -33,7 +26,7 @@ mod tests {
                         cnt: 1,
                         max: true,
                     }]);
-        assert_eq!(rle::code(&vec![4711, 4711, 4811, 4711, 4711]), [Rle {
+        assert_eq!(rle::code([4711, 4711, 4811, 4711, 4711]), [Rle {
                         part: 4711,
                         pos: 0,
                         cnt: 2,
@@ -51,7 +44,7 @@ mod tests {
                         cnt: 2,
                         max: true,
                     }]);
-        assert_eq!(rle::code(&vec![4711, 4711, 4711, 4811, 4711, 4711]), [Rle {
+        assert_eq!(rle::code([4711, 4711, 4711, 4811, 4711, 4711]), [Rle {
                         part: 4711,
                         pos: 0,
                         cnt: 3,
@@ -70,7 +63,7 @@ mod tests {
                         max: false,
                     }]
                    );
-           assert_eq!(rle::code(&vec![4711, 4711, 4711, 4811, 4711, 4711, 4911, 4911, 4911]), [Rle {
+           assert_eq!(rle::code([4711, 4711, 4711, 4811, 4711, 4711, 4911, 4911, 4911]), [Rle {
                            part: 4711,
                            pos: 0,
                            cnt: 3,
@@ -96,7 +89,7 @@ mod tests {
                        }]);
 
 
-       assert_eq!(rle::code(&vec![0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0]), [Rle {
+       assert_eq!(rle::code([0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0]), [Rle {
                        part: 0x2001,
                        pos: 0,
                        cnt: 1,
@@ -127,7 +120,5 @@ mod tests {
                        max: true,
                    }
        ]);
-
-
-    }
-}
+    });
+});
