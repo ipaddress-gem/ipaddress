@@ -519,7 +519,7 @@ impl IPAddress {
     /// network if we change the prefix. Let Ruby do the work:
     ///
     ///   IPAddress::IPv4::summarize(ip1,ip2).to_s
-    ///     /// => "172.16.10.0/23"
+    ///     ///  "172.16.10.0/23"
     ///
     /// We note how the network "172.16.10.0/23" includes all the addresses
     /// specified in the above networks, and (more important) includes
@@ -543,7 +543,7 @@ impl IPAddress {
     ///   ip4 = IPAddress("10.0.3.1/24")
     ///
     ///   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).to_string
-    ///     /// => "10.0.0.0/22",
+    ///     ///  "10.0.0.0/22",
     ///
     /// But the following networks can't be summarized in a single network:
     ///
@@ -553,7 +553,7 @@ impl IPAddress {
     ///   ip4 = IPAddress("10.0.4.1/24")
     ///
     ///   IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
-    ///     /// => ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
+    ///     ///  ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
     ///
     ///
     ///  Summarization (or aggregation) is the process when two or more
@@ -581,7 +581,7 @@ impl IPAddress {
     ///  network if we change the prefix. Let Ruby do the work:
     ///
     ///    IPAddress::IPv6::summarize(ip1,ip2).to_s
-    ///      /// => "2000:0::/31"
+    ///      ///  "2000:0::/31"
     ///
     ///  We note how the network "2000:0::/31" includes all the addresses
     ///  specified in the above networks, and (more important) includes
@@ -605,7 +605,7 @@ impl IPAddress {
     ///    ip4 = IPAddress("2000:3::/32")
     ///
     ///    IPAddress::IPv6::summarize(ip1,ip2,ip3,ip4).to_string
-    ///      /// => ""2000:3::/30",
+    ///      ///  ""2000:3::/30",
     ///
     ///  But the following networks can't be summarized in a single network:
     ///
@@ -615,7 +615,7 @@ impl IPAddress {
     ///    ip4 = IPAddress("2000:4::/32")
     ///
     ///    IPAddress::IPv4::summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
-    ///      /// => ["2000:1::/32","2000:2::/31","2000:4::/32"]
+    ///      ///  ["2000:1::/32","2000:2::/31","2000:4::/32"]
     ///
     #[allow(dead_code)]
     pub fn summarize(networks: &Vec<IPAddress>) -> Vec<IPAddress> {
@@ -670,10 +670,10 @@ impl IPAddress {
     ///    ip = IPAddress("172.16.100.4/22")
     ///
     ///    ip.prefix
-    ///      /// => 22
+    ///      ///  22
     ///
     ///    ip.prefix.class
-    ///      /// => IPAddress::Prefix32
+    ///      ///  IPAddress::Prefix32
     ///
     #[allow(dead_code)]
     pub fn prefix(&self) -> &Prefix {
@@ -686,7 +686,7 @@ impl IPAddress {
     /// expressed in dotted decimal format.
     ///
     ///   IPAddress.valid_ipv4_netmask? "255.255.0.0"
-    ///     /// => true
+    ///     ///  true
     ///
     #[allow(dead_code)]
     pub fn is_valid_netmask<S: Into<String>>(addr: S) -> bool {
@@ -738,12 +738,12 @@ impl IPAddress {
         ///    ip = IPAddress("172.16.100.4")
         ///
         ///    puts ip
-        ///      /// => 172.16.100.4/16
+        ///      ///  172.16.100.4/16
         ///
         ///    ip.prefix = 22
         ///
         ///    puts ip
-        ///      /// => 172.16.100.4/22
+        ///      ///  172.16.100.4/22
         ///
         pub fn change_prefix(&self, num: usize) -> Result<IPAddress, String> {
             let prefix =  self.prefix.from(num);
@@ -770,7 +770,7 @@ impl IPAddress {
     ///    ip = IPAddress("172.16.100.4/22")
     ///
     ///    ip.to_string
-    ///      /// => "172.16.100.4/22"
+    ///      ///  "172.16.100.4/22"
     ///
     #[allow(dead_code)]
     pub fn to_string(&self) -> String {
@@ -824,7 +824,7 @@ impl IPAddress {
     ///    ip = IPAddress("127.0.0.1")
     ///
     ///    ip.bits
-    ///      /// => "01111111000000000000000000000001"
+    ///      ///  "01111111000000000000000000000001"
     ///
     #[allow(dead_code)]
     pub fn bits(&self) -> String {
@@ -850,7 +850,7 @@ impl IPAddress {
     ///    ip = IPAddress("172.16.10.64/24")
     ///
     ///    ip.broadcast.to_s
-    ///      /// => "172.16.10.255"
+    ///      ///  "172.16.10.255"
     ///
     #[allow(dead_code)]
     pub fn broadcast(&self) -> IPAddress {
@@ -863,12 +863,12 @@ impl IPAddress {
     ///    ip = IPAddress("172.16.10.64/24")
     ///
     ///    ip.network?
-    ///      /// => false
+    ///      ///  false
     ///
     ///    ip = IPAddress("172.16.10.64/26")
     ///
     ///    ip.network?
-    ///      /// => true
+    ///      ///  true
     ///
     #[allow(dead_code)]
     pub fn is_network(&self) -> bool {
@@ -882,7 +882,7 @@ impl IPAddress {
     ///    ip = IPAddress("172.16.10.64/24")
     ///
     ///    ip.network.to_s
-    ///      /// => "172.16.10.0"
+    ///      ///  "172.16.10.0"
     ///
     #[allow(dead_code)]
     pub fn network(&self) -> IPAddress {
@@ -941,7 +941,7 @@ impl IPAddress {
     ///    ip = IPAddress("192.168.100.0/24")
     ///
     ///    ip.first.to_s
-    ///      /// => "192.168.100.1"
+    ///      ///  "192.168.100.1"
     ///
     ///  The object IP doesn't need to be a network: the method
     ///  automatically gets the network number from it
@@ -949,7 +949,7 @@ impl IPAddress {
     ///    ip = IPAddress("192.168.100.50/24")
     ///
     ///    ip.first.to_s
-    ///      /// => "192.168.100.1"
+    ///      ///  "192.168.100.1"
     ///
     pub fn first(&self) -> IPAddress {
         return self.from(&self.network().host_address.add(&self.ip_bits.host_ofs), &self.prefix);
@@ -965,7 +965,7 @@ impl IPAddress {
     ///    ip = IPAddress("192.168.100.0/24")
     ///
     ///    ip.last.to_s
-    ///      /// => "192.168.100.254"
+    ///      ///  "192.168.100.254"
     ///
     ///  The object IP doesn't need to be a network: the method
     ///  automatically gets the network number from it
@@ -973,7 +973,7 @@ impl IPAddress {
     ///    ip = IPAddress("192.168.100.50/24")
     ///
     ///    ip.last.to_s
-    ///      /// => "192.168.100.254"
+    ///      ///  "192.168.100.254"
     ///
     #[allow(dead_code)]
     pub fn last(&self) -> IPAddress {
@@ -988,12 +988,12 @@ impl IPAddress {
     ///    ip.each_host do |i|
     ///      p i.to_s
     ///    end
-    ///      /// => "10.0.0.1"
-    ///      /// => "10.0.0.2"
-    ///      /// => "10.0.0.3"
-    ///      /// => "10.0.0.4"
-    ///      /// => "10.0.0.5"
-    ///      /// => "10.0.0.6"
+    ///      ///  "10.0.0.1"
+    ///      ///  "10.0.0.2"
+    ///      ///  "10.0.0.3"
+    ///      ///  "10.0.0.4"
+    ///      ///  "10.0.0.5"
+    ///      ///  "10.0.0.6"
     ///
     #[allow(dead_code)]
     pub fn each_host<F>(&self, func: F) where F : Fn(&IPAddress) {
@@ -1015,14 +1015,14 @@ impl IPAddress {
     ///    ip.each do |i|
     ///      p i.address
     ///    end
-    ///      /// => "10.0.0.0"
-    ///      /// => "10.0.0.1"
-    ///      /// => "10.0.0.2"
-    ///      /// => "10.0.0.3"
-    ///      /// => "10.0.0.4"
-    ///      /// => "10.0.0.5"
-    ///      /// => "10.0.0.6"
-    ///      /// => "10.0.0.7"
+    ///      ///  "10.0.0.0"
+    ///      ///  "10.0.0.1"
+    ///      ///  "10.0.0.2"
+    ///      ///  "10.0.0.3"
+    ///      ///  "10.0.0.4"
+    ///      ///  "10.0.0.5"
+    ///      ///  "10.0.0.6"
+    ///      ///  "10.0.0.7"
     ///
     #[allow(dead_code)]
     pub fn each<F>(&self, func: F) where F : Fn(&IPAddress) {
@@ -1057,12 +1057,12 @@ impl IPAddress {
     ///    ip3 = IPAddress "10.100.100.1/16"
     ///
     ///    ip1 < ip2
-    ///      /// => true
+    ///      ///  true
     ///    ip1 > ip3
-    ///      /// => false
+    ///      ///  false
     ///
     ///    [ip1,ip2,ip3].sort.map{|i| i.to_string}
-    ///      /// => ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
+    ///      ///  ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
     ///
     ///  Returns the number of IP addresses included
     ///  in the network. It also counts the network
@@ -1071,7 +1071,7 @@ impl IPAddress {
     ///    ip = IPAddress("10.0.0.1/29")
     ///
     ///    ip.size
-    ///      /// => 8
+    ///      ///  8
     ///
     #[allow(dead_code)]
     pub fn size(&self) -> BigUint {
@@ -1092,10 +1092,10 @@ impl IPAddress {
     ///    addr = IPAddress("192.168.10.102/24")
     ///
     ///    ip.include? addr
-    ///      /// => true
+    ///      ///  true
     ///
     ///    ip.include? IPAddress("172.16.0.48/16")
-    ///      /// => false
+    ///      ///  false
     ///
     #[allow(dead_code)]
     pub fn includes(&self, oth: &IPAddress) -> bool {
@@ -1115,7 +1115,7 @@ impl IPAddress {
     ///    addr2 = IPAddress("192.168.10.103/24")
     ///
     ///    ip.include_all?(addr1,addr2)
-    ///      /// => true
+    ///      ///  true
     ///
     #[allow(dead_code)]
     pub fn includes_all(&self, oths: &[IPAddress]) -> bool {
@@ -1133,7 +1133,7 @@ impl IPAddress {
     ///
     ///    ip = IPAddress "10.1.1.1/24"
     ///    ip.private?
-    ///      /// => true
+    ///      ///  true
     ///
     #[allow(dead_code)]
     pub fn is_private(&self) -> bool {
@@ -1153,7 +1153,7 @@ impl IPAddress {
     ///    network = IPAddress("172.16.10.0/24")
     ///
     ///    network / 4   ///  implies map{|i| i.to_string}
-    ///      /// => ["172.16.10.0/26",
+    ///      ///  ["172.16.10.0/26",
     ///           "172.16.10.64/26",
     ///           "172.16.10.128/26",
     ///           "172.16.10.192/26"]
@@ -1165,7 +1165,7 @@ impl IPAddress {
     ///    network = IPAddress("172.16.10.0/24")
     ///
     ///    network / 3   ///  implies map{|i| i.to_string}
-    ///      /// => ["172.16.10.0/26",
+    ///      ///  ["172.16.10.0/26",
     ///           "172.16.10.64/26",
     ///           "172.16.10.128/25"]
     ///
@@ -1217,13 +1217,13 @@ impl IPAddress {
     ///  you can supernet it with a new /23 prefix
     ///
     ///    ip.supernet(23).to_string
-    ///      /// => "172.16.10.0/23"
+    ///      ///  "172.16.10.0/23"
     ///
     ///  However if you supernet it with a /22 prefix, the
     ///  network address will change:
     ///
     ///    ip.supernet(22).to_string
-    ///      /// => "172.16.8.0/22"
+    ///      ///  "172.16.8.0/22"
     ///
     ///  If +new_prefix+ is less than 1, returns 0.0.0.0/0
     ///
@@ -1256,7 +1256,7 @@ impl IPAddress {
     ///  we can calculate the subnets with a /26 prefix
     ///
     ///    ip.subnets(26).map(&:to_string)
-    ///      /// => ["172.16.10.0/26", "172.16.10.64/26",
+    ///      ///  ["172.16.10.0/26", "172.16.10.64/26",
     ///           "172.16.10.128/26", "172.16.10.192/26"]
     ///
     ///  The resulting number of subnets will of course always be
@@ -1293,7 +1293,7 @@ impl IPAddress {
     ///    ip = IPAddress("172.16.10.1/24")
     ///
     ///    ip.to_ipv6
-    ///      /// => "ac10:0a01"
+    ///      ///  "ac10:0a01"
     ///
     #[allow(dead_code)]
     pub fn to_ipv6(&self) -> IPAddress {

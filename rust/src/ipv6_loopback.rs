@@ -21,20 +21,20 @@ use num_traits::One;
 ///    ip = IPAddress::IPv6::Loopback.new
 ///
 ///    ip.to_string
-///      /// => "::1/128"
+///      ///  "::1/128"
 ///
 ///  or by using the wrapper:
 ///
 ///    ip = IPAddress "::1"
 ///
 ///    ip.to_string
-///      /// => "::1/128"
+///      ///  "::1/128"
 ///
 ///  Checking if an address is loopback is easy with the IPv6/// loopback?
 ///  method:
 ///
 ///    ip.loopback?
-///      /// => true
+///      ///  true
 ///
 ///  The IPv6 loopback address corresponds to 127.0.0.1 in IPv4.
 ///
@@ -44,7 +44,7 @@ use num_traits::One;
 ///    ip = IPAddress::IPv6::Loopback.new
 ///
 ///    ip.to_string
-///      /// => "::1/128"
+///      ///  "::1/128"
 ///
 #[allow(dead_code)]
 pub fn new() -> IPAddress {

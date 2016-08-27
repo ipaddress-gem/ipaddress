@@ -11,7 +11,7 @@ fn from(my: &::prefix::Prefix, num: usize) -> Result<::prefix::Prefix, String> {
 ///    prefix = IPAddress::prefix::Prefix32.new 24
 ///
 ///    prefix.to_ip
-///      /// => "255.255.255.0"
+///      ///  "255.255.255.0"
 ///
 #[allow(unused_comparisons)]
 pub fn new(num: usize) -> Result<::prefix::Prefix, String> {

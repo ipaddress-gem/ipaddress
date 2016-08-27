@@ -37,26 +37,26 @@ use num_traits::Zero;
 ///  Let's check it's really a mapped address:
 ///
 ///    ip6.mapped?
-///      /// => true
+///      ///  true
 ///
 ///    ip6.to_string
-///      /// => "::FFFF:172.16.10.1/128"
+///      ///  "::FFFF:172.16.10.1/128"
 ///
 ///  Now with the +ipv4+ attribute, we can easily access the IPv4 portion
 ///  of the mapped IPv6 address:
 ///
 ///    ip6.ipv4.address
-///      /// => "172.16.10.1"
+///      ///  "172.16.10.1"
 ///
 ///  Internally, the IPv4 address is stored as two 16 bits
 ///  groups. Therefore all the usual methods for an IPv6 address are
 ///  working perfectly fine:
 ///
 ///    ip6.to_hex
-///      /// => "00000000000000000000ffffac100a01"
+///      ///  "00000000000000000000ffffac100a01"
 ///
 ///    ip6.address
-///      /// => "0000:0000:0000:0000:0000:ffff:ac10:0a01"
+///      ///  "0000:0000:0000:0000:0000:ffff:ac10:0a01"
 ///
 ///  A mapped IPv6 can also be created just by specify the address in the
 ///  following format:
@@ -77,7 +77,7 @@ use num_traits::Zero;
 ///    ip6 = IPAddress::IPv6::Mapped.new "::ffff:172.16.10.1/128"
 ///
 ///    ipv6.ipv4.class
-///      /// => IPAddress::IPv4
+///      ///  IPAddress::IPv4
 ///
 ///  An IPv6 IPv4-mapped address can also be created using the
 ///  IPv6 only format of the address:
@@ -85,7 +85,7 @@ use num_traits::Zero;
 ///    ip6 = IPAddress::IPv6::Mapped.new "::0d01:4403"
 ///
 ///    ip6.to_string
-///      /// => "::ffff:13.1.68.3"
+///      ///  "::ffff:13.1.68.3"
 ///
 pub fn new<S: Into<String>>(_str: S) -> Result<IPAddress, String> {
     let str = _str.into();

@@ -6,7 +6,7 @@ use prefix::Prefix;
 ///  Creates a new prefix object for 128 bits IPv6 addresses
 ///
 ///    prefix = IPAddressPrefix128.new 64
-///      /// => 64
+///      ///  64
 ///
 pub fn new(num: usize) -> Result<Prefix, String> {
     if num <= 128 {

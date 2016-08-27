@@ -121,7 +121,7 @@ impl Prefix {
     ///    prefix = IPAddress::Prefix32.new 24
     ///
     ///    prefix.hostmask
-    ///      /// => "0.0.0.255"
+    ///      ///  "0.0.0.255"
     ///
     #[allow(dead_code)]
     pub fn host_mask(&self) -> BigUint {
@@ -139,7 +139,7 @@ impl Prefix {
     ///    prefix = Prefix128.new 96
     ///
     ///    prefix.host_prefix
-    ///      /// => 128
+    ///      ///  128
     ///
     #[allow(dead_code)]
     pub fn host_prefix(&self) -> usize {
@@ -153,7 +153,7 @@ impl Prefix {
     ///    prefix = IPAddress::Prefix128.new 64
     ///
     ///    prefix.bits
-    ///      /// => "1111111111111111111111111111111111111111111111111111111111111111"
+    ///      ///  "1111111111111111111111111111111111111111111111111111111111111111"
     ///          "0000000000000000000000000000000000000000000000000000000000000000"
     ///
     #[allow(dead_code)]

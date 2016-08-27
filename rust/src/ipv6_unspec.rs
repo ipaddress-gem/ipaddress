@@ -20,13 +20,13 @@ use ipaddress::IPAddress;
 ///    ip = IPAddress::IPv6::Unspecified.new
 ///
 ///    ip.to_s
-///      /// => => "::/128"
+///      ///  => "::/128"
 ///
 ///  You can easily check if an IPv6 object is an unspecified address by
 ///  using the IPv6/// unspecified? method
 ///
 ///    ip.unspecified?
-///      /// => true
+///      ///  true
 ///
 ///  An unspecified IPv6 address can also be created with the wrapper
 ///  method, like we've seen before
@@ -34,7 +34,7 @@ use ipaddress::IPAddress;
 ///    ip = IPAddress "::"
 ///
 ///    ip.unspecified?
-///      /// => true
+///      ///  true
 ///
 ///  This address must never be assigned to an interface and is to be used
 ///  only in software before the application has learned its host's source
@@ -47,7 +47,7 @@ use ipaddress::IPAddress;
 ///    ip = IPAddress::IPv6::Unspecified.new
 ///
 ///    ip.to_s
-///       /// => => "::/128"
+///       ///  => "::/128"
 ///
 #[allow(dead_code)]
 pub fn new() -> IPAddress {
