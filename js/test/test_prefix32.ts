@@ -2,6 +2,7 @@
 import { assert } from 'chai';
 
 import Prefix32 from '../src/prefix32';
+import IPAddress from '../src/ipaddress';
 
    class Prefix32Test {
         netmask0: string = "0.0.0.0";
@@ -58,6 +59,8 @@ describe("prefix32", () => {
     });
     it("test_method_to_ip", () => {
         for (netmask, num) in setup().prefix_hash {
+            let netmask = hash[0];
+            let num = hash[1];
             let prefix = prefix32::new(num).unwrap();
             assert.equal(*netmask, prefix.to_ip_str())
         }

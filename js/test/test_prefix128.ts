@@ -1,48 +1,42 @@
-describe("prefix128", () => {
-    class Prefix128Test {
-        u128_hash: HashMap<usize, BigUint>,
-    }
+import { assert } from 'chai';
 
-    function setup() : Prefix128Test {
-        let mut p128t = Prefix128Test { u128_hash: HashMap::new() };
-        p128t.u128_hash.insert(32,
-                               BigUint::parse_bytes(b"340282366841710300949110269838224261120",
-                                                    10)
-                                   .unwrap());
-        p128t.u128_hash.insert(64,
-                               BigUint::parse_bytes(b"340282366920938463444927863358058659840",
-                                                    10)
-                                   .unwrap());
-        p128t.u128_hash.insert(96,
-                               BigUint::parse_bytes(b"340282366920938463463374607427473244160",
-                                                    10)
-                                   .unwrap());
-        p128t.u128_hash.insert(126,
-                               BigUint::parse_bytes(b"340282366920938463463374607431768211452",
-                                                    10)
-                                   .unwrap());
+import Prefix128 from '../src/prefix128';
+import Crunchy from '../src/crunchy';
+
+class Prefix128Test {
+    public u128_hash: any[]; []
+}
+
+describe("prefix128", () => {
+
+    function setup(): Prefix128Test {
+        let p128t = new Prefix128Test();
+        p128t.u128_hash.push([32, Crunchy.parse("340282366841710300949110269838224261120")]);
+        p128t.u128_hash.push([64, Crunchy.parse("340282366920938463444927863358058659840")]);
+        p128t.u128_hash.push([96, Crunchy.parse("340282366920938463463374607427473244160")]);
+        p128t.u128_hash.push([126, Crunchy.parse("340282366920938463463374607431768211452")]);
         return p128t;
     }
 
-    it("test_initialize", () => {
-        assert!(prefix128::new(129).is_err());
-        assert!(prefix128::new(64).is_ok());
+it("test_initialize", () => {
+    assert.isNotOk(Prefix128.create(129));
+    assert.isOk(Prefix128.create(64));
     });
 
-    it("test_method_bits", () => {
-        let prefix = prefix128::new(64).unwrap();
-        let mut str = String::new();
-        for i in 0..64 {
-            str.push_str("1");
-        }
-        for i in 0..64 {
-            str.push_str("0");
-        }
-        assert_eq!(str, prefix.bits())
-    });
-    it("test_method_to_u32", () => {
-        for (num, u128) in setup().u128_hash {
-            assert_eq!(u128, prefix128::new(num).unwrap().netmask())
+it("test_method_bits", () => {
+    let prefix = Prefix128.create(64);
+    let str = "";
+    for (let i = 0; i < 64; ++i) {
+        str += "1";
+    }
+    for (let i = 0; i < 64; ++i) {
+        str += "0";
+    }
+    assert.equal(str, prefix.bits())
+});
+it("test_method_to_u32", () => {
+    for (let hash of setup().u128_hash) {
+        assert!(hash[1].eq(Prefix128.create(hash[0]).netmask()))
         }
     });
 });
