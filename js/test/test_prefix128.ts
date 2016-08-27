@@ -4,7 +4,7 @@ import Prefix128 from '../src/prefix128';
 import Crunchy from '../src/crunchy';
 
 class Prefix128Test {
-    public u128_hash: any[]; []
+    public u128_hash: any[] = [];
 }
 
 describe("prefix128", () => {
@@ -18,25 +18,25 @@ describe("prefix128", () => {
         return p128t;
     }
 
-it("test_initialize", () => {
-    assert.isNotOk(Prefix128.create(129));
-    assert.isOk(Prefix128.create(64));
+    it("test_initialize", () => {
+        assert.isNotOk(Prefix128.create(129));
+        assert.isOk(Prefix128.create(64));
     });
 
-it("test_method_bits", () => {
-    let prefix = Prefix128.create(64);
-    let str = "";
-    for (let i = 0; i < 64; ++i) {
-        str += "1";
-    }
-    for (let i = 0; i < 64; ++i) {
-        str += "0";
-    }
-    assert.equal(str, prefix.bits())
-});
-it("test_method_to_u32", () => {
-    for (let hash of setup().u128_hash) {
-        assert!(hash[1].eq(Prefix128.create(hash[0]).netmask()))
+    it("test_method_bits", () => {
+        let prefix = Prefix128.create(64);
+        let str = "";
+        for (let i = 0; i < 64; ++i) {
+            str += "1";
+        }
+        for (let i = 0; i < 64; ++i) {
+            str += "0";
+        }
+        assert.equal(str, prefix.bits())
+    });
+    it("test_method_to_u32", () => {
+        for (let hash of setup().u128_hash) {
+            assert.isOk(hash[1].eq(Prefix128.create(hash[0]).netmask()))
         }
     });
 });

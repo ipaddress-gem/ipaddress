@@ -24,7 +24,7 @@ class Prefix128 {
                 num: num,
                 ip_bits: ip_bits,
                 net_mask: Prefix.new_netmask(num, bits),
-                vt_from: from, // vt_to_ip_str: _TO_IP_STR
+                vt_from: Prefix128.from, // vt_to_ip_str: _TO_IP_STR
             });
         }
         return null;
@@ -34,3 +34,6 @@ class Prefix128 {
         return Prefix128.create(num);
     }
 }
+
+
+export default Prefix128;

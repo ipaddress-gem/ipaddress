@@ -51,8 +51,10 @@ class Ipv6Unspec {
     //    ip.to_s
     //       // => => "::/128"
     //
-    public create(): IPAddress {
+    public static create(): IPAddress {
         return IPAddress.parse("::");
     }
     //  class IPv6::Unspecified
 }
+
+export default Ipv6Unspec;

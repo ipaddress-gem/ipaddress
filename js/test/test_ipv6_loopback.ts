@@ -1,31 +1,47 @@
-describe("ipv6_loopback", () => {
-    class IPv6LoopbackTest {
-        ip: IPAddress,
-        s: string,
-        n: string,
-        string: string,
-        one: Crunchy
+import { assert } from 'chai';
+
+import IPAddress from '../src/ipaddress';
+import Prefix128 from '../src/prefix128';
+import Ipv6Loopback from '../src/ipv6_loopback';
+import Crunchy from '../src/crunchy';
+
+class IPv6LoopbackTest {
+    ip: IPAddress;
+    s: string;
+    n: string;
+    string: string;
+    one: Crunchy;
+    constructor(obj: { [id: string]: any }) {
+        this.ip = obj['ip'];
+        this.s = obj['s'];
+        this.n = obj['n'];
+        this.string = obj['string'];
+        this.one = obj['one'];
     }
-    function setup() : IPv6LoopbackTest {
-        return IPv6LoopbackTest {
-            ip: ipv6_loopback::new(),
+}
+
+
+describe("ipv6_loopback", () => {
+    function setup(): IPv6LoopbackTest {
+        return new IPv6LoopbackTest({
+            ip: Ipv6Loopback.create(),
             s: "::1",
             n: "::1/128",
             string: "0000:0000:0000:0000:0000:0000:0000:0001/128",
-            one: BigUint::one(),
-        };
+            one: Crunchy.one()
+        });
     }
 
     it("test_attributes", () => {
         let s = setup();
-        assert_eq!(128, s.ip.prefix.num);
-        assert_eq!(true, s.ip.is_loopback());
-        assert_eq!(s.s, s.ip.to_s());
-        assert_eq!(s.n, s.ip.to_string());
-        assert_eq!(s.string, s.ip.to_string_uncompressed());
-        assert_eq!(s.one, s.ip.host_address);
+        assert.equal(128, s.ip.prefix.num);
+        assert.equal(true, s.ip.is_loopback());
+        assert.equal(s.s, s.ip.to_s());
+        assert.equal(s.n, s.ip.to_string());
+        assert.equal(s.string, s.ip.to_string_uncompressed());
+        assert.equal(s.one, s.ip.host_address);
     });
     it("test_method_ipv6", () => {
-        assert_eq!(true, setup().ip.is_ipv6());
+        assert.equal(true, setup().ip.is_ipv6());
     });
 });

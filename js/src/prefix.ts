@@ -1,9 +1,6 @@
 
 import IpBits from './ip_bits';
-import * as Crunch from 'number-crunch';
-
-type Crunchy = number[];
-
+import Crunchy from './crunchy';
 
 interface From {
     (source: Prefix, num: number): Prefix;
@@ -64,14 +61,14 @@ class Prefix {
     }
 
     public size() : Crunchy {
-      return Crunch.parse(1).leftShift(this.ip_bits.bits-this.num);
+      return Crunchy.one().shl(this.ip_bits.bits-this.num);
     }
 
     public static new_netmask(prefix: number, bits: number) : Crunchy {
-        let mask = Crunch.parse(0);
+        let mask = Crunchy.zero();
         let host_prefix = bits-prefix;
         for (let i=0; i < prefix; ++i) {
-            mask = mask.add(Crunch.parse(1).leftShift(host_prefix+i));
+            mask = mask.add(Crunchy.one().shl(host_prefix+i));
         }
         return mask
     }
@@ -94,9 +91,9 @@ class Prefix {
     //      // => "0.0.0.255"
     //
     public host_mask() : Crunchy {
-        let ret = Crunch.parse(0);
+        let ret = Crunchy.zero();
         for(let _ = 0; _ < (this.ip_bits.bits-this.num); _++) {
-            ret = ret.shl(1).add(Crunch.parse(1));
+            ret = ret.shl(1).add(Crunchy.one());
         }
         return ret;
     }

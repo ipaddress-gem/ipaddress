@@ -1,8 +1,11 @@
 
 import Prefix from './prefix';
 import IpBits from './ip_bits';
+import IPAddress from './ipaddress';
+import Ipv4 from './ipv4';
+import Prefix128 from './prefix128';
+import Crunchy from './crunchy';
 
-type Crunchy = number[];
 
 class Ipv6 {
     //  =Name
@@ -63,119 +66,120 @@ class Ipv6 {
     //
 
     public static from_str(str: string, radix: number, prefix: number): IPAddress {
-        let num = BigUint::from_str_radix(&str.clone(), radix);
-        if num.is_err() {
-            return Err(format!("unparsable {}", str));
+        let num = Crunchy.from_string(str, radix);
+        if (!num) {
+            return null;
         }
-        return from_int(num.unwrap(), prefix);
+        return Ipv6.from_int(num, prefix);
     }
 
-    static enhance_if_mapped(ip: IPAddress) : IPAddress {
+    static enhance_if_mapped(ip: IPAddress): IPAddress {
         // println!("real mapped {:x} {:x}", &ip.host_address, ip.host_address.clone().shr(32));
         if (ip.is_mapped()) {
             return ip;
         }
-        let ipv6_top_96bit = ip.host_address.clone().shr(32);
-if ipv6_top_96bit == BigUint::from_u32(0xffff).unwrap() {
-    // println!("enhance_if_mapped-1:{}", );
-    let num = ip.host_address.clone().rem(BigUint::one().shl(32));
-    if num == BigUint::zero() {
-        return Ok(ip);
-    }
-    println!("ip:{},{:x}", ip.to_string(), num);
-    let ipv4_bits = ::ip_bits::v4();
-    if ipv4_bits.bits < ip.prefix.host_prefix() {
-        println!("enhance_if_mapped-2:{}:{}", ip.to_string(), ip.prefix.host_prefix());
-        return Err(format!("enhance_if_mapped prefix not ipv4 compatible {}", ip.prefix.host_prefix()));
-    }
-    let mapped = ipv4::from_u32(num.to_u32().unwrap(), ipv4_bits.bits - ip.prefix.host_prefix());
-    if mapped.is_err() {
-        println!("enhance_if_mapped-3");
-        return mapped;
-    }
-    // println!("real mapped!!!!!={}", mapped.clone().unwrap().to_string());
-    ip.mapped = Some(Box::new (mapped.unwrap()));
-}
-return Ok(ip);
-}
-
-public static from_int(adr: BigUint, prefix: usize) -> Result < IPAddress, String > {
-    let prefix = prefix128::new(prefix);
-    if prefix.is_err() {
-    return Err(prefix.unwrap_err());
-}
-return enhance_if_mapped(IPAddress {
-    ip_bits: ::ip_bits::v6(),
-    host_address: adr.clone(),
-    prefix: prefix.unwrap(),
-    mapped: None,
-    vt_is_private: ipv6_is_private,
-    vt_is_loopback: ipv6_is_loopback,
-    vt_to_ipv6: to_ipv6,
-});
-}
-
-
-//  Creates a new IPv6 address object.
-//
-//  An IPv6 address can be expressed in any of the following forms:
-//
-//  * "2001:0db8:0000:0000:0008:0800:200C:417A": IPv6 address with no compression
-//  * "2001:db8:0:0:8:800:200C:417A": IPv6 address with leading zeros compression
-//  * "2001:db8::8:800:200C:417A": IPv6 address with full compression
-//
-//  In all these 3 cases, a new IPv6 address object will be created, using the default
-//  subnet mask /128
-//
-//  You can also specify the subnet mask as with IPv4 addresses:
-//
-//    ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
-//
-public static create(str: String) : IPAddress {
-    let(ip, o_netmask) = IPAddress.split_at_slash(&str);
-if IPAddress::is_valid_ipv6(ip.clone()) {
-    let o_num = IPAddress::split_to_num(&ip);
-    if o_num.is_err() {
-        return Err(o_num.unwrap_err());
-    }
-    let mut netmask = 128;
-    if o_netmask.is_some() {
-        let network = o_netmask.unwrap();
-        let num_mask = u8::from_str(&network);
-        if num_mask.is_err() {
-            return Err(format!("Invalid Netmask {}", str));
+        let ipv6_top_96bit = ip.host_address.shr(32);
+        if (ipv6_top_96bit.eq(Crunchy.from_number(0xffff))) {
+            let num = ip.host_address.mod(Crunchy.one().shl(32));
+            if (num.eq(Crunchy.zero())) {
+                return ip;
+            }
+            //println!("ip:{},{:x}", ip.to_string(), num);
+            let ipv4_bits = IpBits.v4();
+            if (ipv4_bits.bits < ip.prefix.host_prefix()) {
+                //println!("enhance_if_mapped-2:{}:{}", ip.to_string(), ip.prefix.host_prefix());
+                return null;
+            }
+            let mapped = Ipv4.from_number(num.toNumber(), ipv4_bits.bits - ip.prefix.host_prefix());
+            if (!mapped) {
+                // println!("enhance_if_mapped-3");
+                return mapped;
+            }
+            // println!("real mapped!!!!!={}", mapped.clone().to_string());
+            ip.mapped = mapped;
         }
-        netmask = network.parse::<usize>().unwrap();
+        return ip;
     }
-    let prefix = ::prefix128::new(netmask);
-    if prefix.is_err() {
-        return Err(prefix.unwrap_err());
+
+    public static from_int(adr: Crunchy, prefix_num: number): IPAddress {
+        let prefix = Prefix128.create(prefix_num);
+        if (!prefix) {
+            return null;
+        }
+        return Ipv6.enhance_if_mapped(new IPAddress({
+            ip_bits: IpBits.v6(),
+            host_address: adr.clone(),
+            prefix: prefix.clone(),
+            mapped: null,
+            vt_is_private: Ipv6.ipv6_is_private,
+            vt_is_loopback: Ipv6.ipv6_is_loopback,
+            vt_to_ipv6: Ipv6.to_ipv6,
+        }));
     }
-    return enhance_if_mapped(IPAddress {
-        ip_bits: ::ip_bits::v6(),
-        host_address: o_num.unwrap(),
-        prefix: prefix.unwrap(),
-        mapped: None,
-        vt_is_private: ipv6_is_private,
-        vt_is_loopback: ipv6_is_loopback,
-        vt_to_ipv6: to_ipv6
-    });
-} else {
-    return Err(format!("Invalid IP {}", str));
-}
-} //  pub fn initialize
-
-public static to_ipv6(ia: IPAddress) : IPAddress {
-    return ia.clone();
-}
-
-public static ipv6_is_loopback(my: IPAddress) : boolean {
-    return my.host_address == BigUint::one();
-}
 
 
-public static ipv6_is_private(my: IPAddress) : boolean {
-    return IPAddress.parse("fd00::/8").includes(my);
-}
+    //  Creates a new IPv6 address object.
+    //
+    //  An IPv6 address can be expressed in any of the following forms:
+    //
+    //  * "2001:0db8:0000:0000:0008:0800:200C:417A": IPv6 address with no compression
+    //  * "2001:db8:0:0:8:800:200C:417A": IPv6 address with leading zeros compression
+    //  * "2001:db8::8:800:200C:417A": IPv6 address with full compression
+    //
+    //  In all these 3 cases, a new IPv6 address object will be created, using the default
+    //  subnet mask /128
+    //
+    //  You can also specify the subnet mask as with IPv4 addresses:
+    //
+    //    ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
+    //
+    public static create(str: string): IPAddress {
+        let [ip, o_netmask] = IPAddress.split_at_slash(str);
+        if (IPAddress.is_valid_ipv6(ip) {
+            let o_num = IPAddress.split_to_num(ip);
+            if (o_num) {
+                return null;
+            }
+            let netmask = 128;
+            if (o_netmask) {
+                let network = o_netmask;
+                let num_mask = u8::from_str(&network);
+                if (!num_mask) {
+                    return null;
+                }
+                netmask = network.parse::<usize>();
+            }
+            let prefix = Prefix128.create(netmask);
+            if (prefix) {
+                return null;
+            }
+            return Ipv6.enhance_if_mapped(new IPAddress({
+                ip_bits: IpBits.v6(),
+                host_address: o_num,
+                prefix: prefix,
+                mapped: null,
+                vt_is_private: Ipv6.ipv6_is_private,
+                vt_is_loopback: Ipv6.ipv6_is_loopback,
+                vt_to_ipv6: Ipv6.to_ipv6
+            }));
+        } else {
+            return null;
+        }
+    } //  pub fn initialize
+
+    public static to_ipv6(ia: IPAddress): IPAddress {
+        return ia.clone();
+    }
+
+    public static ipv6_is_loopback(my: IPAddress): boolean {
+        return my.host_address == Crunchy.one();
+    }
+
+
+    public static ipv6_is_private(my: IPAddress): boolean {
+        return IPAddress.parse("fd00::/8").includes(my);
+    }
 
 }
+
+export default Ipv6;

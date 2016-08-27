@@ -18,7 +18,7 @@ class Prefix32 {
                 num: num,
                 ip_bits: ip_bits,
                 net_mask: Prefix.new_netmask(num, bits),
-                vt_from: from,
+                vt_from: Prefix32.from,
                 //vt_to_ip_str: _TO_IP_STR,
             });
         }

@@ -1,32 +1,47 @@
-describe("ipv6_unspec", () => {
-    class IPv6UnspecifiedTest {
-        ip: IPAddress,
-        to_s: String,
-        to_string: String,
-        to_string_uncompressed: String,
-        num: BigUint,
-    }
+import { assert } from 'chai';
 
-    function setup() : IPv6UnspecifiedTest {
-        return IPv6UnspecifiedTest {
-            ip: ipv6_unspec::new(),
-            to_s: String::from("::"),
-            to_string: String::from("::/128"),
-            to_string_uncompressed: String::from("0000:0000:0000:0000:0000:0000:0000:0000/128"),
-            num: BigUint::zero(),
-        };
+import IPAddress from '../src/ipaddress';
+import Prefix128 from '../src/prefix128';
+import Ipv6Unspec from '../src/ipv6_unspec';
+import Crunchy from '../src/crunchy';
+
+class IPv6UnspecifiedTest {
+    ip: IPAddress;
+    to_s: string;
+    to_string: string;
+    to_string_uncompressed: string;
+    num: Crunchy;
+    constructor(obj: { [id: string]: any }) {
+        this.ip = obj['ip'];
+        this.to_s = obj['to_s'];
+        this.to_string = obj['to_string'];
+        this.to_string_uncompressed = obj['to_string_uncompressed'];
+        this.num = obj['num'];
+    }
+}
+
+describe("ipv6_unspec", () => {
+
+    function setup(): IPv6UnspecifiedTest {
+        return new IPv6UnspecifiedTest({
+            ip: Ipv6Unspec.create(),
+            to_s: "::",
+            to_string: "::/128",
+            to_string_uncompressed: "0000:0000:0000:0000:0000:0000:0000:0000/128",
+            num: Crunchy.zero(),
+        });
     }
 
     it("test_attributes", () => {
-        assert_eq!(setup().ip.host_address, setup().num);
-        assert_eq!(128, setup().ip.prefix().get_prefix());
-        assert_eq!(true, setup().ip.is_unspecified());
-        assert_eq!(setup().to_s, setup().ip.to_s());
-        assert_eq!(setup().to_string, setup().ip.to_string());
-        assert_eq!(setup().to_string_uncompressed,
-                   setup().ip.to_string_uncompressed());
+        assert.equal(setup().ip.host_address, setup().num);
+        assert.equal(128, setup().ip.prefix.num);
+        assert.equal(true, setup().ip.is_unspecified());
+        assert.equal(setup().to_s, setup().ip.to_s());
+        assert.equal(setup().to_string, setup().ip.to_string());
+        assert.equal(setup().to_string_uncompressed,
+            setup().ip.to_string_uncompressed());
     });
     it("test_method_ipv6", () => {
-        assert_eq!(true, setup().ip.is_ipv6());
+        assert.equal(true, setup().ip.is_ipv6());
     });
 });

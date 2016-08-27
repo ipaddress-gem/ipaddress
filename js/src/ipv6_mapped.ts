@@ -147,3 +147,5 @@ public static create(str: String) : IPAddress {
     return Err(format!("unknown mapped format:{}", str));
 }
 }
+
+export default Ipv6Mapped;

@@ -1,13 +1,9 @@
 
-import * as Crunch from 'node-crunch';
+import Crunchy from './crunchy';
 
 import Rle from './rle';
 
-type Crunchy = number[];
-enum IpVersion {
-    V4 = 4,
-    V6 = 6
-}
+import IpVersion from './ip_version';
 
 interface ToString {
     (source: IpBits, num: Crunchy): string;
@@ -23,7 +19,7 @@ class IpBits {
     dns_bits: number;
     rev_domain: string;
     part_mod: number;
-    host_ofs: number; // ipv4=1, ipv6=0
+    host_ofs: Crunchy; // ipv4=1, ipv6=0
 
     public clone(): IpBits {
         let my = new IpBits();
@@ -35,29 +31,29 @@ class IpBits {
         my.dns_bits = this.dns_bits;
         my.rev_domain = this.rev_domain;
         my.part_mod = this.part_mod;
-        my.host_ofs = this.host_ofs;
+        my.host_ofs = this.host_ofs.clone();
         return my;
     }
 
-    public parts(bu: Crunchy): Crunchy {
+    public parts(bu: Crunchy): number[] {
         let vec: number[] = [];
-        let my = bu.slice();
-        let part_mod = Crunch.leftShift([1], this.part_bits);// - Crunchy::one();
+        let my = bu.clone();
+        let part_mod = Crunchy.one().shl(this.part_bits);// - Crunchy::one();
         for (let i = 0; i < (this.bits / this.part_bits); ++i) {
-            vec.push(0 + Crunch.stringify(Crunch.mod(my, part_mod)));
-            my = Crunch.rightShift(my, this.part_bits);
+            vec.push(+my.mod(part_mod).toString());
+            my = my.shr(this.part_bits);
         }
         return vec.reverse();
     }
 
-    public as_compressed_string(bu: Crunchy): String {
+    public as_compressed_string(bu: Crunchy): string {
         return (this.vt_as_compressed_string)(this, bu);
     }
-    public as_uncompressed_string(bu: Crunchy): String {
+    public as_uncompressed_string(bu: Crunchy): string {
         return (this.vt_as_uncompressed_string)(this, bu);
     }
 
-    public dns_part_format(i: number): String {
+    public dns_part_format(i: number): string {
         switch (this.version) {
             case IpVersion.V4: return `${i}`;
             case IpVersion.V6: return `${i.toString(16)}`;
@@ -74,7 +70,7 @@ class IpBits {
         my.dns_bits = 8;
         my.rev_domain = "in-addr.arpa";
         my.part_mod = 1 << 8;
-        my.host_ofs = 1;
+        my.host_ofs = Crunchy.one();
         return my;
     }
 
@@ -88,7 +84,7 @@ class IpBits {
         my.dns_bits = 4;
         my.rev_domain = "ip6.arpa";
         my.part_mod = 1 << 16;
-        my.host_ofs = 0;
+        my.host_ofs = Crunchy.zero();
         return my;
     }
 
@@ -122,7 +118,7 @@ class IpBits {
         }
         return ret;
     }
-    public static ipv6_as_uncompressed(ip_bits: IpBits, host_address: Crunchy): String {
+    public static ipv6_as_uncompressed(ip_bits: IpBits, host_address: Crunchy): string {
         let ret = "";
         let sep = "";
         for (let part of ip_bits.parts(host_address)) {

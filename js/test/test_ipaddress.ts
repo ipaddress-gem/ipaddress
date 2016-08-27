@@ -1,203 +1,220 @@
 import { assert } from 'chai';
 
+import IPAddress from '../src/ipaddress';
+import Prefix32 from '../src/prefix32';
+import Crunchy from '../src/crunchy';
+
+class IPAddressTest {
+    valid_ipv4: string;
+    valid_ipv6: string;
+    valid_mapped: string;
+    invalid_ipv4: string;
+    invalid_ipv6: string;
+    invalid_mapped: string;
+    constructor(obj: { [id: string]: any }) {
+
+    }
+}
+
+class RangeItem {
+    start: number;
+    target: number;
+}
+function Range(start: number, target: number) {
+    let ri = new RangeItem();
+    ri.start = start;
+    ri.target = target;
+    return ri;
+}
+
 describe('IPAddressTest', () => {
 
-    class IPAddressTest {
-        valid_ipv4: string,
-        valid_ipv6: string,
-        valid_mapped: string,
-        invalid_ipv4: string,
-        invalid_ipv6: string,
-        invalid_mapped: string,
-    }
-
-    function setup() : IPAddressTest {
-        return new IPAddressTest {
+    function setup(): IPAddressTest {
+        return new IPAddressTest({
             valid_ipv4: "172.16.10.1/24",
-            valid_ipv6: "2001:db8::8:800:200c:417a/64",
-            valid_mapped: "::13.1.68.3",
+            valid_ipv6: "2001:db8.8:800:200c:417a/64",
+            valid_mapped: ".13.1.68.3",
 
             invalid_ipv4: "10.0.0.256",
             invalid_ipv6: ":1:2:3:4:5:6:7",
-            invalid_mapped: "::1:2.3.4",
-        };
+            invalid_mapped: ".1:2.3.4",
+        });
     }
 
     it("test_method_ipaddress", () => {
-        assert!(IPAddress::parse(setup().valid_ipv4).is_ok());
-        assert!(IPAddress::parse(setup().valid_ipv6).is_ok());
-        assert!(IPAddress::parse(setup().valid_mapped).is_ok());
+        assert.isOk(IPAddress.parse(setup().valid_ipv4));
+        assert.isOk(IPAddress.parse(setup().valid_ipv6));
+        assert.isOk(IPAddress.parse(setup().valid_mapped));
 
-        assert!(IPAddress::parse(setup().valid_ipv4).unwrap().is_ipv4());
-        assert!(IPAddress::parse(setup().valid_ipv6).unwrap().is_ipv6());
-        assert!(IPAddress::parse(setup().valid_mapped).unwrap().is_mapped());
+        assert.isOk(IPAddress.parse(setup().valid_ipv4).is_ipv4());
+        assert.isOk(IPAddress.parse(setup().valid_ipv6).is_ipv6());
+        assert.isOk(IPAddress.parse(setup().valid_mapped).is_mapped());
 
-        assert!(IPAddress::parse(setup().invalid_ipv4).is_err());
-        assert!(IPAddress::parse(setup().invalid_ipv6).is_err());
-        assert!(IPAddress::parse(setup().invalid_mapped).is_err());
+        assert.isOk(IPAddress.parse(setup().invalid_ipv4));
+        assert.isOk(IPAddress.parse(setup().invalid_ipv6));
+        assert.isOk(IPAddress.parse(setup().invalid_mapped));
     });
 
     it("test_module_method_valid", () => {
-        assert_eq!(true, IPAddress::is_valid("10.0.0.1"));
-        assert_eq!(true, IPAddress::is_valid("10.0.0.0"));
-        assert_eq!(true, IPAddress::is_valid("2002::1"));
-        assert_eq!(true, IPAddress::is_valid("dead:beef:cafe:babe::f0ad"));
-        assert_eq!(false, IPAddress::is_valid("10.0.0.256"));
-        assert_eq!(false, IPAddress::is_valid("10.0.0.0.0"));
-        assert_eq!(true, IPAddress::is_valid("10.0.0"));
-        assert_eq!(true, IPAddress::is_valid("10.0"));
-        assert_eq!(false, IPAddress::is_valid("2002:516:2:200"));
-        assert_eq!(false, IPAddress::is_valid("2002:::1"));
+        assert.equal(true, IPAddress.is_valid("10.0.0.1"));
+        assert.equal(true, IPAddress.is_valid("10.0.0.0"));
+        assert.equal(true, IPAddress.is_valid("2002.1"));
+        assert.equal(true, IPAddress.is_valid("dead:beef:cafe:babe.f0ad"));
+        assert.equal(false, IPAddress.is_valid("10.0.0.256"));
+        assert.equal(false, IPAddress.is_valid("10.0.0.0.0"));
+        assert.equal(true, IPAddress.is_valid("10.0.0"));
+        assert.equal(true, IPAddress.is_valid("10.0"));
+        assert.equal(false, IPAddress.is_valid("2002:516:2:200"));
+        assert.equal(false, IPAddress.is_valid("2002.:1"));
     });
+
     it("test_module_method_valid_ipv4_netmark", () => {
-        assert_eq!(true, IPAddress::is_valid_netmask("255.255.255.0"));
-        assert_eq!(false, IPAddress::is_valid_netmask("10.0.0.1"));
+        assert.equal(true, IPAddress.is_valid_netmask("255.255.255.0"));
+        assert.equal(false, IPAddress.is_valid_netmask("10.0.0.1"));
     });
+
     it("test_summarize", () => {
-        let mut netstr: Vec<String> = Vec::new();
-        for range in vec![(1..10), (11..127), (128..169), (170..172), (173..192), (193..224)] {
-            for i in range {
-                netstr.push(format!("{}.0.0.0/8", i));
+        let netstr: string[] = [];
+        for (let range of [Range(1, 10), Range(11, 127), Range(128, 169), Range(170, 172),
+            Range(173, 192), Range(193, 224)]) {
+            for (let i = range.start; i < range.target; ++i) {
+                netstr.push(`${i}.0.0.0/8`);
             }
         }
-        for i in 0..256 {
-            if i != 254 {
-                netstr.push(format!("169.{}.0.0/16", i));
+        for (let i = 0; i < 256; ++i) {
+            if (i != 254) {
+                netstr.push(`169.${i}.0.0/16`);
             }
         }
-        for i in 0..256 {
-            if i < 16 || 31 < i {
-                netstr.push(format!("172.{}.0.0/16", i));
+        for (let i = 0; i < 256; ++i) {
+            if (i < 16 || 31 < i) {
+                netstr.push(`172.${i}.0.0/16`);
             }
         }
-        for i in 0..256 {
-            if i != 168 {
-                netstr.push(format!("192.{}.0.0/16", i));
+        for (let i = 0; i < 256; ++i) {
+            if (i != 168) {
+                netstr.push(`192.${i}.0.0/16`);
             }
         }
-        let mut ip_addresses = Vec::new();
-        for net in netstr {
-            ip_addresses.push(IPAddress::parse(net).unwrap());
+        let ip_addresses: IPAddress[] = [];
+        for (let net of netstr) {
+            ip_addresses.push(IPAddress.parse(net));
         }
 
-        let empty_vec : Vec<String> = Vec::new();
-        assert_eq!(IPAddress::summarize_str(empty_vec).unwrap().len(), 0);
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["10.1.0.4/24"])
-                       .unwrap()),
-                   ["10.1.0.0/24"]);
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["2000:1::4711/32"])
-                       .unwrap()),
-                   ["2000:1::/32"]);
+        let empty_vec: string[] = [];
+        assert.equal(IPAddress.summarize_str(empty_vec).length, 0);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["10.1.0.4/24"])
+        ),
+            ["10.1.0.0/24"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["2000:1.4711/32"])
+        ),
+            ["2000:1./32"]);
 
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["10.1.0.4/24",
-                                                                           "7.0.0.0/0",
-                                                                           "1.2.3.4/4"])
-                       .unwrap()),
-                   ["0.0.0.0/0"]);
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["2000:1::/32",
-                                                                           "3000:1::/32",
-                                                                           "2000:2::/32",
-                                                                           "2000:3::/32",
-                                                                           "2000:4::/32",
-                                                                           "2000:5::/32",
-                                                                           "2000:6::/32",
-                                                                           "2000:7::/32",
-                                                                           "2000:8::/32"])
-                       .unwrap()),
-                   ["2000:1::/32", "2000:2::/31", "2000:4::/30", "2000:8::/32", "3000:1::/32"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["10.1.0.4/24",
+            "7.0.0.0/0",
+            "1.2.3.4/4"])
+        ),
+            ["0.0.0.0/0"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["2000:1./32",
+            "3000:1./32",
+            "2000:2./32",
+            "2000:3./32",
+            "2000:4./32",
+            "2000:5./32",
+            "2000:6./32",
+            "2000:7./32",
+            "2000:8./32"])
+        ),
+            ["2000:1./32", "2000:2./31", "2000:4./30", "2000:8./32", "3000:1./32"]);
 
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["10.0.1.1/24",
-                                                                           "30.0.1.0/16",
-                                                                           "10.0.2.0/24",
-                                                                           "10.0.3.0/24",
-                                                                           "10.0.4.0/24",
-                                                                           "10.0.5.0/24",
-                                                                           "10.0.6.0/24",
-                                                                           "10.0.7.0/24",
-                                                                           "10.0.8.0/24"])
-                       .unwrap()),
-                   ["10.0.1.0/24", "10.0.2.0/23", "10.0.4.0/22", "10.0.8.0/24", "30.0.0.0/16"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["10.0.1.1/24",
+            "30.0.1.0/16",
+            "10.0.2.0/24",
+            "10.0.3.0/24",
+            "10.0.4.0/24",
+            "10.0.5.0/24",
+            "10.0.6.0/24",
+            "10.0.7.0/24",
+            "10.0.8.0/24"])
+        ),
+            ["10.0.1.0/24", "10.0.2.0/23", "10.0.4.0/22", "10.0.8.0/24", "30.0.0.0/16"]);
 
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["10.0.0.0/23",
-                                                                           "10.0.2.0/24"])
-                       .unwrap()),
-                   ["10.0.0.0/23", "10.0.2.0/24"]);
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["10.0.0.0/24",
-                                                                           "10.0.1.0/24",
-                                                                           "10.0.2.0/23"])
-                       .unwrap()),
-                   ["10.0.0.0/22"]);
-
-
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize_str(vec!["10.0.0.0/16",
-                                                                           "10.0.2.0/24"])
-                       .unwrap()),
-                   ["10.0.0.0/16"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["10.0.0.0/23",
+            "10.0.2.0/24"])
+        ),
+            ["10.0.0.0/23", "10.0.2.0/24"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["10.0.0.0/24",
+            "10.0.1.0/24",
+            "10.0.2.0/23"])
+        ),
+            ["10.0.0.0/22"]);
 
 
-        let mut cnt = 10;
-        // geht nicht
-        if cfg!(debug_assertions) {
-            cnt = 10;
-        }
-        for _ in 0..cnt {
-            assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize(&ip_addresses)),
-                       vec!["1.0.0.0/8",
-                        "2.0.0.0/7",
-                        "4.0.0.0/6",
-                        "8.0.0.0/7",
-                        "11.0.0.0/8",
-                        "12.0.0.0/6",
-                        "16.0.0.0/4",
-                        "32.0.0.0/3",
-                        "64.0.0.0/3",
-                        "96.0.0.0/4",
-                        "112.0.0.0/5",
-                        "120.0.0.0/6",
-                        "124.0.0.0/7",
-                        "126.0.0.0/8",
-                        "128.0.0.0/3",
-                        "160.0.0.0/5",
-                        "168.0.0.0/8",
-                        "169.0.0.0/9",
-                        "169.128.0.0/10",
-                        "169.192.0.0/11",
-                        "169.224.0.0/12",
-                        "169.240.0.0/13",
-                        "169.248.0.0/14",
-                        "169.252.0.0/15",
-                        "169.255.0.0/16",
-                        "170.0.0.0/7",
-                        "172.0.0.0/12",
-                        "172.32.0.0/11",
-                        "172.64.0.0/10",
-                        "172.128.0.0/9",
-                        "173.0.0.0/8",
-                        "174.0.0.0/7",
-                        "176.0.0.0/4",
-                        "192.0.0.0/9",
-                        "192.128.0.0/11",
-                        "192.160.0.0/13",
-                        "192.169.0.0/16",
-                        "192.170.0.0/15",
-                        "192.172.0.0/14",
-                        "192.176.0.0/12",
-                        "192.192.0.0/10",
-                        "193.0.0.0/8",
-                        "194.0.0.0/7",
-                        "196.0.0.0/6",
-                        "200.0.0.0/5",
-                        "208.0.0.0/4"]);
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize_str(["10.0.0.0/16",
+            "10.0.2.0/24"])
+        ),
+            ["10.0.0.0/16"]);
+
+
+        let cnt = 10;
+        for (let _ = 0; _ < cnt; ++cnt) {
+            assert.equal(IPAddress.to_string_vec(IPAddress.summarize(ip_addresses)),
+                ["1.0.0.0/8",
+                    "2.0.0.0/7",
+                    "4.0.0.0/6",
+                    "8.0.0.0/7",
+                    "11.0.0.0/8",
+                    "12.0.0.0/6",
+                    "16.0.0.0/4",
+                    "32.0.0.0/3",
+                    "64.0.0.0/3",
+                    "96.0.0.0/4",
+                    "112.0.0.0/5",
+                    "120.0.0.0/6",
+                    "124.0.0.0/7",
+                    "126.0.0.0/8",
+                    "128.0.0.0/3",
+                    "160.0.0.0/5",
+                    "168.0.0.0/8",
+                    "169.0.0.0/9",
+                    "169.128.0.0/10",
+                    "169.192.0.0/11",
+                    "169.224.0.0/12",
+                    "169.240.0.0/13",
+                    "169.248.0.0/14",
+                    "169.252.0.0/15",
+                    "169.255.0.0/16",
+                    "170.0.0.0/7",
+                    "172.0.0.0/12",
+                    "172.32.0.0/11",
+                    "172.64.0.0/10",
+                    "172.128.0.0/9",
+                    "173.0.0.0/8",
+                    "174.0.0.0/7",
+                    "176.0.0.0/4",
+                    "192.0.0.0/9",
+                    "192.128.0.0/11",
+                    "192.160.0.0/13",
+                    "192.169.0.0/16",
+                    "192.170.0.0/15",
+                    "192.172.0.0/14",
+                    "192.176.0.0/12",
+                    "192.192.0.0/10",
+                    "193.0.0.0/8",
+                    "194.0.0.0/7",
+                    "196.0.0.0/6",
+                    "200.0.0.0/5",
+                    "208.0.0.0/4"]);
         }
         // end
-        // printer = RubyProf::GraphPrinter.new(result)
+        // printer = RubyProf.GraphPrinter.new(result)
         // printer.print(STDOUT, {})
         // test imutable input parameters
-        let a1 = IPAddress::parse("10.0.0.1/24").unwrap();
-        let a2 = IPAddress::parse("10.0.1.1/24").unwrap();
-        assert_eq!(IPAddress::to_string_vec(&IPAddress::summarize(&vec![a1.clone(), a2.clone()])),
-                   ["10.0.0.0/23"]);
-        assert_eq!("10.0.0.1/24", a1.to_string());
-        assert_eq!("10.0.1.1/24", a2.to_string());
+        let a1 = IPAddress.parse("10.0.0.1/24");
+        let a2 = IPAddress.parse("10.0.1.1/24");
+        assert.equal(IPAddress.to_string_vec(IPAddress.summarize([a1.clone(), a2.clone()])),
+            ["10.0.0.0/23"]);
+        assert.equal("10.0.0.1/24", a1.to_string());
+        assert.equal("10.0.1.1/24", a2.to_string());
     });
-});
+})
