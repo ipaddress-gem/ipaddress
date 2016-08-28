@@ -3,6 +3,8 @@ import Crunchy from './crunchy';
 import Prefix32 from './prefix32';
 import IPAddress from './ipaddress';
 import IpBits from './ip_bits';
+import Prefix128 from './prefix128';
+import Ipv6 from './ipv6';
 
 class Ipv4 {
     public static from_number(addr: number, prefix_num: number): IPAddress {
@@ -67,15 +69,15 @@ class Ipv4 {
     }
 
     public static to_ipv6(ia: IPAddress): IPAddress {
-        return IPAddress {
-            ip_bits: ::ip_bits::v6(),
-                host_address: ia.host_address.clone(),
-                    prefix: ::prefix128::new (ia.prefix.num),
-                        mapped: None,
-                            vt_is_private: ::ipv6::ipv6_is_private,
-                                vt_is_loopback: ::ipv6::ipv6_is_loopback,
-                                    vt_to_ipv6: ::ipv6::to_ipv6
-        }
+        return new IPAddress({
+            ip_bits: IpBits.v6(),
+            host_address: ia.host_address.clone(),
+            prefix: Prefix128.create(ia.prefix.num),
+            mapped: null,
+            vt_is_private: Ipv6.ipv6_is_private,
+            vt_is_loopback: Ipv6.ipv6_is_loopback,
+            vt_to_ipv6: Ipv6.to_ipv6
+        });
     }
 
     //  Checks whether the ip address belongs to a
@@ -89,8 +91,8 @@ class Ipv4 {
     //    ip.a?
     //      // => true
     //
-    public static is_class_a(my: IPAddress): bool {
-        return my.is_ipv4() && my.host_address < BigUint::from_number(0x80000000);
+    public static is_class_a(my: IPAddress): boolean {
+        return my.is_ipv4() && my.host_address.lt(Crunchy.from_number(0x80000000));
     }
 
     //  Checks whether the ip address belongs to a
@@ -104,10 +106,10 @@ class Ipv4 {
     //    ip.b?
     //      // => true
     //
-    public static is_class_b(my: IPAddress): bool {
+    public static is_class_b(my: IPAddress): boolean {
         return my.is_ipv4() &&
-            BigUint::from_number(0x80000000) <= my.host_address &&
-                my.host_address < BigUint::from_number(0xc0000000);
+            Crunchy.from_number(0x80000000).lte(my.host_address) &&
+                my.host_address.lt(Crunchy.from_number(0xc0000000));
     }
 
     //  Checks whether the ip address belongs to a
@@ -150,8 +152,8 @@ class Ipv4 {
     //  Note that classes C, D and E will all have a default
     //  prefix of /24 or 255.255.255.0
     //
-    public parse_classful(ip_si: string): IPAddress {
-        if !IPAddress.is_valid_ipv4(ip_si) {
+    public static parse_classful(ip_si: string): IPAddress {
+        if (!IPAddress.is_valid_ipv4(ip_si)) {
             return null;
         }
         let o_ip = IPAddress.parse(ip_si);

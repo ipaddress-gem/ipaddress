@@ -62,6 +62,22 @@ class IPAddress {
         });
     }
 
+    public lt(oth: IPAddress) : boolean {
+        return this.cmp(oth) == -1;
+    }
+
+    public lte(oth: IPAddress) : boolean {
+        return this.cmp(oth) <= 0;
+    }
+
+    public gt(oth: IPAddress) : boolean {
+        return this.cmp(oth) == 1;
+    }
+
+    public gte(oth: IPAddress) : boolean {
+        return this.cmp(oth) >= 0;
+    }
+
     public cmp(oth: IPAddress): number {
         if (this.ip_bits.version != oth.ip_bits.version) {
             if (this.ip_bits.version == IpVersion.V6) {

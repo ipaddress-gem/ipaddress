@@ -3,6 +3,7 @@ import { assert } from 'chai';
 
 import Prefix32 from '../src/prefix32';
 import IPAddress from '../src/ipaddress';
+import Ipv4 from '../src/ipv4';
 
 class Prefix32Test {
     netmask0: string = "0.0.0.0";
@@ -11,9 +12,9 @@ class Prefix32Test {
     netmask24: string = "255.255.255.0";
     netmask30: string = "255.255.255.252";
     netmasks: string[] = [];
-    prefix_hash: [] = [];
-    octets_hash: [] = [];
-    u32_hash: [] = [];
+    prefix_hash: [string, number][] = [];
+    octets_hash: [number[], number][] = [];
+    u32_hash: [number, number][] = [];
 }
 
 describe("prefix32", () => {
@@ -43,8 +44,8 @@ describe("prefix32", () => {
     }
 
     it("test_attributes", () => {
-        for (let e of setup().prefix_hash.values()) {
-            let prefix = Prefix32.create(e[0]);
+        for (let e of setup().prefix_hash) {
+            let prefix = Prefix32.create(e[1]);
             assert.equal(e[0], prefix.num);
         }
     });
@@ -74,46 +75,50 @@ describe("prefix32", () => {
         assert.equal("11111111111111110000000000000000", prefix.bits())
     });
     it("test_method_to_u32", () => {
-        for (num, ip32) in setup().u32_hash {
-            assert.equal(ip32,
-                Prefix32.create(num).netmask().to_u32())
+        for (let i of setup().u32_hash) {
+            let num = i[0];
+            let ip32 = i[1];
+            assert.equal(ip32, Prefix32.create(num).netmask().toNumber())
         }
     });
     it("test_method_plus", () => {
         let p1 = Prefix32.create(8);
         let p2 = Prefix32.create(10);
-        assert.equal(18, p1.add_prefix(&p2).num);
+        assert.equal(18, p1.add_prefix(p2).num);
         assert.equal(12, p1.add(4).num)
     });
     it("test_method_minus", () => {
         let p1 = Prefix32.create(8);
         let p2 = Prefix32.create(24);
-        assert.equal(16, p1.sub_prefix(&p2).num);
-        assert.equal(16, p2.sub_prefix(&p1).num);
+        assert.equal(16, p1.sub_prefix(p2).num);
+        assert.equal(16, p2.sub_prefix(p1).num);
         assert.equal(20, p2.sub(4).num);
     });
     it("test_initialize", () => {
-        assert.equal(Prefix32.create(33).is_err());
-        assert.equal(Prefix32.create(8).is_ok());
+        assert.isFalse(Prefix32.create(33));
+        assert.isOk(Prefix32.create(8));
     });
     it("test_method_octets", () => {
-        for (arr, pref) in setup().octets_hash {
+        for (let i of setup().octets_hash) {
+            let arr = i[0];
+            let pref = i[1];
             let prefix = Prefix32.create(pref);
-            assert.equal(prefix.ip_bits.parts(&prefix.netmask()), arr);
+            assert.equal(prefix.ip_bits.parts(prefix.netmask()), arr);
         }
     });
     it("test_method_brackets", () => {
-        for (arr, pref) in setup().octets_hash {
+        for (let i of setup().octets_hash) {
+            let arr = i[0];
+            let pref = i[1];
             let prefix = Prefix32.create(pref);
-            for index in 0..arr.len() {
-                let oct = arr.get(index);
-                assert.equal(prefix.ip_bits.parts(&prefix.netmask()).get(index), oct)
+            for (let index=0; index < arr.length; ++index) {
+                let oct = arr[index];
+                assert.equal(prefix.ip_bits.parts(prefix.netmask())[index], oct)
             }
         }
     });
     it("test_method_hostmask", () => {
         let prefix = Prefix32.create(8);
-        assert.equal("0.255.255.255",
-            ipv4::from_u32(prefix.host_mask().to_u32(), 0).to_s());
+        assert.equal("0.255.255.255", Ipv4.from_number(prefix.host_mask().toNumber(), 0).to_s());
     });
 });

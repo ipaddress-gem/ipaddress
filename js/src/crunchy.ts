@@ -1,6 +1,6 @@
 
 
-import * as Crunch from 'node-crunch';
+import * as Crunch from 'number-crunch';
 
 
 class Crunchy {
