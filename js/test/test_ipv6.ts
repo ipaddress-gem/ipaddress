@@ -1,4 +1,5 @@
 import { assert } from 'chai';
+import * as Mocha from 'mocha';
 
 import IPAddress from '../src/ipaddress';
 import Prefix128 from '../src/prefix128';
@@ -66,9 +67,9 @@ describe("ipv6", () => {
             Crunchy.parse("21932261930451111902915077091070067066")
         ]);
 
-        ip6t.networks.push(["2001:db8:1:1:1:1:1:1/32", "2001:db8./32");
-        ip6t.networks.push(["2001:db8:1:1:1:1:1./32", "2001:db8./32");
-        ip6t.networks.push(["2001:db8.1/64", "2001:db8./64");
+        ip6t.networks.push(["2001:db8:1:1:1:1:1:1/32", "2001:db8./32"]);
+        ip6t.networks.push(["2001:db8:1:1:1:1:1./32", "2001:db8./32"]);
+        ip6t.networks.push(["2001:db8.1/64", "2001:db8./64"]);
         return ip6t;
     }
 
@@ -248,7 +249,7 @@ describe("ipv6", () => {
     });
     it("test_method_each", () => {
         let ip = IPAddress.parse("2001:db8.4/125");
-        let arr = string[];
+        let arr: string[] = [];
         ip.each((i) => arr.push(i.to_s()));
         assert.equal(arr, ["2001:db8.", "2001:db8.1", "2001:db8.2", "2001:db8.3",
             "2001:db8.4", "2001:db8.5", "2001:db8.6", "2001:db8.7"]);

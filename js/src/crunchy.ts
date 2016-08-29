@@ -12,14 +12,14 @@ class Crunchy {
     return ret;
   }
 
-  public static parse(val: any) : Crunchy  {
+  public static parse(val: string) : Crunchy  {
     let ret = new Crunchy();
     ret.num = Crunch.parse(val);
     return ret;
   }
 
   public static from_number(val: number) : Crunchy {
-    return null;
+    return Crunchy.parse(""+val);
   }
   public static from_string(val: string, radix : number = 10) : Crunchy {
     return null;
@@ -32,18 +32,18 @@ class Crunchy {
   }
 
   public eq(oth: Crunchy) : boolean {
-    return null;
+    return Crunch.cmp(this.num, oth.num) == 0;
   }
 
   public lte(oth: Crunchy) : boolean {
-    return null;
+    return Crunch.cmp(this.num, oth.num) <= 0;
   }
   public lt(oth: Crunchy) : boolean {
-    return null;
+    return Crunch.cmp(this.num, oth.num) == -1;
   }
 
   public gt(oth: Crunchy) : boolean {
-    return null;
+    return Crunch.cmp(this.num, oth.num) == 1;
   }
 
   public shl(num: number) : Crunchy {
@@ -66,8 +66,23 @@ class Crunchy {
     return Crunchy.from_crunch(Crunch.mod(this.num, cry.num));
   }
 
-  public toString(num: number = 10) : string {
-    return Crunch.stringify(this.num); 
+  static mds(x: number[], n: number) : number {
+    for (var i = 0, z = 0, l = x.length; i < l; i++) {
+      z = ((x[i] >> 14) + (z << 14)) % n;
+      z = ((x[i] & 16383) + (z << 14)) % n;
+    }
+    return z;
+  }
+
+  public toString(radix: number = 10) : string {
+    let a: string[], i = 0;
+    let x = this.num.slice();
+    do {
+      let digit = Crunchy.mds(x, radix);
+      x      = Crunch.div(x, [radix]);
+      a[i++] = "0123456789abcdef"[digit];
+    } while (Crunch.cmp(x, Crunchy._zero));
+    return a.reverse().join("");
   }
 
   public toNumber() : number {
@@ -75,16 +90,16 @@ class Crunchy {
   }
 
 
-  static _zero = Crunchy.parse(0);
+  static _zero = Crunchy.from_number(0);
   public static zero() : Crunchy {
     return Crunchy._zero;
   }
-  static _one = Crunchy.parse(1);
+  static _one = Crunchy.from_number(1);
   public static one() : Crunchy {
     return Crunchy._one;
   }
 
-  static _two = Crunchy.parse(2)
+  static _two = Crunchy.from_number(2);
   public static two() : Crunchy {
     return Crunchy._two;
   }

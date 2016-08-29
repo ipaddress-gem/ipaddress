@@ -1,5 +1,6 @@
 
 import { assert } from 'chai';
+import * as Mocha from 'mocha';
 
 import IPAddress from '../src/ipaddress';
 import Prefix32 from '../src/prefix32';
@@ -219,14 +220,14 @@ describe('Ipv4Test', () => {
     );
     it("test_method_each_host", () => {
         let ip = IPAddress.parse("10.0.0.1/29");
-        let arr = string[];
+        let arr : string[] = [];
         ip.each_host(i => arr.push(i.to_s()));
         assert.equal(arr, ["10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4", "10.0.0.5", "10.0.0.6"]);
     }
     );
     it("test_method_each", () => {
         let ip = IPAddress.parse("10.0.0.1/29");
-        let arr = string[];
+        let arr : string[] = [];
         ip.each(i => arr.push(i.to_s()));
         assert.equal(arr, ["10.0.0.0", "10.0.0.1", "10.0.0.2", "10.0.0.3", "10.0.0.4", "10.0.0.5",
                 "10.0.0.6", "10.0.0.7"]);

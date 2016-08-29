@@ -1,4 +1,8 @@
 
+typings install env~mocha --global
+typings install chai
+
+
 [![Build Status](https://travis-ci.org/mabels/ipaddress.svg?branch=master)](https://travis-ci.org/mabels/ipaddress)
 
 == I not more planning to integrate with the orignal Version. of ip-address. 
@@ -970,3 +974,4 @@ Copyright (c) 2009-2011 Marco Ceresa. See LICENSE for details.
 
 
  
+

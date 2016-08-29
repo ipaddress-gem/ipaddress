@@ -1,5 +1,6 @@
 
 import { assert } from 'chai';
+import * as Mocha from 'mocha';
 
 import Rle from '../src/rle';
 

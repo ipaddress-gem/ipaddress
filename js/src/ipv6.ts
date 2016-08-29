@@ -135,19 +135,17 @@ class Ipv6 {
     //
     public static create(str: string): IPAddress {
         let [ip, o_netmask] = IPAddress.split_at_slash(str);
-        if (IPAddress.is_valid_ipv6(ip) {
+        if (IPAddress.is_valid_ipv6(ip)) {
             let o_num = IPAddress.split_to_num(ip);
             if (o_num) {
                 return null;
             }
             let netmask = 128;
             if (o_netmask) {
-                let network = o_netmask;
-                let num_mask = u8::from_str(&network);
-                if (!num_mask) {
+                let netmask = IPAddress.parse_dec_str(o_netmask);
+                if (netmask === null) {
                     return null;
                 }
-                netmask = network.parse::<usize>();
             }
             let prefix = Prefix128.create(netmask);
             if (prefix) {

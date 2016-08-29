@@ -1,4 +1,5 @@
 import { assert } from 'chai';
+import * as Mocha from 'mocha';
 
 import Prefix128 from '../src/prefix128';
 import Crunchy from '../src/crunchy';

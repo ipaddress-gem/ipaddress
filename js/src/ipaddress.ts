@@ -139,7 +139,7 @@ class IPAddress {
         return null;
     }
 
-    public static split_at_slash(str: string): string[] {
+    public static split_at_slash(str: string): [string, string] {
         let slash: string[] = str.trim().split("/");
         let addr = "";
         if (slash[0]) {
@@ -148,7 +148,7 @@ class IPAddress {
         if (slash[1]) {
             return [addr, slash[1].trim()];
         } else {
-            return [addr]
+            return [addr, null]
         }
     }
     public from(addr: Crunchy, prefix: Prefix): IPAddress {
@@ -200,6 +200,31 @@ class IPAddress {
         return IPAddress.is_valid_ipv4(addr) || IPAddress.is_valid_ipv6(addr);
     }
 
+    public static parse_dec_str(str: string) : number {
+        let re_digit = new RegExp("^\d+$");
+        if (!re_digit.test(str)) {
+            return null;
+        }
+        let part = parseInt(str, 10);
+        if (isNaN(part)) {
+            return null;
+        } 
+        return part;
+    }
+
+    public static parse_hex_str(str: string) : number {
+        let re_digit = new RegExp("^[0-9a-fA-F]+$");
+        if (!re_digit.test(str)) {
+            return null;
+        }
+        let part = parseInt(str, 16);
+        if (isNaN(part)) {
+            return null;
+        } 
+        return part;
+    }
+
+
     // Checks if the given string is a valid IPv4 address
     //
     // Example:
@@ -211,15 +236,8 @@ class IPAddress {
     //     //=> true
     //
     public static parse_ipv4_part(i: string, addr: string): number {
-        let re_digit = new RegExp("^\d+$");
-        if (!re_digit.test(i)) {
-            return null;
-        }
-        let part = parseInt(i, 10);
-        if (isNaN(part)) {
-            return null;
-        }
-        if (part >= 256) {
+        let part = IPAddress.parse_dec_str(i);
+        if (part === null || part >= 256) {
             return null;
         }
         return part;
@@ -238,13 +256,13 @@ class IPAddress {
             if (!part) {
                 return null;
             }
-            ip = part;
-            split_addr.remove(split_addr_len - 1);
+            ip = Crunchy.from_number(part);
+            split_addr = split_addr.slice(0,split_addr_len - 1);
         }
         for (let i of split_addr) {
             let part = IPAddress.parse_ipv4_part(i, addr);
             if (!part) {
-                return part;
+                return Crunchy.from_number(part);
             }
             //println!("{}-{}", part_num, shift);
             ip = ip.add(Crunchy.from_number(part).shl(shift));
@@ -276,17 +294,10 @@ class IPAddress {
         }
         let parts_len = parts.length;
         let shift = ((parts_len - 1) * 16);
-        let re_hex = new RegExp("^[0-9a-fA-F]$");
         for (let i of parts) {
             //println!("{}={}", addr, i);
-            if (!re_hex.test(i)) {
-                return null;
-            }
-            let part = parseInt(i, 16);
-            if (!part) {
-                return null;
-            }
-            if (part >= 65536) {
+            let part = IPAddress.parse_hex_str(i);
+            if (part === null || part >= 65536) {
                 return null;
             }
             ip = ip.add(Crunchy.from_number(part).shl(shift));
@@ -348,16 +359,13 @@ class IPAddress {
         if (networks.length == 1) {
             return [networks[0].network()];
         }
-        let stack = networks.iter().map(|i | Box.new(i.network()))
-            .collect.<Vec<_>>();
-        stack.sort_by(|a, b | a.cmp(b));
+        let stack = networks.map(i => i.network()).sort((a, b) => a.cmp(b));
         // for i in 0..networks.length {
         //     println!("{}==={}", &networks[i].to_string_uncompressed(),
         //         &stack[i].to_string_uncompressed());
         // }
-        let pos: isize = 0;
-        loop {
-            if pos < 0 {
+        for(let pos = 0; true; ) {
+            if (pos < 0) {
                 pos = 0
             }
             let stack_len = stack.length; // borrow checker
@@ -366,34 +374,36 @@ class IPAddress {
             //     println!("exit 1");
             //     break;
             // }
-            if pos >= (stack_len as isize) {
+            if (pos >= stack_len) {
                 // println!("exit first:{}:{}", stack_len, pos);
                 break;
             }
             let first = IPAddress.pos_to_idx(pos, stack_len);
             pos = pos + 1;
-            if pos >= (stack_len as isize) {
+            if (pos >= stack_len) {
                 // println!("exit second:{}:{}", stack_len, pos);
                 break;
             }
             let second = IPAddress.pos_to_idx(pos, stack_len);
             pos = pos + 1;
             //let firstUnwrap = first;
-            if stack[first].includes(stack[second]) {
+            if (stack[first].includes(stack[second])) {
                 pos = pos - 2;
                 // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
-                stack.remove(IPAddress.pos_to_idx(pos + 1, stack_len));
+                let pidx = IPAddress.pos_to_idx(pos + 1, stack_len);
+                stack = stack.slice(0,pidx).concat(stack.slice(pidx+1));
             } else {
                 stack[first].prefix = stack[first].prefix.sub(1);
                 // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
                 // first, second,
                 // stack[first].to_string(), stack[second].to_string());
-                if (stack[first].prefix.num + 1) == stack[second].prefix.num &&
-                    stack[first].includes(stack[second]) {
+                if ((stack[first].prefix.num + 1) == stack[second].prefix.num &&
+                    stack[first].includes(stack[second])) {
                     pos = pos - 2;
                     let idx = IPAddress.pos_to_idx(pos, stack_len);
                     stack[idx] = stack[first].clone(); // kaputt
-                    stack.remove(IPAddress.pos_to_idx(pos + 1, stack_len));
+                    let pidx = IPAddress.pos_to_idx(pos + 1, stack_len);
+                    stack = stack.slice(0,pidx).concat(stack.slice(pidx+1));
                     // println!("remove-2:{}:{}", pos + 1, stack_len);
                     pos = pos - 1; // backtrack
                 } else {
@@ -404,11 +414,7 @@ class IPAddress {
             }
         }
         // println!("agg={}:{}", pos, stack.length);
-        let ret = [];
-        for i in 0..stack.length {
-            ret.push(stack[i].network());
-        }
-        return ret;
+        return stack.slice(0, stack.length);
     }
 
     public parts(): number[] {
@@ -445,7 +451,8 @@ class IPAddress {
         let ret = "";
         let dot = "";
         let dns_parts = this.dns_parts();
-        for (let i of ((this.prefix.host_prefix() + (this.ip_bits.dns_bits - 1)) / this.ip_bits.dns_bits).dns_parts().length) {
+        for (let i = ((this.prefix.host_prefix() + (this.ip_bits.dns_bits - 1)) / this.ip_bits.dns_bits);
+                            i < this.dns_parts().length; ++i) {
             ret += dot;
             ret += this.ip_bits.dns_part_format(dns_parts[i]);
             dot = ".";
@@ -1149,7 +1156,7 @@ class IPAddress {
             // println!("dup:{}:{}:{}", dup.length, i, a.length);
             if (a.length == 1) {
                 dup[i] = a[0].clone();
-                dup.remove(i + 1);
+                dup = dup.slice(0, i + 1).concat(dup.slice(i+2));
                 break;
             }
         }

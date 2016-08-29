@@ -1,5 +1,6 @@
 
 import { assert } from 'chai';
+import * as Mocha from 'mocha';
 
 import Prefix32 from '../src/prefix32';
 import IPAddress from '../src/ipaddress';

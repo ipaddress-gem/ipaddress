@@ -1,4 +1,5 @@
 import { assert } from 'chai';
+import * as Mocha from 'mocha';
 
 import IPAddress from '../src/ipaddress';
 import Prefix128 from '../src/prefix128';
@@ -47,7 +48,7 @@ describe("ipv6_mapped", () => {
         ipv6.valid_mapped_ipv6_conversion.push([" .ffff:13.1.68.3", "13.1.68.3"]);
         ipv6.valid_mapped_ipv6_conversion.push(["0:0:0:0:0:ffff:8190:3426", "129.144.52.38"]);
         ipv6.valid_mapped_ipv6_conversion.push([" .ffff:8190:3426", "129.144.52.38"]);
-        return ret;
+        return ipv6;
     }
 
     it("test_initialize", () => {

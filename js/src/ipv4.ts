@@ -24,48 +24,49 @@ class Ipv4 {
     }
 
     public static create(str: string): IPAddress {
-        let(ip, netmask) = IPAddress::split_at_slash(&str);
-        if !IPAddress::is_valid_ipv4(ip.clone()) {
-            return Err(format!("Invalid IP {}", str));
+        let tmp = IPAddress.split_at_slash(str);
+        let ip = tmp[0];
+        let netmask = tmp[1];
+        if (!IPAddress.is_valid_ipv4(ip)) {
+            return null;
         }
-        let mut ip_prefix_num = Ok(32);
-        if netmask.is_some() {
+        let ip_prefix_num = 32;
+        if (netmask) {
             //  netmask is defined
-            ip_prefix_num = IPAddress::parse_netmask_to_prefix(netmask);
-            if ip_prefix_num.is_err() {
-                return Err(ip_prefix_num.unwrap_err());
+            ip_prefix_num = IPAddress.parse_netmask_to_prefix(netmask);
+            if (!ip_prefix_num) {
+                return null;
             }
             //if ip_prefix.ip_bits.version
         }
-        let ip_prefix = prefix32::new(ip_prefix_num);
-        if ip_prefix.is_err() {
-            return Err(ip_prefix.unwrap_err());
+        let ip_prefix = Prefix32.create(ip_prefix_num);
+        if (ip_prefix === null) {
+            return null;
         }
-        let split_number = IPAddress::split_to_number(&ip);
-        if split_number.is_err() {
-            return Err(split_number.unwrap_err());
+        let split_number = IPAddress.split_to_num(ip);
+        if (split_number === null) {
+            return null;
         }
-        return Ok(IPAddress {
-            ip_bits: ::ip_bits::v4(),
-            host_address: BigUint::from_number(split_number),
+        return new IPAddress({
+            ip_bits: IpBits.v4(),
+            host_address: split_number.crunchy,
             prefix: ip_prefix,
-            mapped: None,
-            vt_is_private: ipv4_is_private,
-            vt_is_loopback: ipv4_is_loopback,
-            vt_to_ipv6: to_ipv6,
+            mapped: null,
+            vt_is_private: Ipv4.ipv4_is_private,
+            vt_is_loopback: Ipv4.ipv4_is_loopback,
+            vt_to_ipv6: Ipv4.to_ipv6,
         });
     }
 
-    public static ipv4_is_private(my: IPAddress): bool {
-        return [IPAddress::parse("10.0.0.0/8"),
-            IPAddress::parse("172.16.0.0/12"),
-            IPAddress::parse("192.168.0.0/16")]
-            .iter().find(|i | i.includes(my)).is_some();
+    public static ipv4_is_private(my: IPAddress): boolean {
+        return [IPAddress.parse("10.0.0.0/8"),
+            IPAddress.parse("172.16.0.0/12"),
+            IPAddress.parse("192.168.0.0/16")]
+            .find(i => i.includes(my)) != null;
     }
 
-    public static ipv4_is_loopback(my: IPAddress): bool {
-        return IPAddress::parse("127.0.0.0/8")
-            .includes(my);
+    public static ipv4_is_loopback(my: IPAddress): boolean {
+        return IPAddress.parse("127.0.0.0/8").includes(my);
     }
 
     public static to_ipv6(ia: IPAddress): IPAddress {
