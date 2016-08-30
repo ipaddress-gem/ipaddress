@@ -4,8 +4,7 @@
     "module": "commonjs",
     "outDir": "dist",
     "noImplicitAny": true,
-    "pretty": true,
-    "jsx": "react"
+    "pretty": true
   },
   "exclude": [
     "node_modules"

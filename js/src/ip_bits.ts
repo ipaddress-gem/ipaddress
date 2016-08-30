@@ -40,9 +40,11 @@ class IpBits {
         let my = bu.clone();
         let part_mod = Crunchy.one().shl(this.part_bits);// - Crunchy::one();
         for (let i = 0; i < (this.bits / this.part_bits); ++i) {
+            // console.log("parts-1:", my, part_mod, my.mod(part_mod), my.mod(part_mod).toString());
             vec.push(+my.mod(part_mod).toString());
             my = my.shr(this.part_bits);
         }
+        // console.log("parts:", vec);
         return vec.reverse();
     }
 
@@ -91,7 +93,7 @@ class IpBits {
     public static ipv4_as_compressed(ip_bits: IpBits, host_address: Crunchy): string {
         let ret = "";
         let sep = "";
-        for (let part in ip_bits.parts(host_address)) {
+        for (let part of ip_bits.parts(host_address)) {
             ret += sep;
             ret += `${part}`;
             sep = ".";
@@ -103,15 +105,17 @@ class IpBits {
         //println!("ipv6_as_compressed:{}", host_address);
         let ret = "";
         let colon = "";
+        let done = false;
         for (let rle of Rle.code(ip_bits.parts(host_address))) {
-            // println!(">>{:?}", rle);
+//            console.log(rle.toString());
             for (let _ = 0; _ < rle.cnt; _++) {
-                if (!(rle.part == 0 && rle.max)) {
+                if (done || !(rle.part == 0 && rle.max)) {
                     ret += `${colon}${rle.part.toString(16)}`;
                     colon = ":";
                 } else if (rle.part == 0 && rle.max) {
                     ret += "::";
                     colon = "";
+                    done = true;
                     break;
                 }
             }
@@ -123,7 +127,7 @@ class IpBits {
         let sep = "";
         for (let part of ip_bits.parts(host_address)) {
             ret += sep;
-            ret += part.toString(16);
+            ret += (0x10000 + part).toString(16).slice(1);
             sep = ":";
         }
         return ret;

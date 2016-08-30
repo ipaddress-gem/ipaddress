@@ -40,7 +40,7 @@ describe("ipv6_loopback", () => {
         assert.equal(s.s, s.ip.to_s());
         assert.equal(s.n, s.ip.to_string());
         assert.equal(s.string, s.ip.to_string_uncompressed());
-        assert.equal(s.one, s.ip.host_address);
+        assert.equal(s.one.toString(), s.ip.host_address.toString());
     });
     it("test_method_ipv6", () => {
         assert.equal(true, setup().ip.is_ipv6());

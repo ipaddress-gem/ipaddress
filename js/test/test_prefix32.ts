@@ -5,6 +5,7 @@ import * as Mocha from 'mocha';
 import Prefix32 from '../src/prefix32';
 import IPAddress from '../src/ipaddress';
 import Ipv4 from '../src/ipv4';
+import Crunchy from '../src/crunchy';
 
 class Prefix32Test {
     netmask0: string = "0.0.0.0";
@@ -15,10 +16,16 @@ class Prefix32Test {
     netmasks: string[] = [];
     prefix_hash: [string, number][] = [];
     octets_hash: [number[], number][] = [];
-    u32_hash: [number, number][] = [];
+    u32_hash: [number, Crunchy][] = [];
 }
 
 describe("prefix32", () => {
+    function assertArrayEqual(a: any[], b: any[]) : void {
+        assert.equal(a.length, b.length, "length missmatch");
+        for (let i = 0; i < a.length; ++i) {
+            assert.equal(a[i], b[i]);
+        }
+    }
     function setup(): Prefix32Test {
         let p32t = new Prefix32Test()
         p32t.netmasks.push(p32t.netmask0);
@@ -36,18 +43,18 @@ describe("prefix32", () => {
         p32t.octets_hash.push([[255, 255, 0, 0], 16]);
         p32t.octets_hash.push([[255, 255, 255, 0], 24]);
         p32t.octets_hash.push([[255, 255, 255, 252], 30]);
-        p32t.u32_hash.push([0, 0]);
-        p32t.u32_hash.push([8, 4278190080]);
-        p32t.u32_hash.push([16, 4294901760]);
-        p32t.u32_hash.push([24, 4294967040]);
-        p32t.u32_hash.push([30, 4294967292]);
+        p32t.u32_hash.push([0, Crunchy.zero()]);
+        p32t.u32_hash.push([8, Crunchy.parse("4278190080")]);
+        p32t.u32_hash.push([16, Crunchy.parse("4294901760")]);
+        p32t.u32_hash.push([24, Crunchy.parse("4294967040")]);
+        p32t.u32_hash.push([30, Crunchy.parse("4294967292")]);
         return p32t;
     }
 
     it("test_attributes", () => {
         for (let e of setup().prefix_hash) {
             let prefix = Prefix32.create(e[1]);
-            assert.equal(e[0], prefix.num);
+            assert.equal(e[1], prefix.num);
         }
     });
 
@@ -55,6 +62,7 @@ describe("prefix32", () => {
         for (let e of setup().prefix_hash) {
             let netmask = e[0];
             let num = e[1];
+            // console.log(e); 
             let prefix = IPAddress.parse_netmask_to_prefix(netmask);
             assert.equal(num, prefix);
         }
@@ -79,7 +87,7 @@ describe("prefix32", () => {
         for (let i of setup().u32_hash) {
             let num = i[0];
             let ip32 = i[1];
-            assert.equal(ip32, Prefix32.create(num).netmask().toNumber())
+            assert.isTrue(ip32.eq(Prefix32.create(num).netmask()));
         }
     });
     it("test_method_plus", () => {
@@ -96,7 +104,7 @@ describe("prefix32", () => {
         assert.equal(20, p2.sub(4).num);
     });
     it("test_initialize", () => {
-        assert.isFalse(Prefix32.create(33));
+        assert.isNull(Prefix32.create(33));
         assert.isOk(Prefix32.create(8));
     });
     it("test_method_octets", () => {
@@ -104,7 +112,7 @@ describe("prefix32", () => {
             let arr = i[0];
             let pref = i[1];
             let prefix = Prefix32.create(pref);
-            assert.equal(prefix.ip_bits.parts(prefix.netmask()), arr);
+            assertArrayEqual(prefix.ip_bits.parts(prefix.netmask()), arr);
         }
     });
     it("test_method_brackets", () => {
@@ -113,13 +121,14 @@ describe("prefix32", () => {
             let pref = i[1];
             let prefix = Prefix32.create(pref);
             for (let index=0; index < arr.length; ++index) {
-                let oct = arr[index];
-                assert.equal(prefix.ip_bits.parts(prefix.netmask())[index], oct)
+                // console.log("xxxx", prefix.netmask());
+                assert.equal(prefix.ip_bits.parts(prefix.netmask())[index], arr[index]);
             }
         }
     });
     it("test_method_hostmask", () => {
         let prefix = Prefix32.create(8);
-        assert.equal("0.255.255.255", Ipv4.from_number(prefix.host_mask().toNumber(), 0).to_s());
+        // console.log(">>>>", prefix.host_mask());
+        assert.equal("0.255.255.255", Ipv4.from_number(prefix.host_mask(), 0).to_s());
     });
 });

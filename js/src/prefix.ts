@@ -16,7 +16,7 @@ class Prefix {
     constructor(obj: {[id:string] : any}) {
        this.num = obj['num']; 
        this.ip_bits = obj['ip_bits']; 
-       this.net_mask = obj['net']; 
+       this.net_mask = obj['net_mask']; 
        this.vt_from = obj['vt_from']; 
     }
 
@@ -68,6 +68,7 @@ class Prefix {
         let mask = Crunchy.zero();
         let host_prefix = bits-prefix;
         for (let i=0; i < prefix; ++i) {
+            // console.log(">>>", i, host_prefix, mask);
             mask = mask.add(Crunchy.one().shl(host_prefix+i));
         }
         return mask

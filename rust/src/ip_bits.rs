@@ -130,15 +130,17 @@ fn ipv6_as_compressed(ip_bits: &IpBits, host_address: &BigUint) -> String {
     let the_colon = String::from(":");
     let the_empty = String::from("");
     let mut colon = &the_empty;
+    let mut done = false;
     for rle in rle::code(&ip_bits.parts(host_address)) {
         // println!(">>{:?}", rle);
         for _ in 0..rle.cnt {
-            if !(rle.part == 0 && rle.max) {
+            if done || !(rle.part == 0 && rle.max) {
                 ret.push_str(&format!("{}{:x}", colon, rle.part));
                 colon = &the_colon;
             } else if rle.part == 0 && rle.max {
                 ret.push_str("::");
                 colon = &the_empty;
+                done = true;
                 break;
             }
         }

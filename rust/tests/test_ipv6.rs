@@ -265,7 +265,7 @@ mod tests {
                    IPAddress::parse("1:0:1:0:0:0:0:1").unwrap().to_s());
         assert_eq!("1::1:1:1:2:3:1",
                    IPAddress::parse("1:0:1:1:1:2:3:1").unwrap().to_s());
-        assert_eq!("1::1:1::2:3:1",
+        assert_eq!("1::1:1:0:2:3:1",
                    IPAddress::parse("1:0:1:1::2:3:1").unwrap().to_s());
         assert_eq!("1:0:0:1::1",
                    IPAddress::parse("1:0:0:1:0:0:0:1").unwrap().to_s());

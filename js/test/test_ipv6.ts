@@ -12,20 +12,29 @@ class IPv6Test {
     valid_ipv6: [string, Crunchy][] = [];
     invalid_ipv6: string[] = [":1:2:3:4:5:6:7", ":1:2:3:4:5:6:7", "2002:516:2:200", "dd"];
     networks: [string, string][] = [];
-    ip: IPAddress = IPAddress.parse("2001:db8.8:800:200c:417a/64");
-    network: IPAddress = IPAddress.parse("2001:db8:8:800./64");
+    ip: IPAddress = IPAddress.parse("2001:db8::8:800:200c:417a/64");
+    network: IPAddress = IPAddress.parse("2001:db8:8:800::/64");
     arr: number[] = [8193, 3512, 0, 0, 8, 2048, 8204, 16762];
     hex: string = "20010db80000000000080800200c417a";
 }
 
 describe("ipv6", () => {
 
+    
+    function assertArrayEqual(a: any[], b: any[]) : void {
+        assert.equal(a.length, b.length, "length missmatch");
+        for (let i = 0; i < a.length; ++i) {
+            assert.equal(a[i], b[i]);
+        }
+    }
+
+
     function setup(): IPv6Test {
         let ip6t = new IPv6Test();
         ip6t.compress_addr.push(["2001:db8:0000:0000:0008:0800:200c:417a",
-            "2001:db8.8:800:200c:417a"]);
+            "2001:db8::8:800:200c:417a"]);
         ip6t.compress_addr.push(["2001:db8:0:0:8:800:200c:417a", "2001:db8.8:800:200c:417a"]);
-        ip6t.compress_addr.push(["ff01:0:0:0:0:0:0:101", "ff01.101"]);
+        ip6t.compress_addr.push(["ff01:0:0:0:0:0:0:101", "ff01::101"]);
         ip6t.compress_addr.push(["0:0:0:0:0:0:0:1", ".1"]);
         ip6t.compress_addr.push(["0:0:0:0:0:0:0:0", "."]);
 
@@ -38,38 +47,38 @@ describe("ipv6", () => {
         ip6t.valid_ipv6.push(["1080:0:0:0:8:800:200C:417A",
             Crunchy.parse("21932261930451111902915077091070067066")
         ]);
-        ip6t.valid_ipv6.push(["1080:0.8:800:200C:417A",
+        ip6t.valid_ipv6.push(["1080:0::8:800:200C:417A",
             Crunchy.parse("21932261930451111902915077091070067066")
         ]);
-        ip6t.valid_ipv6.push(["1080.8:800:200C:417A",
+        ip6t.valid_ipv6.push(["1080::8:800:200C:417A",
             Crunchy.parse("21932261930451111902915077091070067066")
         ]);
         ip6t.valid_ipv6.push(["FF01:0:0:0:0:0:0:43",
             Crunchy.parse("338958331222012082418099330867817087043")
         ]);
-        ip6t.valid_ipv6.push(["FF01:0:0.0:0:43",
+        ip6t.valid_ipv6.push(["FF01:0::0:0:43",
             Crunchy.parse("338958331222012082418099330867817087043")
         ]);
-        ip6t.valid_ipv6.push(["FF01.43",
+        ip6t.valid_ipv6.push(["FF01::43",
             Crunchy.parse("338958331222012082418099330867817087043")
         ]);
         ip6t.valid_ipv6.push(["0:0:0:0:0:0:0:1", Crunchy.parse("1")]);
-        ip6t.valid_ipv6.push(["0:0:0.0:0:1", Crunchy.parse("1")]);
-        ip6t.valid_ipv6.push([".1", Crunchy.parse("1")]);
+        ip6t.valid_ipv6.push(["0:0:0::0:0:1", Crunchy.parse("1")]);
+        ip6t.valid_ipv6.push(["::1", Crunchy.parse("1")]);
         ip6t.valid_ipv6.push(["0:0:0:0:0:0:0:0", Crunchy.parse("0")]);
-        ip6t.valid_ipv6.push(["0:0:0.0:0:0", Crunchy.parse("0")]);
-        ip6t.valid_ipv6.push([".", Crunchy.parse("0")]);
-        ip6t.valid_ipv6.push(["./0", Crunchy.parse("0")]);
+        ip6t.valid_ipv6.push(["0:0:0::0:0:0", Crunchy.parse("0")]);
+        ip6t.valid_ipv6.push(["::", Crunchy.parse("0")]);
+        ip6t.valid_ipv6.push(["::/0", Crunchy.parse("0")]);
         ip6t.valid_ipv6.push(["1080:0:0:0:8:800:200C:417A",
             Crunchy.parse("21932261930451111902915077091070067066")
         ]);
-        ip6t.valid_ipv6.push(["1080.8:800:200C:417A",
+        ip6t.valid_ipv6.push(["1080::8:800:200C:417A",
             Crunchy.parse("21932261930451111902915077091070067066")
         ]);
 
-        ip6t.networks.push(["2001:db8:1:1:1:1:1:1/32", "2001:db8./32"]);
-        ip6t.networks.push(["2001:db8:1:1:1:1:1./32", "2001:db8./32"]);
-        ip6t.networks.push(["2001:db8.1/64", "2001:db8./64"]);
+        ip6t.networks.push(["2001:db8:1:1:1:1:1:1/32", "2001:db8::/32"]);
+        ip6t.networks.push(["2001:db8:1:1:1:1:1::/32", "2001:db8::/32"]);
+        ip6t.networks.push(["2001:db8::1/64", "2001:db8::/64"]);
         return ip6t;
     }
 
@@ -81,20 +90,20 @@ describe("ipv6", () => {
         assert.equal(false, setup().ip.is_ipv4());
 
         for (let ip of setup().valid_ipv6) {
-            assert.equal(true, IPAddress.parse(ip[0]));
+            assert.isOk(IPAddress.parse(ip[0]));
         }
         for (let ip of setup().invalid_ipv6) {
-            assert.equal(true, IPAddress.parse(ip));
+            assert.isNotOk(IPAddress.parse(ip));
         }
         assert.equal(64, setup().ip.prefix.num);
 
-        assert.equal(false, IPAddress.parse(".10.1.1.1"));
+        assert.isOk(IPAddress.parse("::10.1.1.1"));
     });
     it("test_attribute_groups", () => {
-        assert.equal(setup().arr, setup().ip.parts())
+        assertArrayEqual(setup().arr, setup().ip.parts())
     });
     it("test_method_hexs", () => {
-        assert.equal(setup().ip.parts_hex_str(),
+        assertArrayEqual(setup().ip.parts_hex_str(),
             ["2001", "0db8", "0000", "0000", "0008", "0800", "200c", "417a"]);
     });
 
@@ -102,25 +111,25 @@ describe("ipv6", () => {
         for (let i of setup().valid_ipv6) {
             let ip = i[0];
             let num = i[1];
-            assert.equal(num, IPAddress.parse(ip).host_address)
+            assert.isOk(num.eq(IPAddress.parse(ip).host_address));
         }
     });
     it("test_method_set_prefix", () => {
-        let ip = IPAddress.parse("2001:db8.8:800:200c:417a");
+        let ip = IPAddress.parse("2001:db8::8:800:200c:417a");
         assert.equal(128, ip.prefix.num);
-        assert.equal("2001:db8.8:800:200c:417a/128", ip.to_string());
+        assert.equal("2001:db8::8:800:200c:417a/128", ip.to_string());
         let nip = ip.change_prefix(64);
         assert.equal(64, nip.prefix.num);
-        assert.equal("2001:db8.8:800:200c:417a/64", nip.to_string());
+        assert.equal("2001:db8::8:800:200c:417a/64", nip.to_string());
     });
     it("test_method_mapped", () => {
         assert.equal(false, setup().ip.is_mapped());
-        let ip6 = IPAddress.parse(".ffff:1234:5678");
+        let ip6 = IPAddress.parse("::ffff:1234:5678");
         assert.equal(true, ip6.is_mapped());
     });
     it("test_method_group", () => {
         let s = setup();
-        assert.equal(s.ip.parts(), s.arr);
+        assertArrayEqual(s.ip.parts(), s.arr);
     });
     it("test_method_ipv4()", () => {
         assert.equal(false, setup().ip.is_ipv4());
@@ -133,53 +142,53 @@ describe("ipv6", () => {
         assert.equal(false, setup().ip.is_network());
     });
     it("test_method_network_u128", () => {
-        assert.equal(Ipv6.from_int(Crunchy.parse("42540766411282592856903984951653826560"), 128),
-            setup().ip.network());
+        assert.isOk(Ipv6.from_int(Crunchy.parse("42540766411282592856903984951653826560"), 64)
+            .eq(setup().ip.network()));
     });
     it("test_method_broadcast_u128", () => {
-        assert.equal(Ipv6.from_int(Crunchy.parse("42540766411282592875350729025363378175"), 128),
-            setup().ip.broadcast());
+        assert.isOk(Ipv6.from_int(Crunchy.parse("42540766411282592875350729025363378175"), 64)
+            .eq(setup().ip.broadcast()));
     });
     it("test_method_size", () => {
-        let ip = IPAddress.parse("2001:db8.8:800:200c:417a/64");
-        assert.equal(Crunchy.one().shl(64), ip.size());
-        ip = IPAddress.parse("2001:db8.8:800:200c:417a/32");
-        assert.equal(Crunchy.one().shl(96), ip.size());
-        ip = IPAddress.parse("2001:db8.8:800:200c:417a/120");
-        assert.equal(Crunchy.one().shl(8), ip.size());
-        ip = IPAddress.parse("2001:db8.8:800:200c:417a/124");
-        assert.equal(Crunchy.one().shl(4), ip.size());
+        let ip = IPAddress.parse("2001:db8::8:800:200c:417a/64");
+        assert.isOk(Crunchy.one().shl(64).eq(ip.size()));
+        ip = IPAddress.parse("2001:db8::8:800:200c:417a/32");
+        assert.isOk(Crunchy.one().shl(96).eq(ip.size()));
+        ip = IPAddress.parse("2001:db8::8:800:200c:417a/120");
+        assert.isOk(Crunchy.one().shl(8).eq(ip.size()));
+        ip = IPAddress.parse("2001:db8::8:800:200c:417a/124");
+        assert.isOk(Crunchy.one().shl(4).eq(ip.size()));
     });
     it("test_method_includes", () => {
         let ip = setup().ip;
         assert.equal(true, ip.includes(ip));
         // test prefix on same address
-        let included = IPAddress.parse("2001:db8.8:800:200c:417a/128");
-        let not_included = IPAddress.parse("2001:db8.8:800:200c:417a/46");
+        let included = IPAddress.parse("2001:db8::8:800:200c:417a/128");
+        let not_included = IPAddress.parse("2001:db8::8:800:200c:417a/46");
         assert.equal(true, ip.includes(included));
         assert.equal(false, ip.includes(not_included));
         // test address on same prefix
-        included = IPAddress.parse("2001:db8.8:800:200c:0/64");
-        not_included = IPAddress.parse("2001:db8:1.8:800:200c:417a/64");
+        included = IPAddress.parse("2001:db8::8:800:200c:0/64");
+        not_included = IPAddress.parse("2001:db8:1::8:800:200c:417a/64");
         assert.equal(true, ip.includes(included));
         assert.equal(false, ip.includes(not_included));
         // general test
-        included = IPAddress.parse("2001:db8.8:800:200c:1/128");
-        not_included = IPAddress.parse("2001:db8:1.8:800:200c:417a/76");
+        included = IPAddress.parse("2001:db8::8:800:200c:1/128");
+        not_included = IPAddress.parse("2001:db8:1::8:800:200c:417a/76");
         assert.equal(true, ip.includes(included));
         assert.equal(false, ip.includes(not_included));
     }
     );
     it("test_method_to_hex", () => {
-        assert.equal(setup().hex, setup().ip.to_hex());
+        assert(setup().hex, setup().ip.to_hex());
     }
     );
     it("test_method_to_s", () => {
-        assert.equal("2001:db8.8:800:200c:417a", setup().ip.to_s());
+        assert.equal("2001:db8::8:800:200c:417a", setup().ip.to_s());
     }
     );
     it("test_method_to_string", () => {
-        assert.equal("2001:db8.8:800:200c:417a/64", setup().ip.to_string());
+        assert.equal("2001:db8::8:800:200c:417a/64", setup().ip.to_string());
     }
     );
     it("test_method_to_string_uncompressed", () => {
@@ -190,18 +199,18 @@ describe("ipv6", () => {
     it("test_method_reverse", () => {
         let str = "f.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.2.0.0.0.5.0.5.0.e.f.f.3.ip6.arpa";
         assert.equal(str,
-            IPAddress.parse("3ffe:505:2.f").dns_reverse());
+            IPAddress.parse("3ffe:505:2::f").dns_reverse());
     }
     );
     it("test_method_dns_rev_domains", () => {
-        assert.equal(IPAddress.parse("f000:f100./3").dns_rev_domains(),
+        assertArrayEqual(IPAddress.parse("f000:f100::/3").dns_rev_domains(),
             ["e.ip6.arpa", "f.ip6.arpa"]);
-        assert.equal(IPAddress.parse("fea3:f120./15").dns_rev_domains(),
+        assertArrayEqual(IPAddress.parse("fea3:f120::/15").dns_rev_domains(),
             ["2.a.e.f.ip6.arpa", "3.a.e.f.ip6.arpa"]);
-        assert.equal(IPAddress.parse("3a03:2f80:f./48").dns_rev_domains(),
+        assertArrayEqual(IPAddress.parse("3a03:2f80:f::/48").dns_rev_domains(),
             ["f.0.0.0.0.8.f.2.3.0.a.3.ip6.arpa"]);
 
-        assert.equal(IPAddress.parse("f000:f100.1234/125").dns_rev_domains(),
+        assertArrayEqual(IPAddress.parse("f000:f100::1234/125").dns_rev_domains(),
             ["0.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",
                 "1.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",
                 "2.3.2.1.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.f.0.0.0.f.ip6.arpa",
@@ -213,29 +222,29 @@ describe("ipv6", () => {
     }
     );
     it("test_method_compressed", () => {
-        assert.equal("1:1:1.1",
+        assert.equal("1:1:1::1",
             IPAddress.parse("1:1:1:0:0:0:0:1").to_s());
-        assert.equal("1:0:1.1",
+        assert.equal("1:0:1::1",
             IPAddress.parse("1:0:1:0:0:0:0:1").to_s());
-        assert.equal("1.1:1:1:2:3:1",
+        assert.equal("1::1:1:1:2:3:1",
             IPAddress.parse("1:0:1:1:1:2:3:1").to_s());
-        assert.equal("1.1:1.2:3:1",
-            IPAddress.parse("1:0:1:1.2:3:1").to_s());
-        assert.equal("1:0:0:1.1",
+        assert.equal("1::1:1:0:2:3:1",
+            IPAddress.parse("1:0:1:1::2:3:1").to_s());
+        assert.equal("1:0:0:1::1",
             IPAddress.parse("1:0:0:1:0:0:0:1").to_s());
-        assert.equal("1.1:0:0:1",
+        assert.equal("1::1:0:0:1",
             IPAddress.parse("1:0:0:0:1:0:0:1").to_s());
-        assert.equal("1.1", IPAddress.parse("1:0:0:0:0:0:0:1").to_s());
+        assert.equal("1::1", IPAddress.parse("1:0:0:0:0:0:0:1").to_s());
         // assert.equal("1:1.1:2:0:0:1", IPAddress.parse("1:1:0:1:2.1").to_s
     }
     );
     it("test_method_unspecified", () => {
-        assert.equal(true, IPAddress.parse(".").is_unspecified());
+        assert.equal(true, IPAddress.parse("::").is_unspecified());
         assert.equal(false, setup().ip.is_unspecified());
     }
     );
     it("test_method_loopback", () => {
-        assert.equal(true, IPAddress.parse(".1").is_loopback());
+        assert.equal(true, IPAddress.parse("::1").is_loopback());
         assert.equal(false, setup().ip.is_loopback());
     }
     );
@@ -248,14 +257,15 @@ describe("ipv6", () => {
         }
     });
     it("test_method_each", () => {
-        let ip = IPAddress.parse("2001:db8.4/125");
+        let ip = IPAddress.parse("2001:db8::4/125");
         let arr: string[] = [];
         ip.each((i) => arr.push(i.to_s()));
-        assert.equal(arr, ["2001:db8.", "2001:db8.1", "2001:db8.2", "2001:db8.3",
-            "2001:db8.4", "2001:db8.5", "2001:db8.6", "2001:db8.7"]);
+        assertArrayEqual(arr, ["2001:db8::", "2001:db8::1", "2001:db8::2", "2001:db8::3",
+            "2001:db8::4", "2001:db8::5", "2001:db8::6", "2001:db8::7"]);
     }
     );
-    it("test_method_each_net", () => {
+    it("test_method_each_net", function(done) {
+        this.timeout(15000);
         let test_addrs = ["0000:0000:0000:0000:0000:0000:0000:0000",
             "1111:1111:1111:1111:1111:1111:1111:1111",
             "2222:2222:2222:2222:2222:2222:2222:2222",
@@ -279,27 +289,28 @@ describe("ipv6", () => {
                 let ret = net_adr.dns_networks();
                 assert.equal(ret[0].prefix.num % 4, 0);
                 assert.equal(ret.length, nr_networks);
-                assert.equal(net_adr.network(), ret[0].network());
-                assert.equal(net_adr.broadcast(), ret[ret.length - 1].broadcast());
+                assert.equal(net_adr.network().to_s(), ret[0].network().to_s());
+                assert.equal(net_adr.broadcast().to_s(), ret[ret.length - 1].broadcast().to_s());
                 //        puts "//{adr}///{prefix} //{nr_networks} //{ret}"
             }
         }
         let ret0: string[] = [];
-        for (let i of IPAddress.parse("fd01:db8.4/3").dns_networks()) {
+        for (let i of IPAddress.parse("fd01:db8::4/3").dns_networks()) {
             ret0.push(i.to_string());
         }
-        assert.equal(ret0, ["e000./4", "f000./4"]);
+        assertArrayEqual(ret0, ["e000::/4", "f000::/4"]);
         let ret1: string[] = [];
-        for (let i of IPAddress.parse("3a03:2f80:f./48").dns_networks()) {
+        for (let i of IPAddress.parse("3a03:2f80:f::/48").dns_networks()) {
             ret1.push(i.to_string());
         }
-        assert.equal(ret1, ["3a03:2f80:f./48"]);
+        assertArrayEqual(ret1, ["3a03:2f80:f::/48"]);
+        done();
     });
     it("test_method_compare", () => {
-        let ip1 = IPAddress.parse("2001:db8:1.1/64");
-        let ip2 = IPAddress.parse("2001:db8:2.1/64");
-        let ip3 = IPAddress.parse("2001:db8:1.2/64");
-        let ip4 = IPAddress.parse("2001:db8:1.1/65");
+        let ip1 = IPAddress.parse("2001:db8:1::1/64");
+        let ip2 = IPAddress.parse("2001:db8:2::1/64");
+        let ip3 = IPAddress.parse("2001:db8:1::2/64");
+        let ip4 = IPAddress.parse("2001:db8:1::1/65");
 
         // ip2 should be greater than ip1
         assert.equal(true, ip2.gt(ip1));
@@ -323,7 +334,7 @@ describe("ipv6", () => {
         for (let i of r) {
             ret.push(i.to_string());
         }
-        assert.equal(ret, ["2001:db8:1.1/64", "2001:db8:1.1/65", "2001:db8:1.2/64", "2001:db8:2.1/64"]);
+        assertArrayEqual(ret, ["2001:db8:1::1/64", "2001:db8:1::1/65", "2001:db8:1::2/64", "2001:db8:2::1/64"]);
     }
 
         // it("test_classmethod_expand", () => {
@@ -336,21 +347,21 @@ describe("ipv6", () => {
         // }
     );
     it("test_classmethod_compress", () => {
-        let compressed = "2001:db8:0:cd30.";
+        let compressed = "2001:db8:0:cd30::";
         let expanded = "2001:0db8:0000:cd30:0000:0000:0000:0000";
         assert.equal(compressed, IPAddress.parse(expanded).to_s());
-        assert.equal("2001:db8.cd3",
-            IPAddress.parse("2001:0db8:0.cd3").to_s());
-        assert.equal("2001:db8.cd30",
-            IPAddress.parse("2001:0db8.cd30").to_s());
-        assert.equal("2001:db8.cd3",
-            IPAddress.parse("2001:0db8.cd3").to_s());
+        assert.equal("2001:db8::cd3",
+            IPAddress.parse("2001:0db8:0::cd3").to_s());
+        assert.equal("2001:db8::cd30",
+            IPAddress.parse("2001:0db8::cd30").to_s());
+        assert.equal("2001:db8::cd3",
+            IPAddress.parse("2001:0db8::cd3").to_s());
     });
     it("test_classhmethod_parse_u128", () => {
         for (let i of setup().valid_ipv6) {
             let ip = i[0];
             let num = i[1];
-            // println!(">>>{}==={}", ip, num);
+            //console.log(">>>>>>>>", i);
             assert.equal(IPAddress.parse(ip).to_s(), Ipv6.from_int(num, 128).to_s());
         }
     });

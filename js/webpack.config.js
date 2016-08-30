@@ -13,7 +13,7 @@ fs.writeFileSync('test/all.ts',
 module.exports = [
 {
   target: 'node',
-  entry: './src/ipaddress',
+  entry: './src/lib',
   output: {
     path: __dirname + '/dist',
     filename: 'ipaddress.js',

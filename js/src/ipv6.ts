@@ -74,13 +74,19 @@ class Ipv6 {
     }
 
     static enhance_if_mapped(ip: IPAddress): IPAddress {
+        // console.log("------A");
         // println!("real mapped {:x} {:x}", &ip.host_address, ip.host_address.clone().shr(32));
         if (ip.is_mapped()) {
+            console.log("------B");
             return ip;
         }
+        // console.log("------C", ip);
         let ipv6_top_96bit = ip.host_address.shr(32);
+        // console.log("------D", ip);
         if (ipv6_top_96bit.eq(Crunchy.from_number(0xffff))) {
+            // console.log("------E");
             let num = ip.host_address.mod(Crunchy.one().shl(32));
+            // console.log("------F");
             if (num.eq(Crunchy.zero())) {
                 return ip;
             }
@@ -90,7 +96,9 @@ class Ipv6 {
                 //println!("enhance_if_mapped-2:{}:{}", ip.to_string(), ip.prefix.host_prefix());
                 return null;
             }
-            let mapped = Ipv4.from_number(num.toNumber(), ipv4_bits.bits - ip.prefix.host_prefix());
+            // console.log("------G");
+            let mapped = Ipv4.from_number(num, ipv4_bits.bits - ip.prefix.host_prefix());
+            // console.log("------H");
             if (!mapped) {
                 // println!("enhance_if_mapped-3");
                 return mapped;
@@ -103,18 +111,20 @@ class Ipv6 {
 
     public static from_int(adr: Crunchy, prefix_num: number): IPAddress {
         let prefix = Prefix128.create(prefix_num);
-        if (!prefix) {
+        if (prefix === null) {
             return null;
         }
-        return Ipv6.enhance_if_mapped(new IPAddress({
+        let ret = Ipv6.enhance_if_mapped(new IPAddress({
             ip_bits: IpBits.v6(),
             host_address: adr.clone(),
-            prefix: prefix.clone(),
+            prefix: prefix,
             mapped: null,
             vt_is_private: Ipv6.ipv6_is_private,
             vt_is_loopback: Ipv6.ipv6_is_loopback,
             vt_to_ipv6: Ipv6.to_ipv6,
         }));
+        //console.log("from_int:", adr, prefix, ret);
+        return ret;
     }
 
 
@@ -134,26 +144,35 @@ class Ipv6 {
     //    ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     //
     public static create(str: string): IPAddress {
+        // console.log("1>>>>>>>>>", str);
         let [ip, o_netmask] = IPAddress.split_at_slash(str);
+        // console.log("2>>>>>>>>>", str);
         if (IPAddress.is_valid_ipv6(ip)) {
+            // console.log("3>>>>>>>>>", str);
             let o_num = IPAddress.split_to_num(ip);
-            if (o_num) {
+            if (o_num === null) {
+                console.log("ipv6_create-1", str);
                 return null;
             }
+            // console.log("4>>>>>>>>>", str);
             let netmask = 128;
-            if (o_netmask) {
-                let netmask = IPAddress.parse_dec_str(o_netmask);
+            if (o_netmask !== null) {
+                netmask = IPAddress.parse_dec_str(o_netmask);
                 if (netmask === null) {
+                    console.log("ipv6_create-2", str);
                     return null;
                 }
             }
+            // console.log("5>>>>>>>>>", str);
             let prefix = Prefix128.create(netmask);
-            if (prefix) {
+            if (prefix === null) {
+                console.log("ipv6_create-3", str);
                 return null;
             }
+            //console.log("6>>>>>>>>>", str, prefix.num, o_netmask, netmask);
             return Ipv6.enhance_if_mapped(new IPAddress({
                 ip_bits: IpBits.v6(),
-                host_address: o_num,
+                host_address: o_num.crunchy,
                 prefix: prefix,
                 mapped: null,
                 vt_is_private: Ipv6.ipv6_is_private,
@@ -161,6 +180,7 @@ class Ipv6 {
                 vt_to_ipv6: Ipv6.to_ipv6
             }));
         } else {
+            console.log("ipv6_create-4", str);
             return null;
         }
     } //  pub fn initialize
@@ -170,7 +190,8 @@ class Ipv6 {
     }
 
     public static ipv6_is_loopback(my: IPAddress): boolean {
-        return my.host_address == Crunchy.one();
+        // console.log("*************", my);
+        return my.host_address.eq(Crunchy.one());
     }
 
 

@@ -34,7 +34,7 @@ describe("ipv6_unspec", () => {
     }
 
     it("test_attributes", () => {
-        assert.equal(setup().ip.host_address, setup().num);
+        assert.isOk(setup().ip.host_address.eq(setup().num));
         assert.equal(128, setup().ip.prefix.num);
         assert.equal(true, setup().ip.is_unspecified());
         assert.equal(setup().to_s, setup().ip.to_s());

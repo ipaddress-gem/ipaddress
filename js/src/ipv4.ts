@@ -7,14 +7,14 @@ import Prefix128 from './prefix128';
 import Ipv6 from './ipv6';
 
 class Ipv4 {
-    public static from_number(addr: number, prefix_num: number): IPAddress {
+    public static from_number(addr: Crunchy, prefix_num: number): IPAddress {
         let prefix = Prefix32.create(prefix_num);
         if (!prefix) {
             return null;
         }
         return new IPAddress({
             ip_bits: IpBits.v4(),
-            host_address: Crunchy.from_number(addr),
+            host_address: addr.clone(),
             prefix: prefix,
             mapped: null,
             vt_is_private: Ipv4.ipv4_is_private,
@@ -24,32 +24,39 @@ class Ipv4 {
     }
 
     public static create(str: string): IPAddress {
+        // console.log("create:v4:", str);
+        let enable = str == "0.0.0.0/0";
         let tmp = IPAddress.split_at_slash(str);
         let ip = tmp[0];
         let netmask = tmp[1];
         if (!IPAddress.is_valid_ipv4(ip)) {
+            enable && console.log("xx1");
             return null;
         }
         let ip_prefix_num = 32;
         if (netmask) {
             //  netmask is defined
             ip_prefix_num = IPAddress.parse_netmask_to_prefix(netmask);
-            if (!ip_prefix_num) {
+            if (ip_prefix_num === null) {
+                enable && console.log("xx2");
                 return null;
             }
             //if ip_prefix.ip_bits.version
         }
         let ip_prefix = Prefix32.create(ip_prefix_num);
         if (ip_prefix === null) {
+            enable && console.log("xx3");
             return null;
         }
-        let split_number = IPAddress.split_to_num(ip);
+        let split_number = IPAddress.split_to_u32(ip);
         if (split_number === null) {
+            enable && console.log("xx4");
             return null;
         }
+        // console.log(">>>>>>>", ip, ip_prefix);
         return new IPAddress({
             ip_bits: IpBits.v4(),
-            host_address: split_number.crunchy,
+            host_address: split_number,
             prefix: ip_prefix,
             mapped: null,
             vt_is_private: Ipv4.ipv4_is_private,
@@ -93,7 +100,8 @@ class Ipv4 {
     //      // => true
     //
     public static is_class_a(my: IPAddress): boolean {
-        return my.is_ipv4() && my.host_address.lt(Crunchy.from_number(0x80000000));
+        // console.log("is_class_a:", my.to_string(), Crunchy.from_string("80000000", 16), my.is_ipv4()); 
+        return my.is_ipv4() && my.host_address.lt(Crunchy.from_string("80000000", 16));
     }
 
     //  Checks whether the ip address belongs to a
@@ -109,8 +117,8 @@ class Ipv4 {
     //
     public static is_class_b(my: IPAddress): boolean {
         return my.is_ipv4() &&
-            Crunchy.from_number(0x80000000).lte(my.host_address) &&
-                my.host_address.lt(Crunchy.from_number(0xc0000000));
+            Crunchy.from_string("80000000", 16).lte(my.host_address) &&
+                my.host_address.lt(Crunchy.from_string("c0000000", 16));
     }
 
     //  Checks whether the ip address belongs to a
@@ -126,8 +134,8 @@ class Ipv4 {
     //
     public static is_class_c(my: IPAddress): boolean {
         return my.is_ipv4() &&
-            Crunchy.from_number(0xc0000000).lte(my.host_address) &&
-                my.host_address.lt(Crunchy.from_number(0xe0000000));
+            Crunchy.from_string("c0000000", 16).lte(my.host_address) &&
+                my.host_address.lt(Crunchy.from_string("e0000000", 16));
     }
 
 
@@ -158,7 +166,7 @@ class Ipv4 {
             return null;
         }
         let o_ip = IPAddress.parse(ip_si);
-        if (o_ip) {
+        if (o_ip === null) {
             return o_ip;
         }
         let ip = o_ip;

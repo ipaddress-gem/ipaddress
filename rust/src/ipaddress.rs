@@ -239,7 +239,7 @@ impl IPAddress {
             return Err(format!("IP has not the right format:{}", &addr));
         }
         let split_addr_len = split_addr.len();
-        if 0 < split_addr.len() && split_addr_len < 4 {
+        if split_addr_len < 4 {
             let part = IPAddress::parse_ipv4_part(split_addr[split_addr_len-1], addr);
             if part.is_err() {
                 return part;
