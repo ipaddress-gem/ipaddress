@@ -51,7 +51,7 @@ class IPAddress {
     }
 
     public clone(): IPAddress {
-        let mapped: IPAddress = null;
+        let mapped : IPAddress = null;
         if (this.mapped) {
             mapped = this.mapped.clone();
         }
@@ -378,7 +378,7 @@ class IPAddress {
             return [];
         }
         if (networks.length == 1) {
-            console.log("aggregate:", networks[0], networks[0].network());
+            // console.log("aggregate:", networks[0], networks[0].network());
             return [networks[0].network()];
         }
         let stack = networks.map(i => i.network()).sort((a, b) => a.cmp(b));
@@ -656,7 +656,7 @@ class IPAddress {
 
     public static summarize_str(netstr: string[]): IPAddress[] {
         let vec = IPAddress.to_ipaddress_vec(netstr);
-        console.log(netstr, vec);
+        // console.log(netstr, vec);
         if (!vec) {
             return vec;
         }
@@ -829,7 +829,7 @@ class IPAddress {
 
     public to_s_mapped(): string {
         if (this.is_mapped()) {
-            return `.ffff:${this.mapped.to_s()}`;
+            return `::ffff:${this.mapped.to_s()}`;
         }
         return this.to_s();
     }
@@ -837,7 +837,7 @@ class IPAddress {
     public to_string_mapped(): string {
         if (this.is_mapped()) {
             let mapped = this.mapped.clone();
-            return `${this.to_s_mapped()}${mapped.prefix.num}`;
+            return `${this.to_s_mapped()}/${mapped.prefix.num}`;
         }
         return this.to_string();
     }

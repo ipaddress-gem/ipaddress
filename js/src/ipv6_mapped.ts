@@ -81,13 +81,13 @@ class Ipv6Mapped {
     //      // => "::ffff:13.1.68.3"
     //
     public static create(str: string): IPAddress {
-        console.log("mapped-1");
+        // console.log("mapped-1");
         let i = IPAddress.split_at_slash(str);
         let ip = i[0];
         let o_netmask = i[1];
         let split_colon = ip.split(":");
         if (split_colon.length <= 1) {
-            console.log("mapped-2");
+            // console.log("mapped-2");
             return null;
         }
         // if split_colon.get(0).unwrap().len() > 0 {
@@ -103,7 +103,7 @@ class Ipv6Mapped {
         if (IPAddress.is_valid_ipv4(ipv4_str)) {
             let ipv4 = IPAddress.parse(`${ipv4_str}${netmask}`);
             if (ipv4 === null) {
-                console.log("mapped-3");
+                // console.log("mapped-3");
                 return ipv4;
             }
             //mapped = Some(ipv4.unwrap());
@@ -127,37 +127,37 @@ class Ipv6Mapped {
             let rebuild_ipv4 = `${high_part}:${low_part}/${bits}`;
             rebuild_ipv6+= rebuild_ipv4;
 
-            console.log("-----A", rebuild_ipv6, part_mod);
+            // console.log("-----A", rebuild_ipv6, part_mod);
             let r_ipv6 = IPAddress.parse(rebuild_ipv6);
-            console.log("-----B", rebuild_ipv6);
+            // console.log("-----B", rebuild_ipv6);
             if (r_ipv6 === null) {
                 // println!("---3|{}", &rebuild_ipv6);
-                console.log("mapped-4");
+                // console.log("mapped-4");
                 return r_ipv6;
             }
             if (r_ipv6.is_mapped()) {
-                console.log("mapped-5");
+                // console.log("mapped-5");
                 return r_ipv6;
             }
             let ipv6 = r_ipv6;
             let p96bit = ipv6.host_address.clone().shr(32);
             if (!p96bit.eq(Crunchy.zero())) {
                 // println!("---4|{}", &rebuild_ipv6);
-                console.log("mapped-6");
+                // console.log("mapped-6");
                 return null;
             }
             {
                 let r_ipv6 = IPAddress.parse(`::ffff:${rebuild_ipv4}`);
                 if (r_ipv6 === null) {
                     // println!("---3|{}", &rebuild_ipv6);
-                    console.log("mapped-7");
+                    // console.log("mapped-7");
                     return r_ipv6;
                 }
-                console.log("mapped-8");
+                // console.log("mapped-8");
                 return r_ipv6;
             }
         }
-        console.log("mapped-9");
+        // console.log("mapped-9");
         return null;
     }
 }

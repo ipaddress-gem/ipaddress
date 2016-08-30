@@ -25,12 +25,12 @@ class Ipv4 {
 
     public static create(str: string): IPAddress {
         // console.log("create:v4:", str);
-        let enable = str == "0.0.0.0/0";
+        // let enable = str == "0.0.0.0/0";
         let tmp = IPAddress.split_at_slash(str);
         let ip = tmp[0];
         let netmask = tmp[1];
         if (!IPAddress.is_valid_ipv4(ip)) {
-            enable && console.log("xx1");
+            // enable && console.log("xx1");
             return null;
         }
         let ip_prefix_num = 32;
@@ -38,19 +38,19 @@ class Ipv4 {
             //  netmask is defined
             ip_prefix_num = IPAddress.parse_netmask_to_prefix(netmask);
             if (ip_prefix_num === null) {
-                enable && console.log("xx2");
+                // enable && console.log("xx2");
                 return null;
             }
             //if ip_prefix.ip_bits.version
         }
         let ip_prefix = Prefix32.create(ip_prefix_num);
         if (ip_prefix === null) {
-            enable && console.log("xx3");
+            // enable && console.log("xx3");
             return null;
         }
         let split_number = IPAddress.split_to_u32(ip);
         if (split_number === null) {
-            enable && console.log("xx4");
+            // enable && console.log("xx4");
             return null;
         }
         // console.log(">>>>>>>", ip, ip_prefix);

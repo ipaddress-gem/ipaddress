@@ -77,7 +77,7 @@ class Ipv6 {
         // console.log("------A");
         // println!("real mapped {:x} {:x}", &ip.host_address, ip.host_address.clone().shr(32));
         if (ip.is_mapped()) {
-            console.log("------B");
+            // console.log("------B");
             return ip;
         }
         // console.log("------C", ip);
@@ -151,7 +151,7 @@ class Ipv6 {
             // console.log("3>>>>>>>>>", str);
             let o_num = IPAddress.split_to_num(ip);
             if (o_num === null) {
-                console.log("ipv6_create-1", str);
+                // console.log("ipv6_create-1", str);
                 return null;
             }
             // console.log("4>>>>>>>>>", str);
@@ -159,14 +159,14 @@ class Ipv6 {
             if (o_netmask !== null) {
                 netmask = IPAddress.parse_dec_str(o_netmask);
                 if (netmask === null) {
-                    console.log("ipv6_create-2", str);
+                    // console.log("ipv6_create-2", str);
                     return null;
                 }
             }
             // console.log("5>>>>>>>>>", str);
             let prefix = Prefix128.create(netmask);
             if (prefix === null) {
-                console.log("ipv6_create-3", str);
+                // console.log("ipv6_create-3", str);
                 return null;
             }
             //console.log("6>>>>>>>>>", str, prefix.num, o_netmask, netmask);
@@ -180,7 +180,7 @@ class Ipv6 {
                 vt_to_ipv6: Ipv6.to_ipv6
             }));
         } else {
-            console.log("ipv6_create-4", str);
+            // console.log("ipv6_create-4", str);
             return null;
         }
     } //  pub fn initialize
