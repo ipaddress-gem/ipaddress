@@ -51,7 +51,7 @@ class IPAddress {
     }
 
     public clone(): IPAddress {
-        let mapped = null;
+        let mapped: IPAddress = null;
         if (this.mapped) {
             mapped = this.mapped.clone();
         }
