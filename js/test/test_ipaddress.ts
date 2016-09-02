@@ -70,7 +70,8 @@ describe('IPAddressTest', () => {
         assert.equal(false, IPAddress.is_valid_netmask("10.0.0.1"));
     });
 
-    it("test_summarize", () => {
+    it("test_summarize", function() {
+        this.timeout(15000);
         let netstr: string[] = [];
         for (let range of [Range(1, 10), Range(11, 127), Range(128, 169), Range(170, 172),
             Range(173, 192), Range(193, 224)]) {

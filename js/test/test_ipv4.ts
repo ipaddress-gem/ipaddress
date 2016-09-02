@@ -112,7 +112,7 @@ describe('Ipv4Test', () => {
 
     it("test_initialize", () => {
         for (let i of setup().valid_ipv4) {
-            console.log(i[0]);
+            //console.log(i[0]);
             let ip = IPAddress.parse(i[0]);
             assert.isOk(ip.is_ipv4() && !ip.is_ipv6());
         }

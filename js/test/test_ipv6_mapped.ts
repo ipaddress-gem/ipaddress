@@ -59,7 +59,7 @@ describe("ipv6_mapped", () => {
             let u128 = i[1];
             // println("-{}--{}", ip, u128);
             if (!IPAddress .parse(ip)) {
-                console.log(IPAddress.parse(ip));
+              //console.log(IPAddress.parse(ip));
             }
             assert.isOk(IPAddress.parse(ip));
             assert.equal(u128.toString(), IPAddress.parse(ip).host_address.toString());

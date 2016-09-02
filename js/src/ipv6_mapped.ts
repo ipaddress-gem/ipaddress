@@ -142,14 +142,14 @@ class Ipv6Mapped {
             let p96bit = ipv6.host_address.shr(32);
             if (!p96bit.eq(Crunchy.zero())) {
                 // println!("---4|{}", &rebuild_ipv6);
-                console.log("mapped-6",ipv6.host_address, p96bit, Crunchy.zero());
+                //console.log("mapped-6",ipv6.host_address, p96bit, Crunchy.zero());
                 return null;
             }
             {
                 let r_ipv6 = IPAddress.parse(`::ffff:${rebuild_ipv4}`);
                 if (r_ipv6 === null) {
                     // println!("---3|{}", &rebuild_ipv6);
-                    console.log("mapped-7");
+                    //console.log("mapped-7");
                     return null;
                 }
                 // console.log("mapped-8");
