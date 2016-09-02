@@ -29,22 +29,21 @@
   "devDependencies": {
     "@types/chai": "^3.4.32",
     "@types/mocha": "^2.2.31",
+    "@types/should": "^8.1.29",
     "awesome-typescript-loader": "1.1.1",
     "babel-core": "6.9.1",
     "babel-plugin-transform-es2015-modules-commonjs": "6.10.3",
-    "chai": "3.5.0",
+    "chai": "latest",
+    "should": "latest",
+    "mocha": "latest",
     "globby": "5.0.0",
     "in-publish": "^2.0.0",
-    "mocha": "2.5.3",
     "rimraf": "^2.5.4",
     "source-map-support": "0.4.1",
     "tslint": "3.11.0",
     "typescript": "2.0.0",
     "typings": "1.3.2",
     "webpack": "1.13.1"
-  },
-  "dependencies": {
-    "number-crunch": "1.1.0"
   },
   "publishConfig": {
     "tag": "next"

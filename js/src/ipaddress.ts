@@ -28,6 +28,7 @@ class ResultCrunchyParts {
     constructor(crunchy: Crunchy, parts: number) {
         this.crunchy = crunchy;
         this.parts = parts;
+        // console.log("ResultCrunchyParts:", this);
     }
 }
 
@@ -90,10 +91,9 @@ class IPAddress {
             return -1;
         }
         //let adr_diff = this.host_address - oth.host_address;
-        if (this.host_address < oth.host_address) {
-            return -1;
-        } else if (this.host_address > oth.host_address) {
-            return 1;
+        let hostCmp = this.host_address.compare(oth.host_address);
+        if (hostCmp != 0) {
+            return hostCmp;
         }
         return this.prefix.cmp(oth.prefix);
     }
@@ -382,6 +382,7 @@ class IPAddress {
             return [networks[0].network()];
         }
         let stack = networks.map(i => i.network()).sort((a, b) => a.cmp(b));
+        // console.log(IPAddress.to_string_vec(stack));
         // for i in 0..networks.length {
         //     println!("{}==={}", &networks[i].to_string_uncompressed(),
         //         &stack[i].to_string_uncompressed());
@@ -1188,11 +1189,12 @@ class IPAddress {
         if (dup.length < 2) {
             return dup;
         }
-        for (let i = dup.length - 1; i >= 0; --i) {
-            let a = IPAddress.summarize([dup[i].clone(), dup[i + 1].clone()]);
+        for (let i = dup.length - 2; i >= 0; --i) {
+            // console.log("sum_first_found:", dup[i], dup[i + 1]);
+            let a = IPAddress.summarize([dup[i], dup[i + 1]]);
             // println!("dup:{}:{}:{}", dup.length, i, a.length);
             if (a.length == 1) {
-                dup[i] = a[0].clone();
+                dup[i] = a[0];
                 dup = dup.slice(0, i + 1).concat(dup.slice(i+2));
                 break;
             }

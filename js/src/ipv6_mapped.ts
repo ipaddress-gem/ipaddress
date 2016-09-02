@@ -129,7 +129,6 @@ class Ipv6Mapped {
 
             // console.log("-----A", rebuild_ipv6, part_mod);
             let r_ipv6 = IPAddress.parse(rebuild_ipv6);
-            // console.log("-----B", rebuild_ipv6);
             if (r_ipv6 === null) {
                 // println!("---3|{}", &rebuild_ipv6);
                 // console.log("mapped-4");
@@ -140,18 +139,18 @@ class Ipv6Mapped {
                 return r_ipv6;
             }
             let ipv6 = r_ipv6;
-            let p96bit = ipv6.host_address.clone().shr(32);
+            let p96bit = ipv6.host_address.shr(32);
             if (!p96bit.eq(Crunchy.zero())) {
                 // println!("---4|{}", &rebuild_ipv6);
-                // console.log("mapped-6");
+                console.log("mapped-6",ipv6.host_address, p96bit, Crunchy.zero());
                 return null;
             }
             {
                 let r_ipv6 = IPAddress.parse(`::ffff:${rebuild_ipv4}`);
                 if (r_ipv6 === null) {
                     // println!("---3|{}", &rebuild_ipv6);
-                    // console.log("mapped-7");
-                    return r_ipv6;
+                    console.log("mapped-7");
+                    return null;
                 }
                 // console.log("mapped-8");
                 return r_ipv6;

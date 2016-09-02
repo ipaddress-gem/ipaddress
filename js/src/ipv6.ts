@@ -190,7 +190,7 @@ class Ipv6 {
     }
 
     public static ipv6_is_loopback(my: IPAddress): boolean {
-        // console.log("*************", my);
+        // console.log("*************", my.host_address, Crunchy.one());
         return my.host_address.eq(Crunchy.one());
     }
 

@@ -154,8 +154,8 @@ describe('IPAddressTest', () => {
 
 
         let cnt = 10;
-        for (let _ = 0; _ < cnt; ++cnt) {
-            assertArrayEqual(IPAddress.to_string_vec(IPAddress.summarize(ip_addresses)),
+        for (let _ = 0; _ < cnt; ++_) {
+            assert.deepEqual(IPAddress.to_string_vec(IPAddress.summarize(ip_addresses)),
                 ["1.0.0.0/8",
                     "2.0.0.0/7",
                     "4.0.0.0/6",

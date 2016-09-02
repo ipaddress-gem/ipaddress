@@ -1,3 +1,4 @@
+import './test_crunchy';
 import './test_ipaddress';
 import './test_ipv4';
 import './test_ipv6_loopback';
