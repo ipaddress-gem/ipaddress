@@ -17,4 +17,4 @@ script:
     - (cd ruby && rake test)
     - (cd rust && cargo build --release --verbose)
     - (cd rust && cargo test --release --verbose)
-    - (cd js && npm install)
+    - (cd js && npm install && npm test)
