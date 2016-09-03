@@ -6,8 +6,11 @@ pkg
 server.rb
 ipaddr.html
 Gemfile.lock
+rust/target
+rust/Cargo.lock
 **/node_modules
 **/dist
+*.gem
 js/ipaddress.js
 js/ipaddress.js.map
 js/LICENSE
