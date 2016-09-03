@@ -3,6 +3,7 @@ const node_modules = fs.readdirSync('node_modules').filter(x => x !== '.bin');
 //const HtmlWebpackPlugin = require('html-webpack-plugin');
 //const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const globby = require('globby');
+const webpack = require('webpack');
 
 fs.writeFileSync('test/all.ts',
   globby.sync(['test/**/test_*.ts', 'test/**/*-test.tsx'])
@@ -10,12 +11,15 @@ fs.writeFileSync('test/all.ts',
     .map(file => `import './${file}';`)
     .join('\n'));
 
+fs.createReadStream('../README.md').pipe(fs.createWriteStream('README.md'));
+fs.createReadStream('../LICENSE').pipe(fs.createWriteStream('LICENSE'));
+
 module.exports = [
 {
   target: 'node',
   entry: './src/lib',
   output: {
-    path: __dirname + '/dist',
+    path: __dirname,
     filename: 'ipaddress.js',
     libraryTarget: 'commonjs2'
   },

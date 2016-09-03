@@ -1,70 +1,58 @@
 
-typings install env~mocha --global
-typings install chai
-
-
 [![Build Status](https://travis-ci.org/mabels/ipaddress.svg?branch=master)](https://travis-ci.org/mabels/ipaddress)
-
-== I not more planning to integrate with the orignal Version. of ip-address. 
-== This has some improvements which i mainly use in construqt
-
-== This is from the orignal Version for now a one Year or More!
-<b>IPAddress 1.0 is currently under development and will be released soon! Stay tuned!</b>
-
----
 
 = IPAddress
 
-IPAddress is a Ruby library designed to make the use of IPv4 and IPv6
+IPAddress is a library designed to make the use of IPv4 and IPv6
 addresses simple, powerful and enjoyable. It provides a complete set of
 methods to handle IP addresses for any need, from simple scripting to
 full network design.
 
-IPAddress is written with a full OO interface, and its code is easy to
-read, maintain and extend. The documentation is full of examples, to
-let you start being productive immediately.
+IPAddress should have the same api for:
+- ruby (the root implementation, it's not updated after the port to rust)
+- rust
+- javascript/typescript
+The documentation is in ruby and hopefully in rust. There should
+be examples writen in ruby in. 
 
-This document provides a brief introduction to the library and
-examples of typical usage. 
-
-== Requirements
-
-* Ruby >= 1.8.7 (not tested with previous versions)
-* Ruby 1.9.2 or later is strongly recommended 
-
-IPAddress 0.8.0 has been tested on:
-
-* ruby-1.8.7-p334 [ i386 ]
-* ree-1.8.7-2011.03 [ i386 ]
-* rbx-head [ ]
-* jruby-1.6.1 [ linux-i386-java ]
-* ruby-1.9.1-p431 [ i386 ]
-* ruby-1.9.2-p180 [ i386 ]
-
-If you want to collaborate feel 
-free to send a small report to my email address, or 
-{join the discussion}[http://groups.google.com/group/ruby-ipaddress]. 
-
+The Function naming could be odd non CamelCase in the javascript out
+of the fact that it is grown from ruby/rust which both does not like
+CamelCase.
 
 == Installation
 
 Install the library using rubygems
 
-  $ gem install ipaddress
+  $ gem install construqt-ipaddress
 
 You can then use it in your programs:
   
   require 'rubygems'  # optional
-  require 'ipaddress'
+  require 'construqt-ipaddress'
 
 Another way would be to clone the git repository
 
-  $ git clone git://github.com/bluemonk/ipaddress.git
+  $ git clone git://github.com/mabels/ipaddress.git
 
 And then install the library
  
   $ cd ipaddress
   ipaddress$ rake install
+
+Install the library with rust
+  $ cargo install ipaddress
+
+or add to your Cargo.toml
+  ipaddress = "0.1.1"
+
+For javascript:
+  
+  $ npm install ipaddress
+
+it is a commonjs file ipaddress.js in the root of the package
+if your in typescript there is the src directory with the 
+typescipt sources.
+  
 
 == Documentation
 
@@ -74,7 +62,15 @@ documentation with Rake:
   ipaddress$ rake rdoc
 
 The latest documentation can be found online at 
-{this address}[http://rubydoc.info/gems/ipaddress/0.8.0/frames]
+[http://rubydoc.info/gems/costruqt-ipaddress]
+
+or 
+
+[https://docs.rs/ipaddress/0.1.1/ipaddress/struct.IPAddress.html]
+
+or 
+
+i have to explore to publish the documentation to the npm
  
 == IPv4
 
@@ -948,29 +944,11 @@ in addition to provide an organic API with logical separation and OO structure.
 We hope that IPAddress will address all these issues and meet all your
 needs in network programming.
 
-
-== Community
-
-Want to join the community? 
-
-* {IPAddress google group}[http://groups.google.com/group/ruby-ipaddress]
-
-We've created a group to discuss about 
-IPAddress future development, features and provide some kind of support.
-Feel free to join us and tell us what you think!
-
-== Thanks to
- 
-Thanks to Luca Russo (vargolo) and Simone Carletti 
-(weppos) for all the support and technical review. Thanks to Marco Beri, 
-Bryan T. Richardson, Nicolas Fevrier, jdpace, Daniele Alessandri, jrdioko, 
-Ghislain Charrier, Pawel Krzesniak, Mark Sullivan, Leif Gensert, 
-Erik Ahlström, Peter Vandenberk and Steve Rawlinson for their support, 
-feedback and bug reports.
   
 == Copyright
 
 Copyright (c) 2009-2011 Marco Ceresa. See LICENSE for details.
+Copyright (c) 2015-2016 Meno Abels. See LICENSE for details.
 
 
  

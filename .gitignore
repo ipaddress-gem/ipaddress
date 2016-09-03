@@ -7,3 +7,8 @@ server.rb
 ipaddr.html
 Gemfile.lock
 **/node_modules
+**/dist
+js/ipaddress.js
+js/ipaddress.js.map
+js/LICENSE
+js/README.md
