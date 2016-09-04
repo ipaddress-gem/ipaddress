@@ -30,7 +30,7 @@ class Prefix128 {
         return null;
     }
 
-    public static from(my: Prefix, num: number) : Prefix {
+    public static from(my: Prefix, num: number): Prefix {
         return Prefix128.create(num);
     }
 }

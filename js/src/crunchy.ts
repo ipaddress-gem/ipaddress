@@ -40,8 +40,8 @@ class Crunchy {
     return out;//.transformOut();
   }
 
-  public static from_14bit(a: number[]) : Crunchy {
-    let ret = new Crunchy(); 
+  public static from_14bit(a: number[]): Crunchy {
+    let ret = new Crunchy();
     ret.num = a;
     return ret;
   }
@@ -433,8 +433,8 @@ class Crunchy {
       return null;
     }
     // var u, v, xt, yt, d, q, k, i, z;
-    let u : Crunchy;
-    let v : Crunchy;
+    let u: Crunchy;
+    let v: Crunchy;
     let s = Crunchy.msb(y.num[0]) - 1;
     if (s > 0) {
       u = this.lsh(s);
@@ -443,10 +443,10 @@ class Crunchy {
       u = this.clone();
       v = y.clone();
     }
-    let d  = u.num.length - v.num.length;
-    let q  = [0];
-    let k  = Crunchy.from_14bit(v.num.concat(Crunchy.zeroes.slice(0, d)));
-    let yt = v.num[0]*268435456 + v.num[1];
+    let d = u.num.length - v.num.length;
+    let q = [0];
+    let k = Crunchy.from_14bit(v.num.concat(Crunchy.zeroes.slice(0, d)));
+    let yt = v.num[0] * 268435456 + v.num[1];
 
     // only cmp as last resort
     while (u.num[0] > k.num[0] || (u.num[0] === k.num[0] && u.compare(k) > -1)) {
@@ -455,23 +455,23 @@ class Crunchy {
     }
 
     for (let i = 1; i <= d; i++) {
-      q[i] = u.num[i-1] === v.num[0] ? 268435455 : ~~((u.num[i-1]*268435456 + u.num[i])/v.num[0]);
+      q[i] = u.num[i - 1] === v.num[0] ? 268435455 : ~~((u.num[i - 1] * 268435456 + u.num[i]) / v.num[0]);
 
-      let xt = u.num[i-1]*72057594037927936 + u.num[i]*268435456 + u.num[i+1];
-      while (q[i]*yt > xt) { //condition check can fail due to precision problem at 28-bit
+      let xt = u.num[i - 1] * 72057594037927936 + u.num[i] * 268435456 + u.num[i + 1];
+      while (q[i] * yt > xt) { //condition check can fail due to precision problem at 28-bit
         q[i]--;
       }
 
       k = v.mul(Crunchy.from_14bit([q[i]]));
-      k.num = k.num.concat(Crunchy.zeroes.slice(0, d-i)); //concat after multiply, save cycles
+      k.num = k.num.concat(Crunchy.zeroes.slice(0, d - i)); //concat after multiply, save cycles
       u = u.unsigned_sub(k, false);
 
       if (u.negative) {
-        u = Crunchy.from_14bit(v.num.concat(Crunchy.zeroes.slice(0, d-i))).unsigned_sub(u, false);
+        u = Crunchy.from_14bit(v.num.concat(Crunchy.zeroes.slice(0, d - i))).unsigned_sub(u, false);
         q[i]--;
       }
     }
-    let z : Crunchy;
+    let z: Crunchy;
     if (internal) {
       z = (s > 0) ? u.cut().rsh(s) : u.cut();
     } else {

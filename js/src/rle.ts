@@ -20,20 +20,20 @@ class Last {
         // console.log(_last.part, this.max_poses);
         for (let idx in max_rles) {
             let prev = this.ret[max_rles[idx]];
-        if (prev.cnt > _last.cnt) {
-            // console.log(`>>>>> last=${_last}->${idx}->prev=${prev}`);
-            _last.max = false;
-        } else if (prev.cnt == _last.cnt) {
-            // nothing
-        } else if (prev.cnt < _last.cnt) {
-            // console.log(`<<<<< last=${_last}->${idx}->prev=${prev}`);
-            prev.max = false;
+            if (prev.cnt > _last.cnt) {
+                // console.log(`>>>>> last=${_last}->${idx}->prev=${prev}`);
+                _last.max = false;
+            } else if (prev.cnt == _last.cnt) {
+                // nothing
+            } else if (prev.cnt < _last.cnt) {
+                // console.log(`<<<<< last=${_last}->${idx}->prev=${prev}`);
+                prev.max = false;
+            }
         }
-    }
-    //println!("push:{}:{:?}", self.ret.len(), _last);
-    max_rles.push(this.ret.length);
-_last.pos = this.ret.length;
-this.ret.push(_last);
+        //println!("push:{}:{:?}", self.ret.len(), _last);
+        max_rles.push(this.ret.length);
+        _last.pos = this.ret.length;
+        this.ret.push(_last);
     }
 }
 

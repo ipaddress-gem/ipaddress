@@ -125,7 +125,7 @@ class Ipv6Mapped {
             let low_part = down_addr.mod(part_mod).toString(16);
             let bits = ipv6_bits.bits - addr.prefix.host_prefix();
             let rebuild_ipv4 = `${high_part}:${low_part}/${bits}`;
-            rebuild_ipv6+= rebuild_ipv4;
+            rebuild_ipv6 += rebuild_ipv4;
 
             // console.log("-----A", rebuild_ipv6, part_mod);
             let r_ipv6 = IPAddress.parse(rebuild_ipv6);

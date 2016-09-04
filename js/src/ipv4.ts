@@ -118,7 +118,7 @@ class Ipv4 {
     public static is_class_b(my: IPAddress): boolean {
         return my.is_ipv4() &&
             Crunchy.from_string("80000000", 16).lte(my.host_address) &&
-                my.host_address.lt(Crunchy.from_string("c0000000", 16));
+            my.host_address.lt(Crunchy.from_string("c0000000", 16));
     }
 
     //  Checks whether the ip address belongs to a
@@ -135,7 +135,7 @@ class Ipv4 {
     public static is_class_c(my: IPAddress): boolean {
         return my.is_ipv4() &&
             Crunchy.from_string("c0000000", 16).lte(my.host_address) &&
-                my.host_address.lt(Crunchy.from_string("e0000000", 16));
+            my.host_address.lt(Crunchy.from_string("e0000000", 16));
     }
 
 
