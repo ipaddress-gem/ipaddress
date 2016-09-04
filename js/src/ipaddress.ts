@@ -52,7 +52,7 @@ export class IPAddress {
     }
 
     public clone(): IPAddress {
-        let mapped : IPAddress = null;
+        let mapped: IPAddress = null;
         if (this.mapped) {
             mapped = this.mapped.clone();
         }
@@ -67,19 +67,19 @@ export class IPAddress {
         });
     }
 
-    public lt(oth: IPAddress) : boolean {
+    public lt(oth: IPAddress): boolean {
         return this.cmp(oth) == -1;
     }
 
-    public lte(oth: IPAddress) : boolean {
+    public lte(oth: IPAddress): boolean {
         return this.cmp(oth) <= 0;
     }
 
-    public gt(oth: IPAddress) : boolean {
+    public gt(oth: IPAddress): boolean {
         return this.cmp(oth) == 1;
     }
 
-    public gte(oth: IPAddress) : boolean {
+    public gte(oth: IPAddress): boolean {
         return this.cmp(oth) >= 0;
     }
 
@@ -164,10 +164,10 @@ export class IPAddress {
         }
     }
     public from(addr: Crunchy, prefix: Prefix): IPAddress {
-        let mapped : IPAddress = null;
+        let mapped: IPAddress = null;
         if (this.mapped) {
-          mapped = this.mapped.clone();
-        } 
+            mapped = this.mapped.clone();
+        }
         return new IPAddress({
             ip_bits: this.ip_bits,
             host_address: addr.clone(),
@@ -216,7 +216,7 @@ export class IPAddress {
         return IPAddress.is_valid_ipv4(addr) || IPAddress.is_valid_ipv6(addr);
     }
 
-    public static parse_dec_str(str: string) : number {
+    public static parse_dec_str(str: string): number {
         let re_digit = new RegExp("^\\d+$");
         if (!re_digit.test(str)) {
             // console.log("parse_dec_str:-1:", str);
@@ -226,12 +226,12 @@ export class IPAddress {
         if (isNaN(part)) {
             // console.log("parse_dec_str:-2:", str, part);
             return null;
-        } 
+        }
         // console.log("parse_dec_str:-3:", str, part);
         return part;
     }
 
-    public static parse_hex_str(str: string) : number {
+    public static parse_hex_str(str: string): number {
         let re_digit = new RegExp("^[0-9a-fA-F]+$");
         if (!re_digit.test(str)) {
             return null;
@@ -239,7 +239,7 @@ export class IPAddress {
         let part = parseInt(str, 16);
         if (isNaN(part)) {
             return null;
-        } 
+        }
         return part;
     }
 
@@ -277,7 +277,7 @@ export class IPAddress {
                 return null;
             }
             ip = Crunchy.from_number(part);
-            split_addr = split_addr.slice(0,split_addr_len - 1);
+            split_addr = split_addr.slice(0, split_addr_len - 1);
         }
         for (let i of split_addr) {
             let part = IPAddress.parse_ipv4_part(i);
@@ -387,7 +387,7 @@ export class IPAddress {
         //     println!("{}==={}", &networks[i].to_string_uncompressed(),
         //         &stack[i].to_string_uncompressed());
         // }
-        for(let pos = 0; true; ) {
+        for (let pos = 0; true;) {
             if (pos < 0) {
                 pos = 0
             }
@@ -414,7 +414,7 @@ export class IPAddress {
                 pos = pos - 2;
                 // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
                 let pidx = IPAddress.pos_to_idx(pos + 1, stack_len);
-                stack = stack.slice(0,pidx).concat(stack.slice(pidx+1));
+                stack = stack.slice(0, pidx).concat(stack.slice(pidx + 1));
             } else {
                 stack[first].prefix = stack[first].prefix.sub(1);
                 // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
@@ -426,7 +426,7 @@ export class IPAddress {
                     let idx = IPAddress.pos_to_idx(pos, stack_len);
                     stack[idx] = stack[first].clone(); // kaputt
                     let pidx = IPAddress.pos_to_idx(pos + 1, stack_len);
-                    stack = stack.slice(0,pidx).concat(stack.slice(pidx+1));
+                    stack = stack.slice(0, pidx).concat(stack.slice(pidx + 1));
                     // println!("remove-2:{}:{}", pos + 1, stack_len);
                     pos = pos - 1; // backtrack
                 } else {
@@ -476,7 +476,7 @@ export class IPAddress {
         let dot = "";
         let dns_parts = this.dns_parts();
         for (let i = ~~((this.prefix.host_prefix() + (this.ip_bits.dns_bits - 1)) / this.ip_bits.dns_bits);
-                            i < this.dns_parts().length; ++i) {
+            i < this.dns_parts().length; ++i) {
             // console.log("dns_r", i);                                
             ret += dot;
             ret += this.ip_bits.dns_part_format(dns_parts[i]);
@@ -504,7 +504,7 @@ export class IPAddress {
         // +this.ip_bits.dns_bits-1
         let next_bit_mask = this.ip_bits.bits -
             ((~~((this.prefix.host_prefix()) / this.ip_bits.dns_bits)) * this.ip_bits.dns_bits);
-// console.log("dns_networks-1", this.to_string(), this.prefix.host_prefix();j 
+        // console.log("dns_networks-1", this.to_string(), this.prefix.host_prefix();j 
         // this.ip_bits.dns_bits, next_bit_mask);            
         if (next_bit_mask <= 0) {
             return [this.network()];
@@ -513,14 +513,14 @@ export class IPAddress {
         // dns_bits
         let step_bit_net = Crunchy.one().shl(this.ip_bits.bits - next_bit_mask);
         if (step_bit_net.eq(Crunchy.zero())) {
-// console.log("dns_networks-2", this.to_string());            
+            // console.log("dns_networks-2", this.to_string());            
             return [this.network()];
         }
         let ret: IPAddress[] = [];
         let step = this.network().host_address;
         let prefix = this.prefix.from(next_bit_mask);
         while (step.lte(this.broadcast().host_address)) {
-// console.log("dns_networks-3", this.to_string(), step.toString(), next_bit_mask, step_bit_net.toString());            
+            // console.log("dns_networks-3", this.to_string(), step.toString(), next_bit_mask, step_bit_net.toString());            
             ret.push(this.from(step, prefix));
             step = step.add(step_bit_net);
         }
@@ -1021,6 +1021,24 @@ export class IPAddress {
         }
     }
 
+    public inc() : IPAddress {
+        let ret = this.clone();
+        ret.host_address = ret.host_address.add(Crunchy.one());
+        if (ret.lte(this.last())) {
+            return ret;
+        }
+        return null;
+    }
+    
+    public dec() : IPAddress {
+        let ret = this.clone();
+        ret.host_address = ret.host_address.sub(Crunchy.one());
+        if (ret.gte(this.first())) {
+            return ret;
+        }
+        return null;
+    }
+
     //  Iterates over all the IP addresses for the given
     //  network (or IP address).
     //
@@ -1195,7 +1213,7 @@ export class IPAddress {
             // println!("dup:{}:{}:{}", dup.length, i, a.length);
             if (a.length == 1) {
                 dup[i] = a[0];
-                dup = dup.slice(0, i + 1).concat(dup.slice(i+2));
+                dup = dup.slice(0, i + 1).concat(dup.slice(i + 2));
                 break;
             }
         }
@@ -1276,7 +1294,7 @@ export class IPAddress {
         if (subprefix < this.prefix.num || this.ip_bits.bits < subprefix) {
             return null;
         }
-        let ret : IPAddress[] = [];
+        let ret: IPAddress[] = [];
         let net = this.network();
         net.prefix = net.prefix.from(subprefix);
         for (let _ = 0; _ < (1 << (subprefix - this.prefix.num)); _++) {
@@ -1302,7 +1320,7 @@ export class IPAddress {
         return this.vt_to_ipv6(this);
     }
 
-  public newprefix(num: number) : Prefix {
+    public newprefix(num: number): Prefix {
         for (let i = num; i < this.ip_bits.bits; ++i) {
             let a = ~~Math.log2(i);
             if (a == Math.log2(i)) {

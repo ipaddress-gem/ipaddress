@@ -10,9 +10,6 @@ import './ipv6_mapped';
 import './ipv6_loopback';
 import './ipv6_unspec';
 
-
-console.log("Hello World", IPAddress);
-
-export = IPAddress;
-
+//export = IPAddress
+export default IPAddress;
 //declare let Ip: IPAddress;
