@@ -2,12 +2,12 @@
 import IpBits from './ip_bits';
 import Crunchy from './crunchy';
 
-interface From {
+export interface From {
     (source: Prefix, num: number): Prefix;
 }
 
 
-class Prefix {
+export class Prefix {
     num: number;
     ip_bits: IpBits;
     net_mask: Crunchy;

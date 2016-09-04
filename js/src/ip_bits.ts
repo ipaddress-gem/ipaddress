@@ -5,12 +5,12 @@ import Rle from './rle';
 
 import IpVersion from './ip_version';
 
-interface ToString {
+export interface ToString {
     (source: IpBits, num: Crunchy): string;
 }
 
 // #[derive(Debug, Clone)]
-class IpBits {
+export class IpBits {
     version: IpVersion;
     vt_as_compressed_string: ToString;
     vt_as_uncompressed_string: ToString;

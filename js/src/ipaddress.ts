@@ -8,20 +8,20 @@ import Ipv6Mapped from './ipv6_mapped';
 
 import Crunchy from './crunchy';
 
-interface Is {
+export interface Is {
     (source: IPAddress): boolean;
 }
 
-interface ToIpv4 {
+export interface ToIpv4 {
     (source: IPAddress): IPAddress;
 }
 
 
-interface EachFn {
+export interface EachFn {
     (source: IPAddress): void;
 }
 
-class ResultCrunchyParts {
+export class ResultCrunchyParts {
     public crunchy: Crunchy;
     public parts: number;
 
@@ -32,7 +32,7 @@ class ResultCrunchyParts {
     }
 }
 
-class IPAddress {
+export class IPAddress {
     ip_bits: IpBits;
     host_address: Crunchy;
     prefix: Prefix;

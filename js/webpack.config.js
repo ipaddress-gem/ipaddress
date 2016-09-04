@@ -5,22 +5,46 @@ const node_modules = fs.readdirSync('node_modules').filter(x => x !== '.bin');
 const globby = require('globby');
 const webpack = require('webpack');
 
+const shell = require('shelljs');
+
+
+
+
 fs.writeFileSync('test/all.ts',
   globby.sync(['test/**/test_*.ts', 'test/**/*-test.tsx'])
     .map(file => file.replace('test/', '').replace(/\.tsx?$/, ''))
     .map(file => `import './${file}';`)
     .join('\n'));
 
-fs.createReadStream('../README.md').pipe(fs.createWriteStream('README.md'));
-fs.createReadStream('../LICENSE').pipe(fs.createWriteStream('LICENSE'));
+
+function CreateIndex_d_ts() { }
+
+CreateIndex_d_ts.prototype.apply = function(compiler) {
+
+  compiler.plugin("emit", function(compilation, callback) {
+    //chunk.files.forEach(function(filename) {
+    //     console.log(compilation.assets[filename]);
+    //});
+    //console.log("The compilation is going to emit files...", compilation);
+    shell.mkdir('-p', "dist/npm");
+    shell.cp('../README.md', 'dist/npm/README.md');
+    shell.cp('../LICENSE', 'dist/npm/LICENSE');
+    shell.cp('package.json', 'dist/npm/package.json');
+    shell.mkdir('-p', "dist/tsc");
+    shell.exec("./node_modules/typescript/bin/tsc --outDir dist/tsc -d");
+    shell.cp('dist/tsc/src/*.d.ts', "dist/npm");
+    callback();
+  });
+};
+
 
 module.exports = [
 {
   target: 'node',
-  entry: './src/lib',
+  entry: './src/index',
   output: {
     path: __dirname,
-    filename: 'ipaddress.js',
+    filename: 'dist/npm/ipaddress.js',
     libraryTarget: 'commonjs2'
   },
   module: {
@@ -35,7 +59,10 @@ module.exports = [
   devtool: 'source-map',
   resolve: {
     extensions: ['', '.ts', '.webpack.js', '.web.js', '.js']
-  }
+  },
+  plugins: [
+    new CreateIndex_d_ts()
+  ]
 },{
   target: 'node',
   entry: './test/all',
