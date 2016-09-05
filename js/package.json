@@ -1,8 +1,8 @@
 {
   "name": "ipaddress",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "ipaddress handles ipv4 and ipv6",
-  "main": "dist/ipaddress.js",
+  "main": "./ipaddress.js",
   "scripts": {
     "clean": "rimraf dist",
     "prebuild": "npm run clean",
