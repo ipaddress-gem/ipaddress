@@ -1,6 +1,6 @@
 {
   "name": "ipaddress",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "ipaddress handles ipv4 and ipv6",
   "main": "./ipaddress.js",
   "scripts": {

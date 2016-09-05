@@ -14,7 +14,7 @@
  */
 // import Crunch from './crunch';
 
-class Crunchy {
+export class Crunchy {
   num: number[] = [];
   negative: boolean = false;
 
