@@ -11,8 +11,14 @@ export * from './ipv6_mapped';
 export * from './ipv6_loopback';
 export * from './ipv6_unspec';
 
-import IPAddress from './ipaddress';
 import Crunchy from './crunchy';
+import Ipv4 from './ipv4';
+import Ipv6 from './ipv6';
+import Prefix from './prefix';
+import Ipv6Mapped from './ipv6_mapped';
+import Ipv6Loopback from './ipv6_loopback';
+import Ipv6Unspec from './ipv6_unspec';
+import IPAddress from './ipaddress';
 //export = Crunchy;
 export default IPAddress;
 //declare let Ip: IPAddress;

@@ -3,7 +3,7 @@ import Crunchy from './crunchy';
 import IpBits from './ip_bits';
 import IPAddress from './ipaddress';
 
-class Ipv6Mapped {
+export class Ipv6Mapped {
     //  Ac
     //  It is usually identified as a IPv4 mapped IPv6 address, a particular
     //  IPv6 address which aids the transition from IPv4 to IPv6. The

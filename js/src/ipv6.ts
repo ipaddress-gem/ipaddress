@@ -7,7 +7,7 @@ import Prefix128 from './prefix128';
 import Crunchy from './crunchy';
 
 
-class Ipv6 {
+export class Ipv6 {
     //  =Name
     //
     //  IPAddress::IPv6 - IP version 6 address manipulation library

@@ -6,7 +6,7 @@ import IpBits from './ip_bits';
 import Prefix128 from './prefix128';
 import Ipv6 from './ipv6';
 
-class Ipv4 {
+export class Ipv4 {
     public static from_number(addr: Crunchy, prefix_num: number): IPAddress {
         let prefix = Prefix32.create(prefix_num);
         if (!prefix) {

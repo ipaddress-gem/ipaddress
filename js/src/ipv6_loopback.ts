@@ -4,7 +4,7 @@ import Ipv6 from './ipv6';
 
 import Crunchy from './crunchy';
 
-class Ipv6Loopback {
+export class Ipv6Loopback {
     //    The loopback  address is a unicast localhost address. If an
     //  application in a host sends packets to this address, the IPv6 stack
     //  will loop these packets back on the same virtual interface.
