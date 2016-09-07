@@ -1,148 +1,55 @@
-#include "mocha.hpp"
 #include "chai.hpp"
+#include "mocha.hpp"
+
+#include <sstream>
+#include <vector>
 
 #include "../src/rle.hpp"
 
-void assert_rle(left: Rle[], right: Rle[]) {
-  assert.equal(left.length, right.length, "array length missmatch");
-  for (let i = 0; i < left.length; ++i) {
-    assert.isOk(left[i].eq(right[i]),
-        `left:${left[i].toString()} right:${right[i].toString()}`);
+void assert_rle(std::vector<Rle> left, std::vector<Rle> right, const char *str) {
+  // std::cout << str << std::endl;
+  Chai::assert.equal(left.size(), right.size(), "array size() missmatch");
+  for (size_t i = 0; i < left.size(); ++i) {
+    // std::cout << left[i] << "==" << right[i] << std::endl;
+    Chai::assert.isTrue(left[i].eq(right[i]),
+                        ([str, i, left, right]() -> const char * {
+                          std::stringstream s2;
+                          s2 << str << "=>";
+                          s2 << "left:" << left[i].toString();
+                          s2 << " ";
+                          s2 << "right:" << right[i].toString();
+                          return s2.str().c_str();
+                        })());
   }
 }
 
-int main(int argc, char **argv) {
+int main(int, char **) {
 
-  describe("rle", []()  {
-      it("test_rle", []()  {
-          Rle::vec empty;
-          assert_rle(Rle.code(empty), []);
-          assert_rle(Rle.code(4711), [
-              new Rle({
-part: 4711,
-pos: 0,
-cnt: 1,
-max: true,
-})]);
-          assert_rle(Rle.code([4711, 4711]), [
-            new Rle({
-part: 4711,
-pos: 0,
-cnt: 2,
-max: true,
-})]);
-          assert_rle(Rle.code([4711, 4711, 4811]), [
-            new Rle({
-part: 4711,
-pos: 0,
-cnt: 2,
-max: true,
-}),
-            new Rle({
-part: 4811,
-pos: 1,
-cnt: 1,
-max: true,
-})]);
-assert_rle(Rle.code([4711, 4711, 4811, 4711, 4711]), [
-    new Rle({
-part: 4711,
-pos: 0,
-cnt: 2,
-max: true,
-}),
-    new Rle({
-part: 4811,
-pos: 1,
-cnt: 1,
-max: true,
-}),
-    new Rle({
-part: 4711,
-pos: 2,
-cnt: 2,
-max: true,
-})]);
-assert_rle(Rle.code([4711, 4711, 4711, 4811, 4711, 4711]), [
-    new Rle({
-part: 4711,
-pos: 0,
-cnt: 3,
-max: true,
-}),
-    new Rle({
-part: 4811,
-pos: 1,
-cnt: 1,
-max: true,
-}),
-    new Rle({
-part: 4711,
-pos: 2,
-cnt: 2,
-max: false,
-})]
-    );
-assert_rle(Rle.code([4711, 4711, 4711, 4811, 4711, 4711, 4911, 4911, 4911]),
-    [
-    new Rle({
-part: 4711,
-pos: 0,
-cnt: 3,
-max: true,
-}),
-    new Rle({
-part: 4811,
-pos: 1,
-cnt: 1,
-max: true,
-}),
-    new Rle({
-part: 4711,
-pos: 2,
-cnt: 2,
-max: false,
-}),
-    new Rle({
-part: 4911,
-pos: 3,
-cnt: 3,
-max: true,
-})]);
+  describe("rle", []() {
+    it("test_rle", []() {
+      assert_rle(Rle::code({}), {}, "empty");
+      assert_rle(Rle::code({4711}), {Rle(4711, 0, 1, true)}, "one");
+      assert_rle(Rle::code({4711, 4711}), {Rle(4711, 0, 2, true)}, "two");
+      assert_rle(Rle::code({4711, 4711, 4811}),
+                 {Rle(4711, 0, 2, true), Rle(4811, 1, 1, true)}, "three");
+      assert_rle(Rle::code({4711, 4711, 4811, 4711, 4711}),
+                 {Rle(4711, 0, 2, true), Rle(4811, 1, 1, true),
+                  Rle(4711, 2, 2, true)},"double");
+      assert_rle(Rle::code({4711, 4711, 4711, 4811, 4711, 4711}),
+                 {Rle(4711, 0, 3, true), Rle(4811, 1, 1, true),
+                  Rle(4711, 2, 2, false)}, "triple");
+      assert_rle(
+          Rle::code({4711, 4711, 4711, 4811, 4711, 4711, 4911, 4911, 4911}),
+          {Rle(4711, 0, 3, true), Rle(4811, 1, 1, true), Rle(4711, 2, 2, false),
+           Rle(4911, 3, 3, true)}, "double + triple");
 
-
-assert_rle(Rle.code([0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0]), [
-    new Rle({
-part: 0x2001,
-pos: 0,
-cnt: 1,
-max: true,
-}),
-    new Rle({
-part: 0x888,
-pos: 1,
-cnt: 1,
-max: true,
-}),
-    new Rle({
-part: 0,
-pos: 2,
-cnt: 1,
-max: false,
-}),
-    new Rle({
-part: 0x6630,
-pos: 3,
-cnt: 1,
-max: true,
-}),
-    new Rle({
-part: 0,
-pos: 4,
-cnt: 4,
-max: true,
-})
-]);
-});
-});
+      assert_rle(Rle::code({0x2001, 0x888, 0, 0x6630, 0, 0, 0, 0}),
+                 {Rle(0x2001, 0, 1, true), Rle(0x888, 1, 1, true),
+                  Rle(0, 2, 1, false), Rle(0x6630, 3, 1, true),
+                  Rle(0, 4, 4, true)}, "real");
+    });
+  });
 }
+
+//  });
+//  });

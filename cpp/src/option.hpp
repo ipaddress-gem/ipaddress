@@ -1,20 +1,23 @@
 #ifndef __OPTION__
 #define __OPTION__
 
+#include <exception>
+#include <string>
+
 class OptionError : public std::exception {
-    const char *msg;
+    const std::string msg;
   public:
     OptionError(const char *msg) : msg(msg) {}
     ~OptionError() {}
 
     virtual const char* what() const throw() {
-      return msg;
+      return msg.c_str();
     }
 };
 
 template<typename T> class Option {
   bool none;
-  T t; 
+  T t;
   public:
   Option(T *t = 0) : none(t == 0) {
     if (t != 0) {

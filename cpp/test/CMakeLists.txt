@@ -28,3 +28,6 @@ add_test(test_option test_option)
 
 add_executable(test_result test_result.cpp)
 add_test(test_result test_result)
+
+add_executable(test_rle test_rle.cpp ../src/rle.cpp)
+add_test(test_rle test_rle)

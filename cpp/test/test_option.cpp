@@ -15,6 +15,17 @@ int main(int, char **) {
 
   describe("#option", [](){
 
+      it("default", [](){
+          auto none = Option<TestOptional>(); 
+          Chai::assert.isTrue(none.isNone());
+          Chai::assert.isFalse(none.isSome());
+          try {
+            none.unwrap();
+            Chai::assert.isTrue(true, "unwrap should not work");
+          } catch (OptionError e) {
+          }
+      });
+
       it("None", [](){
           auto none = None<TestOptional>(); 
           Chai::assert.isTrue(none.isNone());
