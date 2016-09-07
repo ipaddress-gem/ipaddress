@@ -16,7 +16,7 @@ int main(int, char **) {
   describe("#option", [](){
 
       it("default", [](){
-          auto none = Option<TestOptional>(); 
+          auto none = Option<TestOptional>();
           Chai::assert.isTrue(none.isNone());
           Chai::assert.isFalse(none.isSome());
           try {
@@ -27,7 +27,7 @@ int main(int, char **) {
       });
 
       it("None", [](){
-          auto none = None<TestOptional>(); 
+          auto none = None<TestOptional>();
           Chai::assert.isTrue(none.isNone());
           Chai::assert.isFalse(none.isSome());
           try {
@@ -48,4 +48,6 @@ int main(int, char **) {
       });
 
   });
+  return exit();
+
 }

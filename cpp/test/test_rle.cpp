@@ -49,6 +49,7 @@ int main(int, char **) {
                   Rle(0, 4, 4, true)}, "real");
     });
   });
+  return exit();
 }
 
 //  });

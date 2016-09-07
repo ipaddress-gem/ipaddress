@@ -31,3 +31,6 @@ add_test(test_result test_result)
 
 add_executable(test_rle test_rle.cpp ../src/rle.cpp)
 add_test(test_rle test_rle)
+
+add_executable(test_crunchy test_crunchy.cpp ../src/crunchy.cpp)
+add_test(test_crunchy test_crunchy)
