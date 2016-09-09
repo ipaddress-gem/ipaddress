@@ -165,9 +165,12 @@ class IPAddress {
       }
       ResultSplitSlash rss;
       rss.addr =  boost::trim_copy(slash[0]);
+      //std::cout << "split_at_slash|" << rss.addr << "|";
       if (slash.size() > 1) {
         rss.netmask = Some(slash[1]);
+        //std::cout << rss.netmask.unwrap();
       }
+      //std::cout << "|" << std::endl;
       return Ok(rss);
     }
 
@@ -318,16 +321,19 @@ class IPAddress {
       auto tstr = boost::trim_copy(addr);
       boost::algorithm::split_regex(pre_post, tstr, boost::regex("::"));
       if (pre_post.size() > 2) {
+        //std::cout << "size:" << addr << std::endl;
         return Err<ResultCrunchyParts>("to many double colons");
       }
       if (pre_post.size() == 2) {
         //println!("{}=.={}", pre_post[0], pre_post[1]);
         auto pre = IPAddress::split_on_colon(pre_post[0]);
         if (pre.isErr()) {
+          //std::cout << "pre:" << addr << std::endl;
           return pre;
         }
         auto post = IPAddress::split_on_colon(pre_post[1]);
         if (post.isErr()) {
+          //std::cout << "post|" << addr << "|" << pre_post[0] << "|" << pre_post[1] << std::endl;
           return post;
         }
         // println!("pre:{} post:{}", pre_parts, post_parts);
@@ -339,6 +345,7 @@ class IPAddress {
       //println!("split_to_num:no double:{}", addr);
       auto ret = IPAddress::split_on_colon(addr);
       if (ret.isErr() || ret.unwrap().parts != 128 / 16) {
+        //std::cout << "format:" << addr << std::endl;
         return Err<ResultCrunchyParts>("format error");
       }
       return ret;
@@ -414,6 +421,7 @@ class IPAddress {
           pos = pos - 2;
           // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
           auto pidx = IPAddress::pos_to_idx(pos + 1, stack_len);
+          // std::cout << "-1:" << pidx << ":" << stack.size() << std::endl;
           stack.erase(stack.begin() + pidx);
         } else {
           stack[first].prefix = stack[first].prefix.sub(1).unwrap();
@@ -426,6 +434,7 @@ class IPAddress {
             auto idx = IPAddress::pos_to_idx(pos, stack_len);
             stack[idx] = stack[first].clone(); // kaputt
             auto pidx = IPAddress::pos_to_idx(pos + 1, stack_len);
+            // std::cout << "-1:" << pidx << ":" << stack.size() << std::endl;
             stack.erase(stack.begin() + pidx);
             // println!("remove-2:{}:{}", pos + 1, stack_len);
             pos = pos - 1; // backtrack
@@ -522,8 +531,10 @@ class IPAddress {
       std::vector<IPAddress> ret;
       auto step = this->network().host_address;
       auto prefix = this->prefix.from(next_bit_mask).unwrap();
-      while (step.lte(this->broadcast().host_address)) {
+      auto target = this->broadcast().host_address;
+      while (step.lte(target)) {
         // console.log("dns_networks-3", this->to_string(), step.toString(), next_bit_mask, step_bit_net.toString());
+        //std::cout << step.toString(16) << ":" << target.toString(16) << ":" << step_bit_net.toString(16) << std::endl;
         ret.push_back(this->from(step, prefix));
         step = step.add(step_bit_net);
       }
@@ -872,9 +883,7 @@ class IPAddress {
       return ret;
     }
     std::string to_hex() const {
-      std::stringstream s2;
-      s2 << std::hex << this->host_address;
-      return s2.str();
+      return this->host_address.toString(16);
     }
 
     IPAddress netmask() const {
@@ -1347,30 +1356,9 @@ class IPAddress {
       return Err<Prefix>("prefix not found");
     }
 
-    static Result<size_t> parse_str(const std::string &str, size_t radix) {
-      std::stringstream s2;
-      if (radix == 10) {
-        s2 << std::dec;
-      } else if (radix == 16) {
-        s2 << std::hex;
-      } else {
-        return Err<size_t>("unknown radix");
-      }
-      s2 << str;
-      size_t ret;
-      s2 >> ret;
-      if (s2.fail()) {
-        return Err<size_t>("not a decimal number");
-      }
-      return Ok(ret);
-    }
-    static Result<size_t> parse_dec_str(const std::string &str) {
-      return IPAddress::parse_str(str, 10);
-    }
-    static Result<size_t> parse_hex_str(const std::string &str) {
-      return IPAddress::parse_str(str, 16);
-    }
-
+    static Result<size_t> parse_str(const std::string &str, size_t radix);
+    static Result<size_t> parse_dec_str(const std::string &str);
+    static Result<size_t> parse_hex_str(const std::string &str);
 };
 
 std::ostream& operator<<(std::ostream &o, const IPAddress &ipa);

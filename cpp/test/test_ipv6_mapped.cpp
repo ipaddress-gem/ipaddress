@@ -77,12 +77,12 @@ int main() {
     });
     it("test_attributes", []() {
       auto s = setup();
-      Chai::assert.equal(s.address, s.ip.to_string());
-      Chai::assert.equal(128, s.ip.prefix.num);
-      Chai::assert.equal(s.s, s.ip.to_s_mapped());
-      Chai::assert.equal(s.sstr, s.ip.to_string_mapped());
-      Chai::assert.equal(s.string, s.ip.to_string_uncompressed());
-      Chai::assert.equal(s.u128.toString(), s.ip.host_address.toString());
+      Chai::assert.equal(s.address, s.ip.to_string(), "to_string");
+      Chai::assert.equal(128, s.ip.prefix.num, "prefix_num");
+      Chai::assert.equal(s.s, s.ip.to_s_mapped(), "mapped");
+      Chai::assert.equal(s.sstr, s.ip.to_string_mapped(), "mapped str");
+      Chai::assert.equal(s.string, s.ip.to_string_uncompressed(), "uncompressed");
+      Chai::assert.equal(s.u128.toString(), s.ip.host_address.toString(), "crunchy");
     });
     it("test_method_ipv6", []() { Chai::assert.isTrue(setup().ip.is_ipv6()); });
     it("test_mapped", []() { Chai::assert.isTrue(setup().ip.is_mapped()); });

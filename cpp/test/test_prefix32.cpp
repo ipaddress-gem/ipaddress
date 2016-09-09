@@ -60,7 +60,7 @@ describe("prefix32", []() {
             auto num = e.second;
             // console.log(e);
             auto prefix = IPAddress::parse_netmask_to_prefix(netmask).unwrap();
-            std::cout << netmask << ":" << num << ":" << prefix;
+            std::cout << netmask << ":" << num << ":" << prefix << std::endl;
             Chai::assert.equal(num, prefix);
         }
     });

@@ -41,7 +41,7 @@ int main() {
       Chai::assert.isTrue(IPAddress::parse(setup().valid_ipv4).isOk(), "valid_ipv4");
         std::cout << "-2" << std::endl;
       Chai::assert.isTrue(IPAddress::parse(setup().valid_ipv6).isOk(), "valid_ipv6");
-        std::cout << "-3" << IPAddress::parse(setup().valid_mapped).text() << std::endl;
+        std::cout << "-3" << std::endl;
       Chai::assert.isTrue(IPAddress::parse(setup().valid_mapped).isOk(), "valid_mapped");
         std::cout << "-4" << std::endl;
 
@@ -156,7 +156,7 @@ int main() {
               { "10.0.0.0/16", "10.0.2.0/24" }).unwrap()),
           {"10.0.0.0/16"});
 
-      size_t cnt = 100;
+      size_t cnt = 1;
       for (size_t _ = 0; _ < cnt; ++_) {
         Chai::assert.deepEqual(
             IPAddress::to_string_vec(IPAddress::summarize(ip_addresses)), {

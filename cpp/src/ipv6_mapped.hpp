@@ -87,12 +87,14 @@ public:
         // console.log("mapped-1");
         auto i = IPAddress::split_at_slash(str);
         if (i.isErr()) {
+          std::cout << "mapped:slash" << std::endl;
           return Err<IPAddress>(i.text());
         }
         std::vector<std::string> split_colon;
         boost::split(split_colon, i.unwrap().addr, boost::is_any_of(":"));
         if (split_colon.size() <= 1) {
             // console.log("mapped-2");
+            std::cout << "mapped:colon" << std::endl;
             return Err<IPAddress>("no colon found");
         }
         // if split_colon.get(0).unwrap().len() > 0 {
@@ -111,6 +113,7 @@ public:
           ipv4_net += netmask;
             auto ipv4 = IPAddress::parse(ipv4_net);
             if (ipv4.isErr()) {
+                std::cout << "mapped:ipv4parse" << std::endl;
                 // console.log("mapped-3");
                 return ipv4;
             }
@@ -132,12 +135,16 @@ public:
             auto low_part = down_addr.mod(part_mod);
             auto bits = ipv6_bits.bits - addr.prefix.host_prefix();
             std::stringstream rebuild_ipv4;
-            rebuild_ipv4 << std::hex << high_part << ":" << low_part << "/" << bits;
+            rebuild_ipv4 << high_part.toString(16) << ":" << low_part.toString(16) << "/" << bits;
             rebuild_ipv6 << rebuild_ipv4.str();
+            // std::cout << "mapped:rebuild_ipv6:" << ipv4_net << ":" << addr.host_address <<
+            //   "|" << rebuild_ipv6.str() << "|" << high_part << ":" << low_part
+            //   << ":" << part_mod << std::endl;
 
             // console.log("-----A", rebuild_ipv6, part_mod);
             auto r_ipv6 = IPAddress::parse(rebuild_ipv6.str());
             if (r_ipv6.isErr()) {
+                std::cout << "mapped:ipv6parse|" << rebuild_ipv6.str() << "|" << r_ipv6.text() << std::endl;
                 // println!("---3|{}", &rebuild_ipv6);
                 // console.log("mapped-4");
                 return r_ipv6;
@@ -145,10 +152,12 @@ public:
             auto ipv6 = r_ipv6.unwrap();
             if (ipv6.is_mapped()) {
                 // console.log("mapped-5");
+                // std::cout << "mapped:mapped" << std::endl;
                 return r_ipv6;
             }
             auto p96bit = ipv6.host_address.shr(32);
             if (!p96bit.eq(Crunchy::zero())) {
+                std::cout << "mapped:no ffff" << std::endl;
                 // println!("---4|{}", &rebuild_ipv6);
                 //console.log("mapped-6",ipv6.host_address, p96bit, Crunchy::zero());
                 return Err<IPAddress>("ipv6 part is not ::ffff:");
@@ -157,6 +166,7 @@ public:
             s2 << "::ffff:" << rebuild_ipv4.str();
             return IPAddress::parse(s2.str());
         }
+        std::cout << "ipv4 not valid" << std::endl;
         // console.log("mapped-9");
         return Err<IPAddress>("not a valid mapped string");
     }

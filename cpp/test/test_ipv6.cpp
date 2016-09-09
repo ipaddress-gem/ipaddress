@@ -82,17 +82,17 @@ int main() {
       Chai::assert.equal(addr, setup().ip.to_s_uncompressed());
     });
     it("test_initialize", []() {
-      Chai::assert.equal(false, setup().ip.is_ipv4());
+      Chai::assert.equal(false, setup().ip.is_ipv4(), "is_ipv4");
 
       for (auto ip : setup().valid_ipv6) {
-        Chai::assert.isTrue(IPAddress::parse(ip.first).isOk());
+        Chai::assert.isTrue(IPAddress::parse(ip.first).isOk(), ip.first);
       }
       for (auto ip : setup().invalid_ipv6) {
-        Chai::assert.isFalse(IPAddress::parse(ip).isErr());
+        Chai::assert.isTrue(IPAddress::parse(ip).isErr(), ip);
       }
-      Chai::assert.equal(64, setup().ip.prefix.num);
+      Chai::assert.equal(64, setup().ip.prefix.num, "prefix");
 
-      Chai::assert.isTrue(IPAddress::parse("::10.1.1.1").isOk());
+      Chai::assert.isTrue(IPAddress::parse("::10.1.1.1").isOk(), "mapped");
     });
     it("test_attribute_groups", []() {
          Chai::assert.deepEqual(setup().arr, setup().ip.parts());

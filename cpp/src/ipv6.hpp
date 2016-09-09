@@ -154,7 +154,8 @@ public:
           return Err<IPAddress>(r_slash.text());
         }
         // console.log("2>>>>>>>>>", str);
-        if (IPAddress::is_valid_ipv6(str)) {
+        //std::cout << "ipv6::create|" << str << "|" << r_slash.unwrap().addr << "|" << std::endl;
+        if (IPAddress::is_valid_ipv6(r_slash.unwrap().addr)) {
             // console.log("3>>>>>>>>>", str);
             auto o_num = IPAddress::split_to_num(r_slash.unwrap().addr);
             if (o_num.isErr()) {

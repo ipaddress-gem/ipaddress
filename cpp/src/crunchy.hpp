@@ -3,6 +3,8 @@
 
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/spirit/include/qi.hpp>
+#include <boost/algorithm/string.hpp>
+
 
 #include <vector>
 
@@ -33,7 +35,8 @@ public:
 };
 
 class Crunchy {
-  typedef boost::multiprecision::uint128_t CrunchyType;
+  // we need for ipv6 129 bits
+  typedef boost::multiprecision::uint256_t CrunchyType;
   CrunchyType num;
 public:
   Crunchy clone() const {
@@ -64,13 +67,13 @@ public:
   auto f(val.begin());
   auto l(val.end());
   if (radix == 10) {
-    boost::spirit::qi::int_parser<CrunchyType, 10, 0, 39> uint128_dec;
-    if (!boost::spirit::qi::parse(f, l, uint128_dec, ret.num)) {
+    boost::spirit::qi::int_parser<CrunchyType, 10, 0, 39> uint256_dec;
+    if (!boost::spirit::qi::parse(f, l, uint256_dec, ret.num)) {
         return Err<Crunchy>("inpossible to parse");
     }
   } else if (radix == 16) {
-    boost::spirit::qi::int_parser<CrunchyType, 16, 0, 39> uint128_hex;
-    if (!boost::spirit::qi::parse(f, l, uint128_hex, ret.num)) {
+    boost::spirit::qi::int_parser<CrunchyType, 16, 0, 39> uint256_hex;
+    if (!boost::spirit::qi::parse(f, l, uint256_hex, ret.num)) {
         return Err<Crunchy>("inpossible to parse");
     }
   } else {
@@ -167,7 +170,7 @@ public:
 
   Crunchy mod(const Crunchy &oth) const {
     Crunchy ret;
-    ret.num = this->num / oth.num;
+    ret.num = this->num % oth.num;
     return ret;
   }
 
@@ -180,8 +183,14 @@ public:
     std::stringstream s2;
     if (radix == 10) {
       s2 << std::dec;
+      s2 << this->num;
+      return s2.str();
     } else if (radix == 16) {
       s2 << std::hex;
+      s2 << this->num;
+      auto ret = s2.str();
+      boost::algorithm::to_lower(ret);
+      return ret;
     } else if (radix == 2) {
       std::vector<size_t> bits;
       auto my = this->num;
@@ -197,8 +206,6 @@ public:
     } else {
       throw NotImplementedException();
     }
-    s2 << this->num;
-    return s2.str();
   }
 
   static const Crunchy &zero();

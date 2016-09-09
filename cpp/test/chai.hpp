@@ -23,6 +23,9 @@ namespace Chai {
   class Assert {
     public:
       size_t count = 0;
+      void isTrue(bool v, const std::string &msg) {
+        this->isTrue(v, msg.c_str());
+      }
       void isTrue(bool v, const char *msg = "") {
         ++count;
         if (!v) {

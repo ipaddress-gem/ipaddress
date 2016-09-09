@@ -6,7 +6,7 @@
 #include "ipv6_mapped.hpp"
 
 std::ostream& operator<<(std::ostream &o, const IPAddress &ipaddress) {
-    o << "<ipaddress@" 
+    o << "<ipaddress@"
       << "ipbits:" << ipaddress.ip_bits << ","
       << "crunchy:" << ipaddress.host_address << ","
       << "prefix:" << ipaddress.prefix << ","
@@ -53,4 +53,38 @@ Result<IPAddress> IPAddress::parse(const std::string &str) {
     }
   }
   return Err<IPAddress>("illegal formated address");
+}
+
+Result<size_t> IPAddress::parse_str(const std::string &str, size_t radix) {
+  std::stringstream s2;
+  if (radix == 10) {
+    s2 << std::dec;
+  } else if (radix == 16) {
+    s2 << std::hex;
+  } else {
+    return Err<size_t>("unknown radix");
+  }
+  s2 << str;
+  size_t ret;
+  s2 >> ret;
+  if (s2.fail()) {
+    return Err<size_t>("not a decimal number");
+  }
+  //std::cout << "parse_str:" << str << ":" << ret << std::endl;
+  return Ok(ret);
+}
+
+static boost::regex re_dec("^\\d+$");
+Result<size_t> IPAddress::parse_dec_str(const std::string &str) {
+  if (boost::regex_match(str, re_dec)) {
+    return IPAddress::parse_str(str, 10);
+  }
+  return Err<size_t>("not a decimal string");
+}
+static boost::regex re_hex("^[0-9a-fA-F]+$");
+Result<size_t> IPAddress::parse_hex_str(const std::string &str) {
+  if (boost::regex_match(str, re_hex)) {
+    return IPAddress::parse_str(str, 16);
+  }
+  return Err<size_t>("not a hex string");
 }
