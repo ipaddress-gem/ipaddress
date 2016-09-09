@@ -4,6 +4,7 @@
 #include "ipaddress.hpp"
 
 class Ipv6Unspec {
+public:
     //  The address with all zero bits is called the +unspecified+ address
     //  (corresponding to 0.0.0.0 in IPv4). It should be something like this:
     //
@@ -54,7 +55,7 @@ class Ipv6Unspec {
     //       // => => "::/128"
     //
     static IPAddress create() {
-        return IPAddress.parse("::").unwrap();
+        return IPAddress::parse("::").unwrap();
     }
     //  class IPv6::Unspecified
 };

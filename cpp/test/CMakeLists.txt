@@ -35,20 +35,20 @@ add_test(test_rle test_rle)
 add_executable(test_crunchy test_crunchy.cpp ../src/crunchy.cpp)
 add_test(test_crunchy test_crunchy)
 
-add_executable(test_prefix32 test_prefix32.cpp ../src/crunchy.cpp)
+add_executable(test_prefix32 test_prefix32.cpp ../src/crunchy.cpp ../src/rle.cpp ../src/ipaddress.cpp ../src/ipv4.cpp)
 add_test(test_prefix32 test_prefix32)
 target_link_libraries(test_prefix32 ${Boost_LIBRARIES})
 
-add_executable(test_prefix128 test_prefix128.cpp ../src/crunchy.cpp)
+add_executable(test_prefix128 test_prefix128.cpp ../src/crunchy.cpp ../src/rle.cpp ../src/ipaddress.cpp ../src/ipv4.cpp)
 add_test(test_prefix128 test_prefix128)
 target_link_libraries(test_prefix128 ${Boost_LIBRARIES})
 
 
-add_executable(test_ipv6_unspec test_ipv6_unspec.cpp ../src/crunchy.cpp)
+add_executable(test_ipv6_unspec test_ipv6_unspec.cpp ../src/crunchy.cpp ../src/rle.cpp ../src/ipaddress.cpp ../src/ipv4.cpp)
 add_test(test_ipv6_unspec test_ipv6_unspec)
 target_link_libraries(test_ipv6_unspec ${Boost_LIBRARIES})
 
-add_executable(test_ipv6_mapped test_ipv6_mapped.cpp ../src/crunchy.cpp)
+add_executable(test_ipv6_mapped test_ipv6_mapped.cpp ../src/crunchy.cpp ../src/rle.cpp ../src/ipaddress.cpp ../src/ipv4.cpp)
 add_test(test_ipv6_mapped test_ipv6_mapped)
 target_link_libraries(test_ipv6_mapped ${Boost_LIBRARIES})
 
@@ -56,7 +56,7 @@ add_executable(test_ipv6_loopback test_ipv6_loopback.cpp ../src/crunchy.cpp ../s
 add_test(test_ipv6_loopback test_ipv6_loopback)
 target_link_libraries(test_ipv6_loopback ${Boost_LIBRARIES})
 
-add_executable(test_ipv6 test_ipv6.cpp ../src/crunchy.cpp)
+add_executable(test_ipv6 test_ipv6.cpp ../src/crunchy.cpp ../src/rle.cpp ../src/ipaddress.cpp ../src/ipv4.cpp)
 add_test(test_ipv6 test_ipv6)
 target_link_libraries(test_ipv6 ${Boost_LIBRARIES})
 
