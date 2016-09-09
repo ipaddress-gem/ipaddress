@@ -13,7 +13,7 @@ install:
     - nvm install 6
 
 script:
-    - rvm use ruby-2.0.0-p598
+    - rvm use 2.2
     - (cd ruby && rake test)
     - (cd rust && cargo build --release --verbose)
     - (cd rust && cargo test --release --verbose)
