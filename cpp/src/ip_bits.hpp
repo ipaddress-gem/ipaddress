@@ -1,26 +1,26 @@
 #ifndef __IP_BITS__
 #define __IP_BITS__
 
-#include <crunchy.hpp>
-#include <rle.hpp>
-#include <ip_version.hpp>
+#include "crunchy.hpp"
+#include "rle.hpp"
+#include "ip_version.hpp"
 
 #include <string>
-#include <function>
+#include <functional>
 #include <vector>
 
-typedef std::function<std::string(const IpBits &source, const Crunchy &num)> ToString;
 
 class IpBits {
 public:
+    typedef std::function<std::string(const IpBits &source, const Crunchy &num)> ToString;
     IpVersion version;
     ToString vt_as_compressed_string;
     ToString vt_as_uncompressed_string;
     size_t bits;
-    size_t part_bits: number;
-    size_t dns_bits: number;
-    std::string rev_domain: string;
-    size_t part_mod: number;
+    size_t part_bits;
+    size_t dns_bits;
+    std::string rev_domain;
+    size_t part_mod;
     Crunchy host_ofs; // ipv4=1, ipv6=0
 
     IpBits clone() const {
@@ -39,13 +39,13 @@ public:
     std::vector<size_t> parts(const Crunchy &bu) const {
         std::vector<size_t> vec;
         auto my = bu.clone();
-        auto part_mod = Crunchy.one().shl(this.part_bits);// - Crunchy::one();
+        // auto part_mod = Crunchy::one().shl(this->part_bits);// - Crunchy::one();
         for (size_t i = 0; i < (this->bits / this->part_bits); ++i) {
             // console.log("parts-1:", my, part_mod, my.mod(part_mod), my.mod(part_mod).toString());
-            vec.push_back(my.mod(part_mod).toString());
+            vec.push_back(my.mds(this->part_mod));
             my = my.shr(this->part_bits);
         }
-        vec.reverse();
+        std::reverse(vec.begin(),vec.end());
         // console.log("parts:", vec);
         return vec;
     }
@@ -54,87 +54,94 @@ public:
         return (this->vt_as_compressed_string)(*this, bu);
     }
     std::string as_uncompressed_string(const Crunchy &bu) const {
-        return (this.vt_as_uncompressed_string)(*this, bu);
+        return (this->vt_as_uncompressed_string)(*this, bu);
     }
 
-    std::string dns_part_format(size_t i) {
-        switch (this->version) {
-            case IpVersion.V4: return `${i}`;
-            case IpVersion.V6: return `${i.toString(16)}`;
-        }
+    std::string dns_part_format(size_t i) const {
+      std::stringstream s2;
+      if (this->version ==  IpVersion::V6) {
+        s2 << std::hex;
+      }
+      s2 << i;
+      return s2.str();
     }
 
     static IpBits v4() {
         IpBits my;
-        my.version = IpVersion.V4;
-        my.vt_as_compressed_string = IpBits.ipv4_as_compressed;
-        my.vt_as_uncompressed_string = IpBits.ipv4_as_compressed;
+        my.version = IpVersion::V4;
+        my.vt_as_compressed_string = IpBits::ipv4_as_compressed;
+        my.vt_as_uncompressed_string = IpBits::ipv4_as_compressed;
         my.bits = 32;
         my.part_bits = 8;
         my.dns_bits = 8;
         my.rev_domain = "in-addr.arpa";
         my.part_mod = 1 << 8;
-        my.host_ofs = Crunchy.one();
+        my.host_ofs = Crunchy::one();
         return my;
     }
 
     static IpBits v6() {
         IpBits my;
-        my.version = IpVersion.V6;
-        my.vt_as_compressed_string = IpBits.ipv6_as_compressed;
-        my.vt_as_uncompressed_string = IpBits.ipv6_as_uncompressed;
+        my.version = IpVersion::V6;
+        my.vt_as_compressed_string = IpBits::ipv6_as_compressed;
+        my.vt_as_uncompressed_string = IpBits::ipv6_as_uncompressed;
         my.bits = 128;
         my.part_bits = 16;
         my.dns_bits = 4;
         my.rev_domain = "ip6.arpa";
         my.part_mod = 1 << 16;
-        my.host_ofs = Crunchy.zero();
+        my.host_ofs = Crunchy::zero();
         return my;
     }
 
-    static std::string ipv4_as_compressed(IpBits &ip_bits, Crunchy &host_address) {
-        std::string ret;
+    static std::string ipv4_as_compressed(const IpBits &ip_bits, const Crunchy &host_address) {
+        std::stringstream ret;
         std::string sep;
         for (auto part : ip_bits.parts(host_address)) {
-            ret += sep;
-            ret += `${part}`;
+            ret << sep;
+            ret << part;
             sep = ".";
         }
-        return ret;
+        return ret.str();
     }
 
-    static std::string ipv6_as_compressed(IpBits &ip_bits, Crunchy &host_address) {
+    static std::string ipv6_as_compressed(const IpBits &ip_bits, const Crunchy &host_address) {
         //println!("ipv6_as_compressed:{}", host_address);
-        std::string ret;
+        std::stringstream ret;
         std::string colon;
         bool done = false;
-        for (auto rle : Rle.code(ip_bits.parts(host_address))) {
+        ret << std::hex;
+        for (auto rle : Rle::code(ip_bits.parts(host_address))) {
 //            console.log(rle.toString());
             for (size_t _ = 0; _ < rle.cnt; _++) {
                 if (done || !(rle.part == 0 && rle.max)) {
-                    ret += `${colon}${rle.part.toString(16)}`;
+                    ret << colon << rle.part;
                     colon = ":";
                 } else if (rle.part == 0 && rle.max) {
-                    ret += "::";
+                    ret << "::";
                     colon = "";
                     done = true;
                     break;
                 }
             }
         }
-        return ret;
+        return ret.str();
     }
-    static ipv6_as_uncompressed(ip_bits: IpBits, host_address: Crunchy): string {
+    static std::string ipv6_as_uncompressed(const IpBits &ip_bits, const Crunchy &host_address) {
         std::string ret;
-        std::string sep;
+        const char *sep = "";
         for (auto part : ip_bits.parts(host_address)) {
             ret += sep;
-            ret += (0x10000 + part).toString(16).slice(1);
+            std::stringstream s2;
+            s2 << std::hex << (0x10000 + part);
+            ret += s2.str().substr(1);
             sep = ":";
         }
         return ret;
     }
 
 };
+
+std::ostream& operator<<(std::ostream &o, const IpBits &ip_bits);
 
 #endif

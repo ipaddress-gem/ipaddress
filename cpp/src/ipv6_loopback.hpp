@@ -7,6 +7,7 @@
 
 
 class Ipv6Loopback {
+  public:
     //    The loopback  address is a unicast localhost address. If an
     //  application in a host sends packets to this address, the IPv6 stack
     //  will loop these packets back on the same virtual interface.
@@ -51,7 +52,7 @@ class Ipv6Loopback {
     //      // => "::1/128"
     //
     static IPAddress create() {
-        return Ipv6.from_int(Crunchy.one(), 128);
+        return Ipv6::from_int(Crunchy::one(), 128).unwrap();
     }
 };
 

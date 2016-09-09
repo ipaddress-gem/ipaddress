@@ -5,10 +5,13 @@
 #include "../src/option.hpp"
 
 
+int c_count = 0;
 class TestOptional {
   public:
     int _42;
-    TestOptional() : _42(42) {}
+    TestOptional() : _42(42) { c_count++; }
+    ~TestOptional() { --c_count; }
+
 };
 
 int main(int, char **) {
@@ -40,11 +43,22 @@ int main(int, char **) {
       it("Some", [](){
           TestOptional to;
           auto some = Some(to);
+          to._42 = 8199;
           Chai::assert.isFalse(some.isNone());
           Chai::assert.isTrue(some.isSome());
           Chai::assert.equal(some.unwrap()._42, 42);
           some.unwrap()._42 = 4711;
           Chai::assert.equal(some.unwrap()._42, 4711);
+      });
+      it("Memory", [](){
+          TestOptional to;
+          c_count = 0;
+          {
+            auto some = Some(to);
+            Chai::assert.equal(c_count, 1);
+            Chai::assert.equal(some.unwrap()._42, 42);
+          }
+          Chai::assert.equal(c_count, 0, "loosing memory");
       });
 
   });

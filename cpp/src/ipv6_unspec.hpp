@@ -54,7 +54,7 @@ class Ipv6Unspec {
     //       // => => "::/128"
     //
     static IPAddress create() {
-        return IPAddress.parse("::");
+        return IPAddress.parse("::").unwrap();
     }
     //  class IPv6::Unspecified
 };

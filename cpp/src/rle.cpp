@@ -6,7 +6,7 @@
 
 std::ostream& operator<<(std::ostream &o, const Rle &rle) {
     o << rle.toString();
-      return o;
+    return o;
 }
 
 

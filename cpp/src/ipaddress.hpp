@@ -1,179 +1,191 @@
 #ifndef __IPADDRESS__
 #define __IPADDRESS__
 
-#include "prefix.hpp";
-#include "ip_bits.hpp";
-#include "ip_version.hpp";
-#include "ipv4.hpp";
-#include "ipv6.hpp";
-#include "ipv6_mapped.hpp";
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/regex.hpp>
+#include <boost/regex.hpp>
 
-#include "crunchy.hpp";
+#include <string>
+#include <vector>
+#include <algorithm>
+#include <functional>
 
-typedef std::function<bool(const IPAddress &source)> Is;
-typedef std::function<IPAddress(const IPAddress &source)> ToIpv4;
-typedef std::function<void(const IPAddress &source)> EachFn;
+#include "prefix.hpp"
+#include "ip_bits.hpp"
+#include "ip_version.hpp"
+// #include "ipv4.hpp"
+// #include "ipv6.hpp"
+// #include "ipv6_mapped.hpp"
+
+#include "crunchy.hpp"
+
+#include "result.hpp"
+#include "option.hpp"
+
+
 
 class ResultCrunchyParts {
-public:
+  public:
     Crunchy crunchy;
     size_t parts;
 
-    ResultCrunchyParts(Crunchy &crunchy, size_t parts) {
-        this->crunchy = crunchy;
-        this->parts = parts;
+    ResultCrunchyParts() {}
+
+    ResultCrunchyParts(const Crunchy &crunchy, size_t parts) {
+      this->crunchy = crunchy;
+      this->parts = parts;
     }
 };
 
+class ResultSplitSlash {
+  public:
+    std::string addr;
+    Option<std::string> netmask;
+};
+
+
 class IPAddress {
-public:
+  public:
+    typedef std::function<bool(const IPAddress &source)> Is;
+    typedef std::function<IPAddress(const IPAddress &source)> ToIpv4;
+    typedef std::function<void(const IPAddress &source)> EachFn;
     IpBits ip_bits;
     Crunchy host_address;
     Prefix prefix;
-    IPAddress mapped;
+    Option<IPAddress> mapped;
     Is vt_is_private;
     Is vt_is_loopback;
     ToIpv4 vt_to_ipv6;
 
+    IPAddress() {
+    }
+
     IPAddress(const IpBits &ip_bits, const Crunchy &host_address,
-      const Prefix &prefix, const IPAddress &mapped,
-      Is &vt_is_private, Is &vt_is_loopback, ToIpv4 &vt_to_ipv6) {
-        this->ip_bits = ip_bits;
-        this->host_address = host_address;
-        this->prefix = prefix;
-        this->mapped = mapped;
-        this->vt_is_private = vt_is_private;
-        this->vt_is_loopback = vt_is_loopback;
-        this->vt_to_ipv6 = vt_to_ipv6;
+        const Prefix &prefix, const Option<IPAddress> &mapped,
+        const Is &vt_is_private, const Is &vt_is_loopback,
+        const ToIpv4 &vt_to_ipv6) : prefix(prefix) {
+      this->ip_bits = ip_bits;
+      this->host_address = host_address;
+      this->mapped = mapped;
+      this->vt_is_private = vt_is_private;
+      this->vt_is_loopback = vt_is_loopback;
+      this->vt_to_ipv6 = vt_to_ipv6;
     }
 
     IPAddress clone() const {
-        let mapped: IPAddress = null;
-        if (this->mapped) {
-            mapped = this->mapped.clone();
-        }
-        return IPAddress(
-            this->ip_bits.clone(),
-            this->host_address.clone(),
-            this->prefix.clone(),
-            mapped,
-            this->vt_is_private,
-            this->vt_is_loopback,
-            this->vt_to_ipv6
-        );
+      Option<IPAddress> mapped;
+      if (this->mapped.isSome()) {
+        auto mip = this->mapped.unwrap();
+        mapped = Some(mip);
+      }
+      return IPAddress(
+          this->ip_bits.clone(),
+          this->host_address.clone(),
+          this->prefix.clone(),
+          mapped,
+          this->vt_is_private,
+          this->vt_is_loopback,
+          this->vt_to_ipv6
+          );
     }
 
     bool lt(const IPAddress &oth) const {
-        return this->cmp(oth) == -1;
+      return this->cmp(oth) == -1;
     }
 
     bool lte(const IPAddress &oth) const {
-        return this->cmp(oth) <= 0;
+      return this->cmp(oth) <= 0;
     }
 
     bool gt(const IPAddress &oth) const {
-        return this->cmp(oth) == 1;
+      return this->cmp(oth) == 1;
     }
 
     bool gte(const IPAddress &oth) const {
-        return this->cmp(oth) >= 0;
+      return this->cmp(oth) >= 0;
     }
 
-    size_t cmp(const IPAddress &oth) const {
-        if (this->ip_bits.version != oth.ip_bits.version) {
-            if (this->ip_bits.version == IpVersion.V6) {
-                return 1;
-            }
-            return -1;
+    ssize_t cmp(const IPAddress &oth) const {
+      if (this->ip_bits.version != oth.ip_bits.version) {
+        if (this->ip_bits.version == IpVersion::V6) {
+          return 1;
         }
-        //let adr_diff = this->host_address - oth.host_address;
-        auto hostCmp = this->host_address.compare(oth.host_address);
-        if (hostCmp != 0) {
-            return hostCmp;
-        }
-        return this->prefix.cmp(oth.prefix);
+        return -1;
+      }
+      //let adr_diff = this->host_address - oth.host_address;
+      auto hostCmp = this->host_address.compare(oth.host_address);
+      if (hostCmp != 0) {
+        return hostCmp;
+      }
+      return this->prefix.cmp(oth.prefix);
     }
 
     bool eq(const IPAddress &other) const {
-        // if (!!this->mapped != !!this->mapped) {
-        //     return false;
-        // }
-        // if (this->mapped) {
-        //     if (!this->mapped.eq(other.mapped)) {
-        //         return false;
-        //     }
-        // }
-        // console.log("************", this);
-        return this->ip_bits.version == other.ip_bits.version &&
-            this->prefix.eq(other.prefix) &&
-            this->host_address.eq(other.host_address);
+      // if (!!this->mapped != !!this->mapped) {
+      //     return false;
+      // }
+      // if (this->mapped) {
+      //     if (!this->mapped.eq(other.mapped)) {
+      //         return false;
+      //     }
+      // }
+      // console.log("************", this);
+      return this->ip_bits.version == other.ip_bits.version &&
+        this->prefix.eq(other.prefix) &&
+        this->host_address.eq(other.host_address);
     }
     bool ne(IPAddress &other) {
-        return !this->eq(other);
+      return !this->eq(other);
     }
     // Parse the argument string to create a new
     // IPv4, IPv6 or Mapped IP object
     //
-    //   ip  = IPAddress.parse "172.16.10.1/24"
-    //   ip6 = IPAddress.parse "2001:db8.8:800:200c:417a/64"
-    //   ip_mapped = IPAddress.parse ".ffff:172.16.10.1/128"
+    //   ip  = IPAddress::parse "172.16.10.1/24"
+    //   ip6 = IPAddress::parse "2001:db8.8:800:200c:417a/64"
+    //   ip_mapped = IPAddress::parse ".ffff:172.16.10.1/128"
     //
     // All the object created will be instances of the
     // correct class:
     //
     //  ip.class
-    //    //=> IPAddress.IPv4
+    //    //=> IPAddress::IPv4
     //  ip6.class
-    //    //=> IPAddress.IPv6
+    //    //=> IPAddress::IPv6
     //  ip_mapped.class
-    //    //=> IPAddress.IPv6.Mapped
+    //    //=> IPAddress::IPv6.Mapped
     //
-    static IPAddress parse(const std::string &str) {
-        let re_mapped = new RegExp(":.+\\.");
-        let re_ipv4 = new RegExp("\\.");
-        let re_ipv6 = new RegExp(":");
-        if (re_mapped.test(str)) {
-            // console.log("mapped:", str);
-            return Ipv6Mapped.create(str);
-        } else {
-            if (re_ipv4.test(str)) {
-                // console.log("ipv4:", str);
-                return Ipv4.create(str);
-            } else if (re_ipv6.test(str)) {
-                // console.log("ipv6:", str);
-                return Ipv6.create(str);
-            }
-        }
-        return null;
-    }
+    static Result<IPAddress> parse(const std::string &str);
 
-    static split_at_slash(str: string): [string, string] {
-        let slash: string[] = str.trim().split("/");
-        let addr = "";
-        if (slash[0]) {
-            addr += slash[0].trim();
-        }
-        if (slash[1]) {
-            return [addr, slash[1].trim()];
-        } else {
-            return [addr, null]
-        }
+    static Result<ResultSplitSlash> split_at_slash(const std::string &str) {
+      std::vector<std::string> slash;
+      auto tstr = boost::trim_copy(str);
+      boost::split(slash, tstr, boost::is_any_of("/"));
+      if (slash.size() == 0 || slash.size() > 2) {
+        return Err<ResultSplitSlash>("Too many slashes");
+      }
+      ResultSplitSlash rss;
+      rss.addr =  boost::trim_copy(slash[0]);
+      if (slash.size() > 1) {
+        rss.netmask = Some(slash[1]);
+      }
+      return Ok(rss);
     }
 
     IPAddress from(const Crunchy &addr, const Prefix &prefix) const {
-        let mapped: IPAddress = null;
-        if (this->mapped) {
-            mapped = this->mapped.clone();
-        }
-        return new IPAddress(
-            this->ip_bits,
-            addr.clone(),
-            prefix.clone(),
-            mapped,
-            this->vt_is_private,
-            this->vt_is_loopback,
-            this->vt_to_ipv6
-        );
+      Option<IPAddress> mapped;
+      if (this->mapped.isSome()) {
+        auto mip = this->mapped.unwrap();
+        mapped = Some(mip);
+      }
+      return IPAddress(
+          this->ip_bits,
+          addr.clone(),
+          prefix.clone(),
+          mapped,
+          this->vt_is_private,
+          this->vt_is_loopback,
+          this->vt_to_ipv6
+          );
     }
 
     // True if the object is an IPv4 address
@@ -184,7 +196,7 @@ public:
     //     //-> true
     //
     bool is_ipv4() const {
-        return this->ip_bits.version == IpVersion.V4;
+      return this->ip_bits.version == IpVersion::V4;
     }
 
     // True if the object is an IPv6 address
@@ -195,7 +207,7 @@ public:
     //     //-> false
     //
     bool is_ipv6() const {
-        return this->ip_bits.version == IpVersion.V6
+      return this->ip_bits.version == IpVersion::V6;
     }
 
     // Checks if the given string is a valid IP address,
@@ -203,94 +215,67 @@ public:
     //
     // Example:
     //
-    //   IPAddress.valid? "2002.1"
+    //   IPAddress::valid? "2002.1"
     //     //=> true
     //
-    //   IPAddress.valid? "10.0.0.256"
+    //   IPAddress::valid? "10.0.0.256"
     //     //=> false
     //
     static bool is_valid(const std::string addr) {
-        return IPAddress.is_valid_ipv4(addr) || IPAddress.is_valid_ipv6(addr);
+      return IPAddress::is_valid_ipv4(addr) || IPAddress::is_valid_ipv6(addr);
     }
-
-    static size_t parse_dec_str(const std::string &str) {
-        let re_digit = new RegExp("^\\d+$");
-        if (!re_digit.test(str)) {
-            // console.log("parse_dec_str:-1:", str);
-            return null;
-        }
-        let part = parseInt(str, 10);
-        if (isNaN(part)) {
-            // console.log("parse_dec_str:-2:", str, part);
-            return null;
-        }
-        // console.log("parse_dec_str:-3:", str, part);
-        return part;
-    }
-
-    static size_t parse_hex_str(const std::string &str) {
-        let re_digit = new RegExp("^[0-9a-fA-F]+$");
-        if (!re_digit.test(str)) {
-            return null;
-        }
-        let part = parseInt(str, 16);
-        if (isNaN(part)) {
-            return null;
-        }
-        return part;
-    }
-
 
     // Checks if the given string is a valid IPv4 address
     //
     // Example:
     //
-    //   IPAddress.valid_ipv4? "2002.1"
+    //   IPAddress::valid_ipv4? "2002.1"
     //     //=> false
     //
-    //   IPAddress.valid_ipv4? "172.16.10.1"
+    //   IPAddress::valid_ipv4? "172.16.10.1"
     //     //=> true
     //
-    static size_t parse_ipv4_part(const std::string &i) {
-        auto part = IPAddress.parse_dec_str(i);
-        //console.log("i=", i, part);
-        if (part === null || part >= 256) {
-            return null;
-        }
-        return part;
+    static Result<size_t> parse_ipv4_part(const std::string &i) {
+      auto part = IPAddress::parse_dec_str(i);
+      //console.log("i=", i, part);
+      if (part.isErr() || part.unwrap() >= 256) {
+        return Err<size_t>("part is not valid or not in range 0xff");
+      }
+      return part;
     }
 
-    static Crunchy split_to_u32(const std::string &addr) {
-        auto ip = Crunchy.zero();
-        auto shift = 24;
-        auto split_addr = addr.split(".");
-        if (split_addr.length > 4) {
-            return null;
+    static Result<Crunchy> split_to_u32(const std::string &addr) {
+      auto ip = Crunchy::zero();
+      auto shift = 24;
+      std::vector<std::string> split_addr;
+      boost::split(split_addr, addr, boost::is_any_of("."));
+      if (split_addr.size() > 4) {
+        return Err<Crunchy>("to many dots");
+      }
+      auto split_addr_len = split_addr.size();
+      if (split_addr_len < 4) {
+        auto part = IPAddress::parse_ipv4_part(split_addr[split_addr_len - 1]);
+        if (part.isErr()) {
+          return Err<Crunchy>(part.text());
         }
-        auto split_addr_len = split_addr.length;
-        if (split_addr_len < 4) {
-            auto part = IPAddress.parse_ipv4_part(split_addr[split_addr_len - 1]);
-            if (part === null) {
-                return null;
-            }
-            ip = Crunchy.from_number(part);
-            split_addr = split_addr.slice(0, split_addr_len - 1);
+        ip = Crunchy::from_number(part.unwrap());
+        split_addr = std::vector<std::string>(split_addr.begin(), split_addr.begin() + split_addr_len - 1);
+      }
+      for (auto i : split_addr) {
+        auto part = IPAddress::parse_ipv4_part(i);
+        // console.log("u32-", addr, i, part);
+        if (part.isErr()) {
+          return Err<Crunchy>(part.text());
         }
-        for (auto i of split_addr) {
-            auto part = IPAddress.parse_ipv4_part(i);
-            // console.log("u32-", addr, i, part);
-            if (part === null) {
-                return null;
-            }
-            //println!("{}-{}", part_num, shift);
-            ip = ip.add(Crunchy.from_number(part).shl(shift));
-            shift -= 8;
-        }
-        return ip;
+        //println!("{}-{}", part_num, shift);
+        ip = ip.add(Crunchy::from_number(part.unwrap()).shl(shift));
+        shift -= 8;
+      }
+      return Ok(ip);
     }
 
     static bool is_valid_ipv4(const std::string &addr) {
-        return IPAddress.split_to_u32(addr) !== null
+      return IPAddress::split_to_u32(addr).isOk();
     }
 
 
@@ -298,62 +283,69 @@ public:
     //
     // Example:
     //
-    //   IPAddress.valid_ipv6? "2002.1"
+    //   IPAddress::valid_ipv6? "2002.1"
     //     //=> true
     //
-    //   IPAddress.valid_ipv6? "2002.DEAD.BEEF"
+    //   IPAddress::valid_ipv6? "2002.DEAD.BEEF"
     //     //=> false
     //
-    static ResultCrunchyParts split_on_colon(const std::string &addr) {
-        auto parts = addr.trim().split(":");
-        auto ip = Crunchy.zero();
-        if (parts.length == 1 && parts[0].length == 0) {
-            return ResultCrunchyParts(ip, 0);
+    static Result<ResultCrunchyParts> split_on_colon(const std::string &addr) {
+      std::vector<std::string> parts;
+      boost::split(parts, addr, boost::is_any_of(":"));
+      auto ip = Crunchy::zero();
+      if (parts.size() == 1 && parts[0].size() == 0) {
+        ResultCrunchyParts ret(ip, 0);
+        return Ok(ret);
+      }
+      auto parts_len = parts.size();
+      auto shift = ((parts_len - 1) * 16);
+      for (auto i : parts) {
+        //println!("{}={}", addr, i);
+        auto part = IPAddress::parse_hex_str(i);
+        if (part.isErr() || part.unwrap() >= 65536) {
+          return Err<ResultCrunchyParts>("hex parse error or to big 0xffff");
         }
-        auto parts_len = parts.length;
-        auto shift = ((parts_len - 1) * 16);
-        for (auto i of parts) {
-            //println!("{}={}", addr, i);
-            auto part = IPAddress.parse_hex_str(i);
-            if (part === null || part >= 65536) {
-                return null;
-            }
-            ip = ip.add(Crunchy.from_number(part).shl(shift));
-            shift -= 16;
-        }
-        return ResultCrunchyParts(ip, parts_len);
+        ip = ip.add(Crunchy::from_number(part.unwrap()).shl(shift));
+        shift -= 16;
+      }
+      ResultCrunchyParts ret(ip, parts_len);
+      return Ok(ret);
     }
 
-    static ResultCrunchyParts split_to_num(const std::string &addr) {
-        //let ip = 0;
-        auto pre_post = addr.trim().split("::");
-        if (pre_post.length > 2) {
-            return null;
+    static Result<ResultCrunchyParts> split_to_num(const std::string &addr) {
+      //let ip = 0;
+      std::vector<std::string> pre_post;
+      auto tstr = boost::trim_copy(addr);
+      boost::algorithm::split_regex(pre_post, tstr, boost::regex("::"));
+      if (pre_post.size() > 2) {
+        return Err<ResultCrunchyParts>("to many double colons");
+      }
+      if (pre_post.size() == 2) {
+        //println!("{}=.={}", pre_post[0], pre_post[1]);
+        auto pre = IPAddress::split_on_colon(pre_post[0]);
+        if (pre.isErr()) {
+          return pre;
         }
-        if (pre_post.length == 2) {
-            //println!("{}=.={}", pre_post[0], pre_post[1]);
-            auto pre = IPAddress.split_on_colon(pre_post[0]);
-            if (!pre) {
-                return pre;
-            }
-            auto post = IPAddress.split_on_colon(pre_post[1]);
-            if (!post) {
-                return post;
-            }
-            // println!("pre:{} post:{}", pre_parts, post_parts);
-            return ResultCrunchyParts(
-                pre.crunchy.shl(128 - (pre.parts * 16)).add(post.crunchy), 128 / 16);
+        auto post = IPAddress::split_on_colon(pre_post[1]);
+        if (post.isErr()) {
+          return post;
         }
-        //println!("split_to_num:no double:{}", addr);
-        auto ret = IPAddress.split_on_colon(addr);
-        if (ret == null || ret.parts != 128 / 16) {
-            return null;
-        }
-        return ret;
+        // println!("pre:{} post:{}", pre_parts, post_parts);
+        ResultCrunchyParts ret(
+            pre.unwrap().crunchy.shl(128 - (pre.unwrap().parts * 16))
+              .add(post.unwrap().crunchy), 128 / 16);
+        return Ok(ret);
+      }
+      //println!("split_to_num:no double:{}", addr);
+      auto ret = IPAddress::split_on_colon(addr);
+      if (ret.isErr() || ret.unwrap().parts != 128 / 16) {
+        return Err<ResultCrunchyParts>("format error");
+      }
+      return ret;
     }
 
     static bool is_valid_ipv6(const std::string &addr) {
-        return IPAddress.split_to_num(addr) != null;
+      return IPAddress::split_to_num(addr).isOk();
     }
 
 
@@ -363,91 +355,105 @@ public:
     //
 
     static size_t pos_to_idx(size_t pos, size_t len) {
-        auto ilen = len;
-        // let ret = pos % ilen;
-        auto rem = ((pos % ilen) + ilen) % ilen;
-        // println!("pos_to_idx:{}:{}=>{}:{}", pos, len, ret, rem);
-        return rem;
+      auto ilen = len;
+      // let ret = pos % ilen;
+      auto rem = ((pos % ilen) + ilen) % ilen;
+      // println!("pos_to_idx:{}:{}=>{}:{}", pos, len, ret, rem);
+      return rem;
+    }
+
+    static std::vector<IPAddress> to_network_vec(const std::vector<IPAddress> &networks) {
+      std::vector<IPAddress> ret;
+      for (auto ip : networks) {
+        ret.push_back(ip.network());
+      }
+      return ret;
     }
 
     static std::vector<IPAddress> aggregate(const std::vector<IPAddress> &networks) {
-        if (networks.length == 0) {
-            return [];
+      if (networks.size() == 0) {
+        return {};
+      }
+      if (networks.size() == 1) {
+        // console.log("aggregate:", networks[0], networks[0].network());
+        return { networks[0].network() };
+      }
+      auto stack = IPAddress::to_network_vec(networks);
+      std::sort (stack.begin(), stack.end(), [](const IPAddress &a, const IPAddress &b) {
+          return a.lt(b);
+      });
+      // console.log(IPAddress::to_string_vec(stack));
+      // for i in 0..networks.size() {
+      //     println!("{}==={}", &networks[i].to_string_uncompressed(),
+      //         &stack[i].to_string_uncompressed());
+      // }
+      for (ssize_t pos = 0; true;) {
+        if (pos < 0) {
+          pos = 0;
         }
-        if (networks.length == 1) {
-            // console.log("aggregate:", networks[0], networks[0].network());
-            return [networks[0].network()];
-        }
-        auto stack = networks.map(i => i.network()).sort((a, b) => a.cmp(b));
-        // console.log(IPAddress.to_string_vec(stack));
-        // for i in 0..networks.length {
-        //     println!("{}==={}", &networks[i].to_string_uncompressed(),
-        //         &stack[i].to_string_uncompressed());
+        auto stack_len = static_cast<ssize_t>(stack.size()); // borrow checker
+        // println!("loop:{}:{}", pos, stack_len);
+        // if stack_len == 1 {
+        //     println!("exit 1");
+        //     break;
         // }
-        for (auto pos = 0; true;) {
-            if (pos < 0) {
-                pos = 0
-            }
-            auto stack_len = stack.length; // borrow checker
-            // println!("loop:{}:{}", pos, stack_len);
-            // if stack_len == 1 {
-            //     println!("exit 1");
-            //     break;
-            // }
-            if (pos >= stack_len) {
-                // println!("exit first:{}:{}", stack_len, pos);
-                break;
-            }
-            auto first = IPAddress.pos_to_idx(pos, stack_len);
-            pos = pos + 1;
-            if (pos >= stack_len) {
-                // println!("exit second:{}:{}", stack_len, pos);
-                break;
-            }
-            auto second = IPAddress.pos_to_idx(pos, stack_len);
-            pos = pos + 1;
-            //let firstUnwrap = first;
-            if (stack[first].includes(stack[second])) {
-                pos = pos - 2;
-                // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
-                auto pidx = IPAddress.pos_to_idx(pos + 1, stack_len);
-                stack = stack.slice(0, pidx).concat(stack.slice(pidx + 1));
-            } else {
-                stack[first].prefix = stack[first].prefix.sub(1);
-                // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
-                // first, second,
-                // stack[first].to_string(), stack[second].to_string());
-                if ((stack[first].prefix.num + 1) == stack[second].prefix.num &&
-                    stack[first].includes(stack[second])) {
-                    pos = pos - 2;
-                    auto idx = IPAddress.pos_to_idx(pos, stack_len);
-                    stack[idx] = stack[first].clone(); // kaputt
-                    auto pidx = IPAddress.pos_to_idx(pos + 1, stack_len);
-                    stack = stack.slice(0, pidx).concat(stack.slice(pidx + 1));
-                    // println!("remove-2:{}:{}", pos + 1, stack_len);
-                    pos = pos - 1; // backtrack
-                } else {
-                    stack[first].prefix = stack[first].prefix.add(1); //reset prefix
-                    // println!("easy:{}:{}=>{}", pos, stack_len, stack[first].to_string());
-                    pos = pos - 1; // do it with second as first
-                }
-            }
+        if (pos >= stack_len) {
+          // println!("exit first:{}:{}", stack_len, pos);
+          break;
         }
-        // println!("agg={}:{}", pos, stack.length);
-        return stack.slice(0, stack.length);
+        auto first = IPAddress::pos_to_idx(pos, stack_len);
+        pos = pos + 1;
+        if (pos >= stack_len) {
+          // println!("exit second:{}:{}", stack_len, pos);
+          break;
+        }
+        auto second = IPAddress::pos_to_idx(pos, stack_len);
+        pos = pos + 1;
+        //auto firstUnwrap = first;
+        if (stack[first].includes(stack[second])) {
+          pos = pos - 2;
+          // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
+          auto pidx = IPAddress::pos_to_idx(pos + 1, stack_len);
+          stack.erase(stack.begin() + pidx);
+        } else {
+          stack[first].prefix = stack[first].prefix.sub(1).unwrap();
+          // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
+          // first, second,
+          // stack[first].to_string(), stack[second].to_string());
+          if ((stack[first].prefix.num + 1) == stack[second].prefix.num &&
+              stack[first].includes(stack[second])) {
+            pos = pos - 2;
+            auto idx = IPAddress::pos_to_idx(pos, stack_len);
+            stack[idx] = stack[first].clone(); // kaputt
+            auto pidx = IPAddress::pos_to_idx(pos + 1, stack_len);
+            stack.erase(stack.begin() + pidx);
+            // println!("remove-2:{}:{}", pos + 1, stack_len);
+            pos = pos - 1; // backtrack
+          } else {
+            stack[first].prefix = stack[first].prefix.add(1).unwrap(); //reset prefix
+            // println!("easy:{}:{}=>{}", pos, stack_len, stack[first].to_string());
+            pos = pos - 1; // do it with second as first
+          }
+        }
+      }
+      // println!("agg={}:{}", pos, stack.size());
+      //return stack.erase(0, stack.size());
+      return stack;
     }
 
     std::vector<size_t> parts() const {
-        return this->ip_bits.parts(this->host_address);
+      return this->ip_bits.parts(this->host_address);
     }
 
-    std::vector<string> parts_hex_str() const {
-        std::vector<string> ret;
-        auto leading = 1 << this->ip_bits.part_bits;
-        for (auto i : this->parts()) {
-            ret.push_back((leading + i).toString(16).slice(1));
-        }
-        return ret;
+    std::vector<std::string> parts_hex_str() const {
+      std::vector<std::string> ret;
+      auto leading = 1 << this->ip_bits.part_bits;
+      for (auto i : this->parts()) {
+        std::stringstream s2;
+        s2 << std::hex << (leading + i);
+        ret.push_back(s2.str().substr(1));
+      }
+      return ret;
     }
 
     //  Returns the IP address in in-addr.arpa format
@@ -458,70 +464,70 @@ public:
     //    ip.dns_rev_domains
     //      // => ["16.172.in-addr.arpa","17.172.in-addr.arpa"]
     //
-    std::vector<string> dns_rev_domains() const {
-        std::vector<string> ret;
-        for (auto net : this->dns_networks()) {
-            // console.log("dns_rev_domains:", this->to_string(), net.to_string());
-            ret.push_back(net.dns_reverse());
-        }
-        return ret;
+    std::vector<std::string> dns_rev_domains() const {
+      std::vector<std::string> ret;
+      for (auto net : this->dns_networks()) {
+        // console.log("dns_rev_domains:", this->to_string(), net.to_string());
+        ret.push_back(net.dns_reverse());
+      }
+      return ret;
     }
 
 
     std::string dns_reverse() const {
-        std::string ret;
-        std::string dot;
-        auto dns_parts = this->dns_parts();
-        for (let i = ((this->prefix.host_prefix() + (this->ip_bits.dns_bits - 1)) / this->ip_bits.dns_bits);
-            i < this->dns_parts().length; ++i) {
-            // console.log("dns_r", i);
-            ret += dot;
-            ret += this->ip_bits.dns_part_format(dns_parts[i]);
-            dot = ".";
-        }
+      std::string ret;
+      std::string dot;
+      auto dns_parts = this->dns_parts();
+      for (auto i = ((this->prefix.host_prefix() + (this->ip_bits.dns_bits - 1)) / this->ip_bits.dns_bits);
+          i < this->dns_parts().size(); ++i) {
+        // console.log("dns_r", i);
         ret += dot;
-        ret += this->ip_bits.rev_domain;
-        return ret;
+        ret += this->ip_bits.dns_part_format(dns_parts[i]);
+        dot = ".";
+      }
+      ret += dot;
+      ret += this->ip_bits.rev_domain;
+      return ret;
     }
 
 
     std::vector<size_t> dns_parts() const {
-        std::vector<size_t> ret;
-        auto num = this->host_address.clone();
-        auto mask = Crunchy.one().shl(this->ip_bits.dns_bits);
-        for (size_t _ = 0; _ < this->ip_bits.bits / this->ip_bits.dns_bits; _++) {
-            auto part = num.clone().mod(mask).toString();
-            num = num.shr(this->ip_bits.dns_bits);
-            ret.push_back(part);
-        }
-        return ret;
+      std::vector<size_t> ret;
+      auto num = this->host_address.clone();
+      auto mask = 1 << this->ip_bits.dns_bits;
+      for (size_t _ = 0; _ < this->ip_bits.bits / this->ip_bits.dns_bits; _++) {
+        auto part = num.clone().mds(mask);
+        num = num.shr(this->ip_bits.dns_bits);
+        ret.push_back(part);
+      }
+      return ret;
     }
 
-    std::vector<IPAddress> dns_networks() {
-        // +this->ip_bits.dns_bits-1
-        auto next_bit_mask = this->ip_bits.bits -
-            ((((this->prefix.host_prefix()) / this->ip_bits.dns_bits)) * this->ip_bits.dns_bits);
-        // console.log("dns_networks-1", this->to_string(), this->prefix.host_prefix();j
-        // this->ip_bits.dns_bits, next_bit_mask);
-        if (next_bit_mask <= 0) {
-            return [this->network()];
-        }
-        //  println!("dns_networks:{}:{}", this->to_string(), next_bit_mask);
-        // dns_bits
-        auto step_bit_net = Crunchy.one().shl(this->ip_bits.bits - next_bit_mask);
-        if (step_bit_net.eq(Crunchy.zero())) {
-            // console.log("dns_networks-2", this->to_string());
-            return [this->network()];
-        }
-        std::vector<IPAddress> ret;
-        auto step = this->network().host_address;
-        auto prefix = this->prefix.from(next_bit_mask);
-        while (step.lte(this->broadcast().host_address)) {
-            // console.log("dns_networks-3", this->to_string(), step.toString(), next_bit_mask, step_bit_net.toString());
-            ret.push_back(this->from(step, prefix));
-            step = step.add(step_bit_net);
-        }
-        return ret;
+    std::vector<IPAddress> dns_networks() const {
+      // +this->ip_bits.dns_bits-1
+      auto next_bit_mask = this->ip_bits.bits -
+        ((((this->prefix.host_prefix()) / this->ip_bits.dns_bits)) * this->ip_bits.dns_bits);
+      // console.log("dns_networks-1", this->to_string(), this->prefix.host_prefix();j
+      // this->ip_bits.dns_bits, next_bit_mask);
+      if (next_bit_mask <= 0) {
+        return { this->network() };
+      }
+      //  println!("dns_networks:{}:{}", this->to_string(), next_bit_mask);
+      // dns_bits
+      auto step_bit_net = Crunchy::one().shl(this->ip_bits.bits - next_bit_mask);
+      if (step_bit_net.eq(Crunchy::zero())) {
+        // console.log("dns_networks-2", this->to_string());
+        return { this->network() };
+      }
+      std::vector<IPAddress> ret;
+      auto step = this->network().host_address;
+      auto prefix = this->prefix.from(next_bit_mask).unwrap();
+      while (step.lte(this->broadcast().host_address)) {
+        // console.log("dns_networks-3", this->to_string(), step.toString(), next_bit_mask, step_bit_net.toString());
+        ret.push_back(this->from(step, prefix));
+        step = step.add(step_bit_net);
+      }
+      return ret;
     }
 
 
@@ -549,7 +555,7 @@ public:
     // These two networks can be expressed using only one IP address
     // network if we change the prefix. Let Ruby do the work:
     //
-    //   IPAddress.IPv4.summarize(ip1,ip2).to_s
+    //   IPAddress::IPv4.summarize(ip1,ip2).to_s
     //     //=> "172.16.10.0/23"
     //
     // We note how the network "172.16.10.0/23" includes all the addresses
@@ -573,7 +579,7 @@ public:
     //   ip3 = IPAddress("10.0.2.1/24")
     //   ip4 = IPAddress("10.0.3.1/24")
     //
-    //   IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).to_string
+    //   IPAddress::IPv4.summarize(ip1,ip2,ip3,ip4).to_string
     //     //=> "10.0.0.0/22",
     //
     // But the following networks can't be summarized in a single network:
@@ -583,7 +589,7 @@ public:
     //   ip3 = IPAddress("10.0.3.1/24")
     //   ip4 = IPAddress("10.0.4.1/24")
     //
-    //   IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //   IPAddress::IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
     //     //=> ["10.0.1.0/24","10.0.2.0/23","10.0.4.0/24"]
     //
     //
@@ -611,7 +617,7 @@ public:
     //  These two networks can be expressed using only one IP address
     //  network if we change the prefix. Let Ruby do the work:
     //
-    //    IPAddress.IPv6.summarize(ip1,ip2).to_s
+    //    IPAddress::IPv6.summarize(ip1,ip2).to_s
     //      // => "2000:0./31"
     //
     //  We note how the network "2000:0./31" includes all the addresses
@@ -635,7 +641,7 @@ public:
     //    ip3 = IPAddress("2000:2./32")
     //    ip4 = IPAddress("2000:3./32")
     //
-    //    IPAddress.IPv6.summarize(ip1,ip2,ip3,ip4).to_string
+    //    IPAddress::IPv6.summarize(ip1,ip2,ip3,ip4).to_string
     //      // => ""2000:3./30",
     //
     //  But the following networks can't be summarized in a single network:
@@ -645,57 +651,58 @@ public:
     //    ip3 = IPAddress("2000:3./32")
     //    ip4 = IPAddress("2000:4./32")
     //
-    //    IPAddress.IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
+    //    IPAddress::IPv4.summarize(ip1,ip2,ip3,ip4).map{|i| i.to_string}
     //      // => ["2000:1./32","2000:2./31","2000:4./32"]
     //
     static std::vector<IPAddress> summarize(const std::vector<IPAddress> &networks) {
-        return IPAddress.aggregate(networks);
+      return IPAddress::aggregate(networks);
     }
 
-    static std::vector<IPAddress> summarize_str(const std::vector<std::string>> netstr) {
-        auto vec = IPAddress.to_ipaddress_vec(netstr);
-        // console.log(netstr, vec);
-        if (!vec) {
-            return vec;
-        }
-        return IPAddress.aggregate(vec);
+    static Result<std::vector<IPAddress>> summarize_str(const std::vector<std::string> &netstr) {
+      auto vec = IPAddress::to_ipaddress_vec(netstr);
+      // console.log(netstr, vec);
+      if (vec.isErr()) {
+        return Err<std::vector<IPAddress>>(vec.text());
+      }
+      auto ret = IPAddress::aggregate(vec.unwrap());
+      return Ok(ret);
     }
 
     bool ip_same_kind(const IPAddress &oth) const {
-        return this->ip_bits.version == oth.ip_bits.version
+      return this->ip_bits.version == oth.ip_bits.version;
     }
 
     //  Returns true if the address is an unspecified address
     //
-    //  See IPAddress.IPv6.Unspecified for more information
+    //  See IPAddress::IPv6.Unspecified for more information
     //
     bool is_unspecified() const {
-        return this->host_address.eq(Crunchy.zero());
+      return this->host_address.eq(Crunchy::zero());
     }
 
     //  Returns true if the address is a loopback address
     //
-    //  See IPAddress.IPv6.Loopback for more information
+    //  See IPAddress::IPv6.Loopback for more information
     //
     bool is_loopback() const {
-        return (this->vt_is_loopback)(this);
+      return this->vt_is_loopback(*this);
     }
 
 
     //  Returns true if the address is a mapped address
     //
-    //  See IPAddress.IPv6.Mapped for more information
+    //  See IPAddress::IPv6.Mapped for more information
     //
     bool is_mapped() const {
-        auto ret = this->mapped !== null &&
-            this->host_address.shr(32).eq(Crunchy.one().shl(16).sub(Crunchy.one()));
-        // console.log("+++++++++++", this->mapped, ret);
-        return ret;
+      auto ret = this->mapped.isSome() &&
+        this->host_address.shr(32).eq(Crunchy::one().shl(16).sub(Crunchy::one()));
+      // console.log("+++++++++++", this->mapped, ret);
+      return ret;
     }
 
 
     //  Returns the prefix portion of the IPv4 object
-    //  as a IPAddress.Prefix32 object
+    //  as a IPAddress::Prefix32 object
     //
     //    ip = IPAddress("172.16.100.4/22")
     //
@@ -703,61 +710,61 @@ public:
     //      // => 22
     //
     //    ip.prefix.class
-    //      // => IPAddress.Prefix32
+    //      // => IPAddress::Prefix32
     //
     // public prefix(): Prefix {
     //     return this->prefix;
     // }
 
 
-
     // Checks if the argument is a valid IPv4 netmask
     // expressed in dotted decimal format.
     //
-    //   IPAddress.valid_ipv4_netmask? "255.255.0.0"
+    //   IPAddress::valid_ipv4_netmask? "255.255.0.0"
     //     //=> true
     //
-    static bool is_valid_netmask(const std::string &addr) const {
-        return IPAddress.parse_netmask_to_prefix(addr) !== null;
+    static bool is_valid_netmask(const std::string &addr) {
+      return IPAddress::parse_netmask_to_prefix(addr).isOk();
     }
 
-    static size_t netmask_to_prefix(const Crunchy &nm, size_t bits) {
-        size_t prefix = 0;
-        auto addr = nm.clone();
-        bool in_host_part = true;
-        // let two = Crunchy.two();
-        for (size_t _ = 0; _ < bits; _++) {
-            auto bit = addr.mds(2);
-            // console.log(">>>", bits, bit, addr, nm);
-            if (in_host_part && bit == 0) {
-                prefix = prefix + 1;
-            } else if (in_host_part && bit == 1) {
-                in_host_part = false;
-            } else if (!in_host_part && bit == 0) {
-                return null;
-            }
-            addr = addr.shr(1);
+    static Result<size_t> netmask_to_prefix(const Crunchy &nm, size_t bits) {
+      size_t prefix = 0;
+      auto addr = nm.clone();
+      bool in_host_part = true;
+      // let two = Crunchy::two();
+      for (size_t _ = 0; _ < bits; _++) {
+        auto bit = addr.mds(2);
+        // console.log(">>>", bits, bit, addr, nm);
+        if (in_host_part && bit == 0) {
+          prefix = prefix + 1;
+        } else if (in_host_part && bit == 1) {
+          in_host_part = false;
+        } else if (!in_host_part && bit == 0) {
+          return Err<size_t>("the number is not a netmask");
         }
-        return bits - prefix;
+        addr = addr.shr(1);
+      }
+      size_t ret = bits - prefix;
+      return Ok(ret);
     }
 
 
-    static size_t parse_netmask_to_prefix(const std::string &netmask) {
-        // console.log("--1", netmask);
-        auto is_number = IPAddress.parse_dec_str(netmask);
-        if (is_number !== null) {
-            // console.log("--2", netmask, is_number);
-            return is_number;
-        }
-        auto my = IPAddress.parse(netmask);
-        // console.log("--3", netmask, my);
-        if (!my) {
-            // console.log("--4", netmask, my);
-            return null;
-        }
-        // console.log("--5", netmask, my);
-        auto my_ip = my;
-        return IPAddress.netmask_to_prefix(my_ip.host_address, my_ip.ip_bits.bits);
+    static Result<size_t> parse_netmask_to_prefix(const std::string &netmask) {
+      // console.log("--1", netmask);
+      auto is_number = IPAddress::parse_dec_str(netmask);
+      if (is_number.isOk()) {
+        // console.log("--2", netmask, is_number);
+        return is_number;
+      }
+      auto my = IPAddress::parse(netmask);
+      // console.log("--3", netmask, my);
+      if (my.isErr()) {
+        // console.log("--4", netmask, my);
+        return Err<size_t>(my.text());
+      }
+      // console.log("--5", netmask, my);
+      auto my_ip = my.unwrap();
+      return IPAddress::netmask_to_prefix(my_ip.host_address, my_ip.ip_bits.bits);
     }
 
 
@@ -778,20 +785,21 @@ public:
     //    puts ip
     //      // => 172.16.100.4/22
     //
-    IPAddress change_prefix(size_t num) const {
-        auto prefix = this->prefix.from(num);
-        if (!prefix) {
-            return null;
-        }
-        return this->from(this->host_address, prefix);
+    Result<IPAddress> change_prefix(size_t num) const {
+      auto prefix = this->prefix.from(num);
+      if (prefix.isErr()) {
+        return Err<IPAddress>(prefix.text());
+      }
+      auto ret = this->from(this->host_address, prefix.unwrap());
+      return Ok(ret);
     }
 
-    IPAddress change_netmask(const std::string &str) const {
-        auto nm = IPAddress.parse_netmask_to_prefix(str);
-        if (!nm) {
-            return null;
-        }
-        return this->change_prefix(nm);
+    Result<IPAddress> change_netmask(const std::string &str) const {
+      auto nm = IPAddress::parse_netmask_to_prefix(str);
+      if (nm.isErr()) {
+        return Err<IPAddress>(nm.text());
+      }
+      return this->change_prefix(nm.unwrap());
     }
 
     //  Returns a string with the IP address in canonical
@@ -803,41 +811,47 @@ public:
     //      // => "172.16.100.4/22"
     //
     std::string to_string() const {
-        std::string ret;
-        ret += this->to_s();
-        ret += "/";
-        ret += this->prefix.to_s();
-        return ret;
+      std::string ret;
+      ret += this->to_s();
+      ret += "/";
+      ret += this->prefix.to_s();
+      return ret;
     }
 
     std::string to_s() const {
-        return this->ip_bits.as_compressed_string(this->host_address);
+      return this->ip_bits.as_compressed_string(this->host_address);
     }
 
     std::string to_string_uncompressed() const {
-        std::string ret;
-        ret += this->to_s_uncompressed();
-        ret += "/";
-        ret += this->prefix.to_s();
-        return ret;
+      std::string ret;
+      ret += this->to_s_uncompressed();
+      ret += "/";
+      ret += this->prefix.to_s();
+      return ret;
     }
     std::string to_s_uncompressed() const {
-        return this->ip_bits.as_uncompressed_string(this->host_address);
+      return this->ip_bits.as_uncompressed_string(this->host_address);
     }
 
     std::string to_s_mapped() const {
-        if (this->is_mapped()) {
-            return `::ffff:${this->mapped.to_s()}`;
-        }
-        return this->to_s();
+      if (this->is_mapped()) {
+        std::stringstream s2;
+        s2 << "::ffff:";
+        s2 << this->mapped.unwrap().to_s();
+        return s2.str();
+      }
+      return this->to_s();
     }
 
     std::string to_string_mapped() const {
-        if (this->is_mapped()) {
-            let mapped = this->mapped.clone();
-            return `${this->to_s_mapped()}/${mapped.prefix.num}`;
-        }
-        return this->to_string();
+      if (this->is_mapped()) {
+        std::stringstream s2;
+        s2 << this->to_s_mapped();
+        s2 << "/";
+        s2 << this->mapped.unwrap().prefix.num;
+        return s2.str();
+      }
+      return this->to_string();
     }
 
     //  Returns the address portion of an IP in binary format,
@@ -849,20 +863,22 @@ public:
     //      // => "01111111000000000000000000000001"
     //
     std::string bits() const {
-        auto num = this->host_address.toString(2);
-        std::string ret;
-        for (let _ = num.length; _ < this->ip_bits.bits; _++) {
-            ret += "0";
-        }
-        ret += num;
-        return ret;
+      auto num = this->host_address.toString(2);
+      std::string ret;
+      for (auto _ = num.size(); _ < this->ip_bits.bits; _++) {
+        ret += "0";
+      }
+      ret += num;
+      return ret;
     }
     std::string to_hex() const {
-        return this->host_address.toString(16);
+      std::stringstream s2;
+      s2 << std::hex << this->host_address;
+      return s2.str();
     }
 
     IPAddress netmask() const {
-        return this->from(this->prefix.netmask(), this->prefix);
+      return this->from(this->prefix.netmask(), this->prefix);
     }
 
     //  Returns the broadcast address for the given IP.
@@ -873,8 +889,8 @@ public:
     //      // => "172.16.10.255"
     //
     IPAddress broadcast() const {
-        return this->from(this->network().host_address.add(this->size().sub(Crunchy.one())), this->prefix);
-        // IPv4.parse_u32(this->broadcast_u32, this->prefix)
+      return this->from(this->network().host_address.add(this->size().sub(Crunchy::one())), this->prefix);
+      // IPv4.parse_u32(this->broadcast_u32, this->prefix)
     }
 
     //  Checks if the IP address is actually a network
@@ -890,8 +906,8 @@ public:
     //      // => true
     //
     bool is_network() const {
-        return this->prefix.num != this->ip_bits.bits &&
-            this->host_address.eq(this->network().host_address);
+      return this->prefix.num != this->ip_bits.bits &&
+        this->host_address.eq(this->network().host_address);
     }
 
     //  Returns a new IPv4 object with the network number
@@ -903,49 +919,50 @@ public:
     //      // => "172.16.10.0"
     //
     IPAddress network() const {
-        return this->from(IPAddress.to_network(this->host_address, this->prefix.host_prefix()), this->prefix);
+      return this->from(IPAddress::to_network(this->host_address, this->prefix.host_prefix()), this->prefix);
     }
+
     static Crunchy to_network(const Crunchy &adr, size_t host_prefix) {
-        return adr.shr(host_prefix).shl(host_prefix);
+      return adr.shr(host_prefix).shl(host_prefix);
     }
 
     Crunchy sub(const IPAddress &other) const {
-        if (this->host_address.gt(other.host_address)) {
-            return this->host_address.clone().sub(other.host_address);
-        }
-        return other.host_address.clone().sub(this->host_address);
+      if (this->host_address.gt(other.host_address)) {
+        return this->host_address.clone().sub(other.host_address);
+      }
+      return other.host_address.clone().sub(this->host_address);
     }
 
     std::vector<IPAddress> add(const IPAddress &other) const {
-        return IPAddress.aggregate([this, other]);
+      return IPAddress::aggregate({*this, other});
     }
 
-    static std::vector<string> to_s_vec(const std::vector<IPAddress> &vec) {
-        std::vector<std::string> ret;
-        for (auto i : vec) {
-            ret.push_back(i.to_s());
-        }
-        return ret;
+    static std::vector<std::string> to_s_vec(const std::vector<IPAddress> &vec) {
+      std::vector<std::string> ret;
+      for (auto i : vec) {
+        ret.push_back(i.to_s());
+      }
+      return ret;
     }
 
-    static std::vector<string> to_string_vec(const std::vector<IPAddress> &vec) {
-        std::vector<std::string> ret;
-        for (auto i : vec) {
-            ret.push_back(i.to_string());
-        }
-        return ret;
+    static std::vector<std::string> to_string_vec(const std::vector<IPAddress> &vec) {
+      std::vector<std::string> ret;
+      for (auto i : vec) {
+        ret.push_back(i.to_string());
+      }
+      return ret;
     }
 
-   static std::vector<IPAddress> to_ipaddress_vec(const std::vector<string> &vec) {
-        std::vector<IPAddress> ret;
-        for (auto ipstr : vec) {
-            auto ipa = IPAddress.parse(ipstr);
-            if (!ipa) {
-                return null;
-            }
-            ret.push(ipa);
+    static Result<std::vector<IPAddress>> to_ipaddress_vec(const std::vector<std::string> &vec) {
+      std::vector<IPAddress> ret;
+      for (auto ipstr : vec) {
+        auto ipa = IPAddress::parse(ipstr);
+        if (ipa.isErr()) {
+          return Err<std::vector<IPAddress>>(ipa.text());
         }
-        return ret;
+        ret.push_back(ipa.unwrap());
+      }
+      return Ok(ret);
     }
 
     //  Returns a new IPv4 object with the
@@ -968,7 +985,7 @@ public:
     //      // => "192.168.100.1"
     //
     IPAddress first() const {
-        return this->from(this->network().host_address.add(this->ip_bits.host_ofs), this->prefix);
+      return this->from(this->network().host_address.add(this->ip_bits.host_ofs), this->prefix);
     }
 
     //  Like its sibling method IPv4// first, this method
@@ -992,7 +1009,7 @@ public:
     //      // => "192.168.100.254"
     //
     IPAddress last() const {
-        return this->from(this->broadcast().host_address.sub(this->ip_bits.host_ofs), this->prefix);
+      return this->from(this->broadcast().host_address.sub(this->ip_bits.host_ofs), this->prefix);
     }
 
     //  Iterates over all the hosts IP addresses for the given
@@ -1010,30 +1027,30 @@ public:
     //      // => "10.0.0.5"
     //      // => "10.0.0.6"
     //
-    void each_host(EachFn &func) const {
-        auto i = this->first().host_address;
-        while (i.lte(this->last().host_address)) {
-            func(this->from(i, this->prefix));
-            i = i.add(Crunchy.one());
-        }
+    void each_host(const EachFn &func) const {
+      auto i = this->first().host_address;
+      while (i.lte(this->last().host_address)) {
+        func(this->from(i, this->prefix));
+        i = i.add(Crunchy::one());
+      }
     }
 
-    IPAddress inc() const {
-        auto ret = this->clone();
-        ret.host_address = ret.host_address.add(Crunchy.one());
-        if (ret.lte(this->last())) {
-            return ret;
-        }
-        return null;
+    Result<IPAddress> inc() const {
+      auto ret = this->clone();
+      ret.host_address = ret.host_address.add(Crunchy::one());
+      if (ret.lte(this->last())) {
+        return Ok(ret);
+      }
+      return Err<IPAddress>("more the the current network");
     }
 
-    IPAddress dec() const {
-        auto ret = this->clone();
-        ret.host_address = ret.host_address.sub(Crunchy.one());
-        if (ret.gte(this->first())) {
-            return ret;
-        }
-        return null;
+    Result<IPAddress> dec() const {
+      auto ret = this->clone();
+      ret.host_address = ret.host_address.sub(Crunchy::one());
+      if (ret.gte(this->first())) {
+        return Ok(ret);
+      }
+      return Err<IPAddress>("less the the current network");
     }
 
     //  Iterates over all the IP addresses for the given
@@ -1056,12 +1073,12 @@ public:
     //      // => "10.0.0.6"
     //      // => "10.0.0.7"
     //
-    void each(EachFn &func) const {
-        auto i = this->network().host_address;
-        while (i <= this->broadcast().host_address) {
-            func(this->from(i, this->prefix));
-            i = i.add(Crunchy.one());
-        }
+    void each(const EachFn &func) const {
+      auto i = this->network().host_address;
+      while (i.lte(this->broadcast().host_address)) {
+        func(this->from(i, this->prefix));
+        i = i.add(Crunchy::one());
+      }
     }
 
     //  Spaceship operator to compare IPv4 objects
@@ -1106,16 +1123,16 @@ public:
     //      // => 8
     //
     Crunchy size() const {
-        return Crunchy.one().shl(this->prefix.host_prefix());
+      return Crunchy::one().shl(this->prefix.host_prefix());
     }
-    bool is_same_kind(IPAddress &oth) const {
-        return this->is_ipv4() == oth.is_ipv4() &&
-            this->is_ipv6() == oth.is_ipv6();
+    bool is_same_kind(const IPAddress &oth) const {
+      return this->is_ipv4() == oth.is_ipv4() &&
+        this->is_ipv6() == oth.is_ipv6();
     }
 
     //  Checks whether a subnet includes the given IP address.
     //
-    //  Accepts an IPAddress.IPv4 object.
+    //  Accepts an IPAddress::IPv4 object.
     //
     //    ip = IPAddress("192.168.10.100/24")
     //
@@ -1128,11 +1145,11 @@ public:
     //      // => false
     //
     bool includes(const IPAddress &oth) const {
-        let ret = this->is_same_kind(oth) &&
-            this->prefix.num <= oth.prefix.num &&
-            this->network().host_address.eq(IPAddress.to_network(oth.host_address, this->prefix.host_prefix()));
-        // println!("includes:{}=={}=>{}", this->to_string(), oth.to_string(), ret);
-        return ret
+      auto ret = this->is_same_kind(oth) &&
+        this->prefix.num <= oth.prefix.num &&
+        this->network().host_address.eq(IPAddress::to_network(oth.host_address, this->prefix.host_prefix()));
+      // println!("includes:{}=={}=>{}", this->to_string(), oth.to_string(), ret);
+      return ret;
     }
 
     //  Checks whether a subnet includes all the
@@ -1146,13 +1163,13 @@ public:
     //    ip.include_all?(addr1,addr2)
     //      // => true
     //
-    bool includes_all(std::vector<IPAddress> &oths) const {
-        for (auto oth : oths) {
-            if (!this->includes(oth)) {
-                return false;
-            }
+    bool includes_all(const std::vector<IPAddress> &oths) const {
+      for (auto oth : oths) {
+        if (!this->includes(oth)) {
+          return false;
         }
-        return true;
+      }
+      return true;
     }
     //  Checks if an IPv4 address objects belongs
     //  to a private network RFC1918
@@ -1164,7 +1181,7 @@ public:
     //      // => true
     //
     bool is_private() const {
-        return this->vt_is_private(this);
+      return this->vt_is_private(*this);
     }
 
 
@@ -1200,35 +1217,36 @@ public:
     //  Returns an array of IPv4 objects
     //
     static std::vector<IPAddress> sum_first_found(const std::vector<IPAddress> &arr) {
-        auto dup = arr.slice();
-        if (dup.length < 2) {
-            return dup;
-        }
-        for (size i = dup.length - 2; i >= 0; --i) {
-            // console.log("sum_first_found:", dup[i], dup[i + 1]);
-            auto a = IPAddress.summarize([dup[i], dup[i + 1]]);
-            // println!("dup:{}:{}:{}", dup.length, i, a.length);
-            if (a.length == 1) {
-                dup[i] = a[0];
-                dup = dup.slice(0, i + 1).concat(dup.slice(i + 2));
-                break;
-            }
-        }
+      auto dup = std::vector<IPAddress>(arr.begin(), arr.end());
+      if (dup.size() < 2) {
         return dup;
+      }
+      for (ssize_t i = dup.size() - 2; i >= 0; --i) {
+        // console.log("sum_first_found:", dup[i], dup[i + 1]);
+        auto a = IPAddress::summarize({dup[i], dup[i + 1]});
+        // println!("dup:{}:{}:{}", dup.size(), i, a.size());
+        if (a.size() == 1) {
+          dup[i] = a[0];
+          dup.erase(dup.begin() + i + 1);
+            break;
+        }
+      }
+      return dup;
     }
-    std::vector<IPAddress> split(size_t subnets) const {
-        if (subnets == 0 || (1 << this->prefix.host_prefix()) <= subnets) {
-            return null;
-        }
-        let networks = this->subnet(this->newprefix(subnets).num);
-        if (!networks) {
-            return networks;
-        }
-        let net = networks;
-        while (net.length != subnets) {
-            net = this->sum_first_found(net);
-        }
-        return net;
+
+    Result<std::vector<IPAddress>> split(size_t subnets) const {
+      if (subnets == 0 || (1 << this->prefix.host_prefix()) <= subnets) {
+        return Err<std::vector<IPAddress>>("subnet not in range");
+      }
+      auto networks = this->subnet(this->newprefix(subnets).unwrap().num);
+      if (networks.isErr()) {
+        return networks;
+      }
+      auto net = networks.unwrap();
+      while (net.size() != subnets) {
+        net = this->sum_first_found(net);
+      }
+      return Ok(net);
     }
     // alias_method :/, :split
 
@@ -1255,15 +1273,17 @@ public:
     //
     //  If +new_prefix+ is less than 1, returns 0.0.0.0/0
     //
-    IPAddress supernet(size_t new_prefix: number) const {
-        if (new_prefix >= this->prefix.num) {
-            return null;
-        }
-        // let new_ip = this->host_address.clone();
-        // for _ in new_prefix..this->prefix.num {
-        //     new_ip = new_ip << 1;
-        // }
-        return this->from(this->host_address, this->prefix.from(new_prefix)).network();
+    Result<IPAddress> supernet(size_t new_prefix) const {
+      if (new_prefix >= this->prefix.num) {
+        return Err<IPAddress>("Prefix out of range");
+      }
+      // let new_ip = this->host_address.clone();
+      // for _ in new_prefix..this->prefix.num {
+      //     new_ip = new_ip << 1;
+      // }
+      auto ret = this->from(this->host_address,
+          this->prefix.from(new_prefix).unwrap()).network();
+      return Ok(ret);
     }
 
     //  This method implements the subnetting function
@@ -1287,20 +1307,20 @@ public:
     //  The resulting number of subnets will of course always be
     //  a power of two.
     //
-    std::vector<IPAddress> subnet(size_t subprefix) const {
-        if (subprefix < this->prefix.num || this->ip_bits.bits < subprefix) {
-            return null;
-        }
-        std::vector<IPAddress> ret;
-        auto net = this->network();
-        net.prefix = net.prefix.from(subprefix);
-        for (size_t _ = 0; _ < (1 << (subprefix - this->prefix.num)); _++) {
-            ret.push(net.clone());
-            net = net.from(net.host_address, net.prefix);
-            auto size = net.size();
-            net.host_address = net.host_address.add(size);
-        }
-        return ret;
+    Result<std::vector<IPAddress>> subnet(size_t subprefix) const {
+      if (subprefix < this->prefix.num || this->ip_bits.bits < subprefix) {
+        return Err<std::vector<IPAddress>>("subprefix out of range");
+      }
+      std::vector<IPAddress> ret;
+      auto net = this->network();
+      net.prefix = net.prefix.from(subprefix).unwrap();
+      for (size_t _ = 0; _ < (1 << (subprefix - this->prefix.num)); _++) {
+        ret.push_back(net);
+        net = net.from(net.host_address, net.prefix);
+        auto size = net.size();
+        net.host_address = net.host_address.add(size);
+      }
+      return Ok(ret);
     }
 
     //  Return the ip address in a format compatible
@@ -1314,19 +1334,45 @@ public:
     //      // => "ac10:0a01"
     //
     IPAddress to_ipv6() const {
-        return this->vt_to_ipv6(this);
+      return this->vt_to_ipv6(*this);
     }
 
-    Prefix newprefix(size_t num) const {
-        for (size_t i = num; i < this->ip_bits.bits; ++i) {
-            size_t a = ~~Math.log2(i);
-            if (a == Math.log2(i)) {
-                return this->prefix.add(a);
-            }
+    Result<Prefix> newprefix(size_t num) const {
+      for (size_t i = num; i < this->ip_bits.bits; ++i) {
+        auto a = floor(log2(i));
+        if (a == log2(i)) {
+          return this->prefix.add(a);
         }
-        return null
+      }
+      return Err<Prefix>("prefix not found");
+    }
+
+    static Result<size_t> parse_str(const std::string &str, size_t radix) {
+      std::stringstream s2;
+      if (radix == 10) {
+        s2 << std::dec;
+      } else if (radix == 16) {
+        s2 << std::hex;
+      } else {
+        return Err<size_t>("unknown radix");
+      }
+      s2 << str;
+      size_t ret;
+      s2 >> ret;
+      if (s2.fail()) {
+        return Err<size_t>("not a decimal number");
+      }
+      return Ok(ret);
+    }
+    static Result<size_t> parse_dec_str(const std::string &str) {
+      return IPAddress::parse_str(str, 10);
+    }
+    static Result<size_t> parse_hex_str(const std::string &str) {
+      return IPAddress::parse_str(str, 16);
     }
 
 };
+
+std::ostream& operator<<(std::ostream &o, const IPAddress &ipa);
 
 #endif

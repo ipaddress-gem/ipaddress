@@ -1,95 +1,93 @@
 #ifndef __IPV4__
-#define  __IPV4__
+#define __IPV4__
 
-#include "crunchy.hpp";
-#include "prefix32.hpp";
-#include "ipaddress.hpp";
-#include "ip_bits.hpp";
-#include "prefix128.hpp";
-#include "ipv6.hpp";
+#include "crunchy.hpp"
+#include "prefix32.hpp"
+#include "ipaddress.hpp"
+#include "ip_bits.hpp"
+#include "prefix128.hpp"
+// #include "ipv6.hpp"
 
 class Ipv4 {
     public:
-    static IPAddress from_number(const Crunchy &addr, size_t prefix_num) {
-        auto prefix = Prefix32.create(prefix_num);
-        if (!prefix) {
-            return null;
+    static Result<IPAddress> from_number(const Crunchy &addr, size_t prefix_num) {
+        auto prefix = Prefix32::create(prefix_num);
+        if (prefix.isErr()) {
+            return Err<IPAddress>(prefix.text());
         }
-        return new IPAddress(
-            IpBits.v4(),
+        IPAddress ret(
+            IpBits::v4(),
             addr.clone(),
-            prefix,
-            null,
-            Ipv4.ipv4_is_private,
-            Ipv4.ipv4_is_loopback,
-            Ipv4.to_ipv6
+            prefix.unwrap(),
+            None<IPAddress>(),
+            Ipv4::ipv4_is_private,
+            Ipv4::ipv4_is_loopback,
+            Ipv4::to_ipv6
         );
+        return Ok(ret);
     }
 
-    static IPAddress create(const std::string &str) {
+    static Result<IPAddress> create(const std::string &str) {
         // console.log("create:v4:", str);
         // let enable = str == "0.0.0.0/0";
-        auto tmp = IPAddress.split_at_slash(str);
-        auto ip = tmp[0];
-        auto netmask = tmp[1];
-        if (!IPAddress.is_valid_ipv4(ip)) {
-            // enable && console.log("xx1");
-            return null;
+        auto tmp = IPAddress::split_at_slash(str);
+        if (tmp.isErr()) {
+          return Err<IPAddress>(tmp.text());
         }
-        auto ip_prefix_num = 32;
-        if (netmask) {
+        if (!IPAddress::is_valid_ipv4(tmp.unwrap().addr)) {
+            // enable && console.log("xx1");
+            return Err<IPAddress>("No ipv4 string");
+        }
+        size_t ip_prefix_num = 32;
+        if (tmp.unwrap().netmask.isSome()) {
             //  netmask is defined
-            ip_prefix_num = IPAddress.parse_netmask_to_prefix(netmask);
-            if (ip_prefix_num === null) {
+            auto ret = IPAddress::parse_netmask_to_prefix(tmp.unwrap().netmask.unwrap());
+            if (ret.isErr()) {
                 // enable && console.log("xx2");
-                return null;
+                return Err<IPAddress>(ret.text());
             }
+            ip_prefix_num = ret.unwrap();
             //if ip_prefix.ip_bits.version
         }
-        auto ip_prefix = Prefix32.create(ip_prefix_num);
-        if (ip_prefix === null) {
+        auto ip_prefix = Prefix32::create(ip_prefix_num);
+        if (ip_prefix.isErr()) {
             // enable && console.log("xx3");
-            return null;
+            return Err<IPAddress>(ip_prefix.text());
         }
-        auto split_number = IPAddress.split_to_u32(ip);
-        if (split_number === null) {
+        auto split_number = IPAddress::split_to_u32(tmp.unwrap().addr);
+        if (split_number.isErr()) {
             // enable && console.log("xx4");
-            return null;
+            return Err<IPAddress>(split_number.text());
         }
         // console.log(">>>>>>>", ip, ip_prefix);
-        return IPAddress(
-            IpBits.v4(),
-            split_number,
-            ip_prefix,
-            null,
-            Ipv4.ipv4_is_private,
-            Ipv4.ipv4_is_loopback,
-            Ipv4.to_ipv6
+        IPAddress ret(
+            IpBits::v4(),
+            split_number.unwrap(),
+            ip_prefix.unwrap(),
+            None<IPAddress>(),
+            Ipv4::ipv4_is_private,
+            Ipv4::ipv4_is_loopback,
+            Ipv4::to_ipv6
         );
+        return Ok(ret);
     }
 
     static bool ipv4_is_private(const IPAddress &my) {
-        return [IPAddress.parse("10.0.0.0/8"),
-            IPAddress.parse("172.16.0.0/12"),
-            IPAddress.parse("192.168.0.0/16")]
-            .find(i => i.includes(my)) != null;
+        for (auto ipa : {IPAddress::parse("10.0.0.0/8").unwrap(),
+            IPAddress::parse("172.16.0.0/12").unwrap(),
+            IPAddress::parse("192.168.0.0/16").unwrap()}) {
+                if (ipa.includes(my)) {
+                    return true;
+                }
+            }
+            return false;
     }
 
     static bool ipv4_is_loopback(const IPAddress &my) {
-        return IPAddress.parse("127.0.0.0/8").includes(my);
+        return IPAddress::parse("127.0.0.0/8").unwrap().includes(my);
     }
 
-    static IPAddress to_ipv6(const IPAddress &ia) {
-        return IPAddress(
-            IpBits.v6(),
-            ia.host_address.clone(),
-            Prefix128.create(ia.prefix.num),
-            null,
-            Ipv6.ipv6_is_private,
-            Ipv6.ipv6_is_loopback,
-            Ipv6.to_ipv6
-        );
-    }
+    static IPAddress to_ipv6(const IPAddress &ia);
 
     //  Checks whether the ip address belongs to a
     //  RFC 791 CLASS A network, no matter
@@ -102,9 +100,9 @@ class Ipv4 {
     //    ip.a?
     //      // => true
     //
-    static boolean is_class_a(const IPAddress &my) {
-        // console.log("is_class_a:", my.to_string(), Crunchy.from_string("80000000", 16), my.is_ipv4());
-        return my.is_ipv4() && my.host_address.lt(Crunchy.from_string("80000000", 16));
+    static bool is_class_a(const IPAddress &my) {
+        // console.log("is_class_a:", my.to_string(), Crunchy::from_string("80000000", 16), my.is_ipv4());
+        return my.is_ipv4() && my.host_address.lt(Crunchy::from_string("80000000", 16).unwrap());
     }
 
     //  Checks whether the ip address belongs to a
@@ -118,10 +116,10 @@ class Ipv4 {
     //    ip.b?
     //      // => true
     //
-    static boolean is_class_b(const IPAddress &my) {
+    static bool is_class_b(const IPAddress &my) {
         return my.is_ipv4() &&
-            Crunchy.from_string("80000000", 16).lte(my.host_address) &&
-            my.host_address.lt(Crunchy.from_string("c0000000", 16));
+            Crunchy::from_string("80000000", 16).unwrap().lte(my.host_address) &&
+            my.host_address.lt(Crunchy::from_string("c0000000", 16).unwrap());
     }
 
     //  Checks whether the ip address belongs to a
@@ -137,8 +135,8 @@ class Ipv4 {
     //
     static bool is_class_c(const IPAddress &my) {
         return my.is_ipv4() &&
-            Crunchy.from_string("c0000000", 16).lte(my.host_address) &&
-            my.host_address.lt(Crunchy.from_string("e0000000", 16));
+            Crunchy::from_string("c0000000", 16).unwrap().lte(my.host_address) &&
+            my.host_address.lt(Crunchy::from_string("e0000000", 16).unwrap());
     }
 
 
@@ -154,7 +152,7 @@ class Ipv4 {
     //
     //  Example:
     //
-    //    ip = IPAddress::IPv4.parse_classful "10.0.0.1"
+    //    ip = IPAddress::Ipv4::parse_classful "10.0.0.1"
     //
     //    ip.netmask
     //      // => "255.0.0.0"
@@ -164,23 +162,23 @@ class Ipv4 {
     //  Note that classes C, D and E will all have a default
     //  prefix of /24 or 255.255.255.0
     //
-    static IPAddress parse_classful(const std::string &ip_si) {
-        if (!IPAddress.is_valid_ipv4(ip_si)) {
-            return null;
+    static Result<IPAddress> parse_classful(const std::string &ip_si) {
+        if (!IPAddress::is_valid_ipv4(ip_si)) {
+            return Err<IPAddress>("no valid ip");
         }
-        auto o_ip = IPAddress.parse(ip_si);
-        if (o_ip === null) {
+        auto o_ip = IPAddress::parse(ip_si);
+        if (o_ip.isErr()) {
             return o_ip;
         }
-        auto ip = o_ip;
-        if (Ipv4.is_class_a(ip)) {
-            ip.prefix = Prefix32.create(8);
-        } else if (Ipv4.is_class_b(ip)) {
-            ip.prefix = Prefix32.create(16);
-        } else if (Ipv4.is_class_c(ip)) {
-            ip.prefix = Prefix32.create(24);
+        auto ip = o_ip.unwrap();
+        if (Ipv4::is_class_a(ip)) {
+            ip.prefix = Prefix32::create(8).unwrap();
+        } else if (Ipv4::is_class_b(ip)) {
+            ip.prefix = Prefix32::create(16).unwrap();
+        } else if (Ipv4::is_class_c(ip)) {
+            ip.prefix = Prefix32::create(24).unwrap();
         }
-        return ip;
+        return Ok(ip);
     }
 };
 #endif

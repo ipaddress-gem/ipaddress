@@ -1,44 +1,49 @@
-#ifndef __PREFIX128__
-#define __PREFIX128__
+#ifndef __PREFIX__
+#define __PREFIX__
 
-#include <ip_bits.hpp>
-#include <crunchy.hpp>
+#include <string>
+#include <functional>
 
-
+#include "result.hpp"
+#include "ip_bits.hpp"
+#include "crunchy.hpp"
 
 
 class Prefix {
 public:
-    typedef std::function<Prefix(const Prefix &source, const size_t num)> From;
+    typedef std::function<Result<Prefix>(const size_t num)> From;
     size_t num;
     IpBits ip_bits;
     Crunchy net_mask;
     From vt_from;
 
-    Prefix(size_t num, const IpBits &ip_bits, const Crunchy &net_mask, From &from) {
-        this.num = num;
-        this.ip_bits = ip_bits;
-        this.net_mask = net_mask;
-        this.vt_from = vt_from;
+    Prefix() {
+    }
+
+    Prefix(size_t num, const IpBits &ip_bits, const Crunchy &net_mask, const From &vt_from) {
+        this->num = num;
+        this->ip_bits = ip_bits;
+        this->net_mask = net_mask;
+        this->vt_from = vt_from;
     }
 
     Prefix clone() const {
         return Prefix(
-            this.num,
-            this.ip_bits,
-            this.net_mask,
-            this.vt_from
+            this->num,
+            this->ip_bits,
+            this->net_mask,
+            this->vt_from
         );
     }
 
-    bool eq(Prefix &other) {
+    bool eq(const Prefix &other) const {
         return this->ip_bits.version == other.ip_bits.version &&
             this->num == other.num;
     }
-    bool ne(Prefix &other) {
-        return !this.eq(other);
+    bool ne(const Prefix &other) const {
+        return !this->eq(other);
     }
-    ssize_t cmp(Prefix &oth) {
+    ssize_t cmp(const Prefix &oth) const {
         if (this->ip_bits.version < oth.ip_bits.version) {
             return -1;
         } else if (this->ip_bits.version > oth.ip_bits.version) {
@@ -54,8 +59,8 @@ public:
         }
     }
     //#[allow(dead_code)]
-    Prefix from(size_t num) const {
-        return (this->vt_from)(this, num);
+    Result<Prefix> from(size_t num) const {
+        return this->vt_from(num);
     }
 
     std::string to_ip_str() const {
@@ -63,25 +68,25 @@ public:
     }
 
     Crunchy size() const {
-        return Crunchy.one().shl(this->ip_bits.bits - this->num);
+        return Crunchy::one().shl(this->ip_bits.bits - this->num);
     }
 
     static Crunchy new_netmask(size_t prefix, size_t bits) {
-        auto mask = Crunchy.zero();
+        auto mask = Crunchy::zero();
         auto host_prefix = bits - prefix;
         for (size_t i = 0; i < prefix; ++i) {
             // console.log(">>>", i, host_prefix, mask);
-            mask = mask.add(Crunchy.one().shl(host_prefix + i));
+            mask = mask.add(Crunchy::one().shl(host_prefix + i));
         }
-        return mask
+        return mask;
     }
 
     Crunchy netmask() const {
-        return this.net_mask;
+        return this->net_mask;
     }
 
     size_t get_prefix() const {
-        return this.num;
+        return this->num;
     }
 
     //  The hostmask is the contrary of the subnet mask,
@@ -94,9 +99,9 @@ public:
     //      // => "0.0.0.255"
     //
     Crunchy host_mask() const {
-        auto ret = Crunchy.zero();
+        auto ret = Crunchy::zero();
         for (size_t _ = 0; _ < (this->ip_bits.bits - this->num); _++) {
-            ret = ret.shl(1).add(Crunchy.one());
+            ret = ret.shl(1).add(Crunchy::one());
         }
         return ret;
     }
@@ -134,29 +139,29 @@ public:
     // }
 
     std::string to_s() const {
-        return this->get_prefix().toString();
+        return std::to_string(this->get_prefix());
     }
     //#[allow(dead_code)]
     // public inspect(&self) -> String {
     //     return self.to_s();
     // }
-    number to_i() const {
-        return this.get_prefix();
+    size_t to_i() const {
+        return this->get_prefix();
     }
 
-    Prefix add_prefix(Prefix &other) const {
+    Result<Prefix> add_prefix(Prefix &other) const {
         return this->from(this->get_prefix() + other.get_prefix());
     }
 
-    Prefix add(size_t other) const {
-        return this->from(this->get_prefix() + other)
+    Result<Prefix> add(size_t other) const {
+        return this->from(this->get_prefix() + other);
     }
 
-    Prefix sub_prefix(Prefix &other) const {
+    Result<Prefix> sub_prefix(Prefix &other) const {
         return this->sub(other.get_prefix());
     }
 
-    Prefix sub(size_t other) const {
+    Result<Prefix> sub(size_t other) const {
         if (other > this->get_prefix()) {
             return this->from(other - this->get_prefix());
         }
@@ -165,4 +170,5 @@ public:
 
 };
 
+std::ostream& operator<<(std::ostream &o, const Prefix &prefix);
 #endif

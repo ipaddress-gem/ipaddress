@@ -11,6 +11,7 @@
 #include <string>
 
 class Ipv6 {
+public:
     //  =Name
     //
     //  IPAddress::IPv6 - IP version 6 address manipulation library
@@ -68,66 +69,66 @@ class Ipv6 {
     //
     //
 
-    static IPAddress from_str(const std::string &str, size_t radix, size_t prefix) {
-        Crunchy num = Crunchy.from_string(str, radix);
-        if (num) {
-            return null;
+    static Result<IPAddress> from_str(const std::string &str, size_t radix, size_t prefix) {
+        auto num = Crunchy::from_string(str, radix);
+        if (num.isErr()) {
+            return Err<IPAddress>(num.text());
         }
-        return Ipv6.from_int(num, prefix);
+        return Ipv6::from_int(num.unwrap(), prefix);
     }
 
-    static IPAddress enhance_if_mapped(IPAddress &ip) {
+    static Result<IPAddress> enhance_if_mapped(IPAddress &ip) {
         // console.log("------A");
         // println!("real mapped {:x} {:x}", &ip.host_address, ip.host_address.clone().shr(32));
         if (ip.is_mapped()) {
             // console.log("------B");
-            return ip;
+            return Ok(ip);
         }
         // console.log("------C", ip);
         auto ipv6_top_96bit = ip.host_address.shr(32);
         // console.log("------D", ip);
-        if (ipv6_top_96bit.eq(Crunchy.from_number(0xffff))) {
+        if (ipv6_top_96bit.eq(Crunchy::from_number(0xffff))) {
             // console.log("------E");
-            auto num = ip.host_address.mod(Crunchy.one().shl(32));
+            auto num = ip.host_address.mod(Crunchy::one().shl(32));
             // console.log("------F");
-            if (num.eq(Crunchy.zero())) {
-                return ip;
+            if (num.eq(Crunchy::zero())) {
+                return Ok(ip);
             }
             //println!("ip:{},{:x}", ip.to_string(), num);
-            auto ipv4_bits = IpBits.v4();
+            auto ipv4_bits = IpBits::v4();
             if (ipv4_bits.bits < ip.prefix.host_prefix()) {
+                std::cout << "mapped:" << ip << std::endl;
                 //println!("enhance_if_mapped-2:{}:{}", ip.to_string(), ip.prefix.host_prefix());
-                return null;
+                return Err<IPAddress>("prefix not in range");
             }
             // console.log("------G");
-            auto mapped = Ipv4.from_number(num, ipv4_bits.bits - ip.prefix.host_prefix());
+            auto mapped = Ipv4::from_number(num, ipv4_bits.bits - ip.prefix.host_prefix());
             // console.log("------H");
-            if (!mapped) {
+            if (mapped.isErr()) {
                 // println!("enhance_if_mapped-3");
                 return mapped;
             }
             // println!("real mapped!!!!!={}", mapped.clone().to_string());
-            ip.mapped = mapped;
+            ip.mapped = Some(mapped.unwrap());
         }
-        return ip;
+        return Ok(ip);
     }
 
-    static IPAddress from_int(const Crunchy &adr, size_t prefix_num) {
-        auto prefix = Prefix128.create(prefix_num);
-        if (prefix === null) {
-            return null;
+    static Result<IPAddress> from_int(const Crunchy &adr, size_t prefix_num) {
+        auto prefix = Prefix128::create(prefix_num);
+        if (prefix.isErr()) {
+            return Err<IPAddress>(prefix.text());
         }
-        auto ret = Ipv6.enhance_if_mapped(IPAddress(
-            IpBits.v6(),
-            adr.clone(),
-            prefix,
-            mapped: null,
-            Ipv6.ipv6_is_private,
-            Ipv6.ipv6_is_loopback,
-            Ipv6.to_ipv6,
-        ));
-        //console.log("from_int:", adr, prefix, ret);
-        return ret;
+        IPAddress ret(
+            IpBits::v6(),
+            adr,
+            prefix.unwrap(),
+            None<IPAddress>(),
+            Ipv6::ipv6_is_private,
+            Ipv6::ipv6_is_loopback,
+            Ipv6::to_ipv6
+        );
+        return Ipv6::enhance_if_mapped(ret);
     }
 
 
@@ -146,45 +147,49 @@ class Ipv6 {
     //
     //    ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     //
-    static IPAddress create(const std::string &str) {
+    static Result<IPAddress> create(const std::string &str) {
         // console.log("1>>>>>>>>>", str);
-        let [ip, o_netmask] = IPAddress.split_at_slash(str);
+        auto r_slash = IPAddress::split_at_slash(str);
+        if (r_slash.isErr()) {
+          return Err<IPAddress>(r_slash.text());
+        }
         // console.log("2>>>>>>>>>", str);
-        if (IPAddress.is_valid_ipv6(ip)) {
+        if (IPAddress::is_valid_ipv6(str)) {
             // console.log("3>>>>>>>>>", str);
-            let o_num = IPAddress.split_to_num(ip);
-            if (o_num === null) {
+            auto o_num = IPAddress::split_to_num(r_slash.unwrap().addr);
+            if (o_num.isErr()) {
                 // console.log("ipv6_create-1", str);
-                return null;
+                return Err<IPAddress>(o_num.text());
             }
             // console.log("4>>>>>>>>>", str);
-            let netmask = 128;
-            if (o_netmask !== null) {
-                netmask = IPAddress.parse_dec_str(o_netmask);
-                if (netmask === null) {
+            size_t netmask = 128;
+            if (r_slash.unwrap().netmask.isSome()) {
+                auto ret = IPAddress::parse_dec_str(r_slash.unwrap().netmask.unwrap());
+                if (ret.isErr()) {
                     // console.log("ipv6_create-2", str);
-                    return null;
+                    return Err<IPAddress>(ret.text());
                 }
+                netmask = ret.unwrap();
             }
             // console.log("5>>>>>>>>>", str);
-            let prefix = Prefix128.create(netmask);
-            if (prefix === null) {
+            auto prefix = Prefix128::create(netmask);
+            if (prefix.isErr()) {
                 // console.log("ipv6_create-3", str);
-                return null;
+                return Err<IPAddress>(prefix.text());
             }
             //console.log("6>>>>>>>>>", str, prefix.num, o_netmask, netmask);
-            return Ipv6.enhance_if_mapped(new IPAddress({
-                ip_bits: IpBits.v6(),
-                host_address: o_num.crunchy,
-                prefix: prefix,
-                mapped: null,
-                vt_is_private: Ipv6.ipv6_is_private,
-                vt_is_loopback: Ipv6.ipv6_is_loopback,
-                vt_to_ipv6: Ipv6.to_ipv6
-            }));
+            IPAddress ret(
+                IpBits::v6(),
+                o_num.unwrap().crunchy,
+                prefix.unwrap(),
+                None<IPAddress>(),
+                Ipv6::ipv6_is_private,
+                Ipv6::ipv6_is_loopback,
+                Ipv6::to_ipv6);
+            return Ipv6::enhance_if_mapped(ret);
         } else {
             // console.log("ipv6_create-4", str);
-            return null;
+            return Err<IPAddress>("input is not a ipv6 address");
         }
     } //  pub fn initialize
 
@@ -193,13 +198,13 @@ class Ipv6 {
     }
 
     static bool ipv6_is_loopback(const IPAddress &my) {
-        // console.log("*************", my.host_address, Crunchy.one());
-        return my.host_address.eq(Crunchy.one());
+        // console.log("*************", my.host_address, Crunchy::one());
+        return my.host_address.eq(Crunchy::one());
     }
 
 
     static bool ipv6_is_private(const IPAddress &my) {
-        return IPAddress.parse("fd00::/8").includes(my);
+        return IPAddress::parse("fd00::/8").unwrap().includes(my);
     }
 
 };

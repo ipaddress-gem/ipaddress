@@ -23,6 +23,12 @@ public:
       part(part), pos(pos), cnt(cnt), max(max) {
     }
 
+    Rle *clonePtr() const {
+      Rle *ret = new Rle();
+      *ret = *this;
+      return ret;
+    }
+
     std::string toString() const {
       std::stringstream s2;
       s2 << "<Rle@part:" << this->part;
