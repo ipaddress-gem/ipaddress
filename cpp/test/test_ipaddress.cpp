@@ -191,4 +191,5 @@ int main() {
       Chai::assert.equal("10.0.1.1/24", a2.to_string());
     });
   });
+  return exit();
 }

@@ -22,7 +22,9 @@ namespace Chai {
 
   class Assert {
     public:
-      void isTrue(bool v, const char *msg = "") const {
+      size_t count = 0;
+      void isTrue(bool v, const char *msg = "") {
+        ++count;
         if (!v) {
           std::stringstream s2;
           s2 << "isTrue got false, ";
@@ -30,7 +32,8 @@ namespace Chai {
           throw AssertError(s2.str().c_str());
         }
       }
-      void isFalse(bool v, const char *msg = "") const {
+      void isFalse(bool v, const char *msg = "") {
+        ++count;
         if (v) {
           std::stringstream s2;
           s2 << "isFalse got true, ";
@@ -38,16 +41,17 @@ namespace Chai {
           throw AssertError(s2.str().c_str());
         }
       }
-      void equal(const std::string &t1, const char *t2, const char *msg = "") const {
+      void equal(const std::string &t1, const char *t2, const char *msg = "") {
         this->equal(t1, std::string(t2), msg);
       }
-      void equal(const char *t1, const std::string &t2, const char *msg = "") const {
+      void equal(const char *t1, const std::string &t2, const char *msg = "") {
         this->equal(std::string(t1), t2, msg);
       }
-      void equal(const char *t1, const char *t2, const char *msg = "") const {
+      void equal(const char *t1, const char *t2, const char *msg = "") {
         this->equal(std::string(t1), std::string(t2), msg);
       }
-      void equal(unsigned char t1, unsigned char t2, const char *msg = "") const {
+      void equal(unsigned char t1, unsigned char t2, const char *msg = "") {
+        ++count;
         if (t1 != t2) {
           std::stringstream s2;
           s2 << "uchar is not equal ";
@@ -59,7 +63,8 @@ namespace Chai {
         }
 
       }
-      template<typename T> void equal(T t1, T t2, const char *msg = "") const {
+      template<typename T> void equal(T t1, T t2, const char *msg = "") {
+        ++count;
         if (t1 != t2) {
           std::stringstream s2;
           s2 << "is not equal ";
@@ -109,7 +114,8 @@ namespace Chai {
         return s2.str();
       }
 
-      template<typename T> void deepEqual(std::vector<T> left, std::vector<T> right, const char *msg = "") const {
+      template<typename T> void deepEqual(std::vector<T> left, std::vector<T> right, const char *msg = "") {
+        ++count;
           std::stringstream s2;
           s2 << "array size() missmatch:" <<  msg << ":" <<
             Assert::vec_to_string(0, left) << "====" <<

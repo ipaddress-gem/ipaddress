@@ -182,6 +182,18 @@ public:
       s2 << std::dec;
     } else if (radix == 16) {
       s2 << std::hex;
+    } else if (radix == 2) {
+      std::vector<size_t> bits;
+      auto my = this->num;
+      do {
+        size_t tmp = static_cast<size_t>(my&0x1);
+        bits.push_back(tmp);
+        my = my >> 1;
+      } while(my != 0);
+      for (int i = bits.size()-1; i >= 0; --i) {
+        s2 << bits[i];
+      }
+      return s2.str();
     } else {
       throw NotImplementedException();
     }

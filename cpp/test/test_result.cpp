@@ -38,4 +38,5 @@ int main(int, char **) {
       });
 
   });
+  return exit();
 }

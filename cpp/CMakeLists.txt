@@ -31,14 +31,11 @@ find_package(Threads REQUIRED)
 
 include_directories(.)
 
-add_executable(main main.cpp tunator.cpp tun_device.cpp if_addrs_macos.cpp if_addrs_linux.cpp)
-add_dependencies(main SimpleWebSocketServer)
-add_dependencies(main jsoncpp)
-#target_link_libraries(main ${jsoncpp_LIBRARY_DIR})
-target_link_libraries(main ${jsoncpp_LIBRARIES})
-target_link_libraries(main ${Boost_LIBRARIES})
-target_link_libraries(main ${OPENSSL_LIBRARIES})
-target_link_libraries(main ${CMAKE_THREAD_LIBS_INIT})
+file(GLOB SOURCES "src/*.cpp")
+#add_library(ipaddress SHARED ${SOURCES})
+add_library(ipaddress STATIC ${SOURCES})
+target_link_libraries(ipaddress ${Boost_LIBRARIES})
+
 
 enable_testing()
 add_subdirectory(test)

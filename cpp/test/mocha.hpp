@@ -4,6 +4,7 @@
 #include <iostream>
 #include <exception>
 #include "chai.hpp"
+#include <stdlib.h>
 
 typedef std::function<void()> MochaAction;
 
@@ -13,8 +14,9 @@ static int okCount = 0;
 int exit() {
   std::cout << std::dec << std::endl << "Total " << okCount+failCount
     << " Ok " << okCount
-    << " Fail " << failCount << std::endl;
-    return failCount;
+    << " Fail " << failCount
+    << " Assertions " << Chai::assert.count << std::endl;
+  std::exit(std::min(failCount, 27));
 }
 
 void describe(const char *title, MochaAction action) {

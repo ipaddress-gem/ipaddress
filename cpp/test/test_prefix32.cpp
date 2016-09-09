@@ -60,6 +60,7 @@ describe("prefix32", []() {
             auto num = e.second;
             // console.log(e);
             auto prefix = IPAddress::parse_netmask_to_prefix(netmask).unwrap();
+            std::cout << netmask << ":" << num << ":" << prefix;
             Chai::assert.equal(num, prefix);
         }
     });
@@ -128,4 +129,5 @@ describe("prefix32", []() {
         Chai::assert.equal("0.255.255.255", Ipv4::from_number(prefix.host_mask(), 0).unwrap().to_s());
     });
 });
+  return exit();
 }

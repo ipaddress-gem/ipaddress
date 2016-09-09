@@ -43,4 +43,5 @@ describe("prefix128", []() {
         }
     });
 });
+  return exit();
 }

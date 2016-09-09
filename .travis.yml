@@ -3,10 +3,10 @@ language: rust
 rust:
   - 1.8.0
 
-#before_install:
-#    - sudo apt-get -qq update
-#    - sudo apt-get install -y ruby
-#    - gem install rbtree
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y libboost-all-dev cmake
+
 install:
     - rvm use ruby-2.0.0-p598
     - gem install construqt-ipaddress
@@ -18,3 +18,5 @@ script:
     - (cd rust && cargo build --release --verbose)
     - (cd rust && cargo test --release --verbose)
     - (cd js && npm install && npm test)
+    - (cd cpp && cmake -DCMAKE_BUILD_TYPE=Release . && make)
+    - (cd cpp && ctest --timeout 60)

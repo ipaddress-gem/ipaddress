@@ -366,4 +366,5 @@ int main() {
                          Ipv6::from_str(setup().hex, 16, 64).unwrap().to_string());
     });
     });
+  return exit();
     }

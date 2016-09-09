@@ -41,4 +41,5 @@ int main() {
           Chai::assert.equal(true, setup().ip.is_ipv6());
           });
       });
+  return exit();
 }

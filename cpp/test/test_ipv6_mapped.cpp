@@ -87,4 +87,5 @@ int main() {
     it("test_method_ipv6", []() { Chai::assert.isTrue(setup().ip.is_ipv6()); });
     it("test_mapped", []() { Chai::assert.isTrue(setup().ip.is_mapped()); });
   });
+  return exit();
 }

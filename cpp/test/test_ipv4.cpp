@@ -628,4 +628,5 @@ int main() {
           Chai::assert.isTrue(Ipv4::parse_classful("192.168.256.257").isErr());
           });
   });
+  return exit();
 }
