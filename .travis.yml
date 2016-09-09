@@ -8,8 +8,7 @@ before_install:
   - sudo apt-get install -y libboost-all-dev cmake
 
 install:
-    - rvm list
-    - rvm use ruby-2.2
+    - rvm use 2.2
     - gem install construqt-ipaddress
     - nvm install 6
 
