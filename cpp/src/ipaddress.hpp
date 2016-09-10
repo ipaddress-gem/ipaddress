@@ -5,6 +5,8 @@
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/regex.hpp>
 #include <boost/container/stable_vector.hpp>
+#include <boost/regex/v4/perl_matcher.hpp>
+#include <boost/regex/v4/perl_matcher_common.hpp>
 
 #include <string>
 #include <vector>
@@ -1174,7 +1176,7 @@ class IPAddress {
     }
 
     Result<std::vector<IPAddress>> split(size_t subnets) const {
-      if (subnets == 0 || (1 << this->prefix.host_prefix()) <= subnets) {
+      if (subnets == 0 || (1u << this->prefix.host_prefix()) <= subnets) {
         return Err<std::vector<IPAddress>>("subnet not in range");
       }
       auto networks = this->subnet(this->newprefix(subnets).unwrap().num);
@@ -1253,7 +1255,7 @@ class IPAddress {
       std::vector<IPAddress> ret;
       auto net = this->network();
       net.prefix = net.prefix.from(subprefix).unwrap();
-      for (size_t _ = 0; _ < (1 << (subprefix - this->prefix.num)); _++) {
+      for (size_t _ = 0; _ < (1u << (subprefix - this->prefix.num)); _++) {
         ret.push_back(net);
         net = net.from(net.host_address, net.prefix);
         auto size = net.size();

@@ -11,6 +11,7 @@ before_install:
 install:
     - rvm use 2.2
     - gem install construqt-ipaddress
+    - gem install jeweler
     - nvm install 6
 
 script:

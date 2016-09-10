@@ -5,6 +5,7 @@
 #include <exception>
 #include "chai.hpp"
 #include <stdlib.h>
+#include <functional>
 
 typedef std::function<void()> MochaAction;
 
@@ -19,12 +20,12 @@ int exit() {
   std::exit(std::min(failCount, 27));
 }
 
-void describe(const char *title, MochaAction action) {
+void describe(const char *title, const MochaAction &action) {
   std::cout << "Test:" << title << std::endl;
   (action)();
 }
 
-void it(const char *title, MochaAction action) {
+void it(const char *title, const MochaAction &action) {
   try {
     (action)();
     std::cout << "   FINE " << title << std::endl;
