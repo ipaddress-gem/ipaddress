@@ -1,4 +1,5 @@
 language: rust
+dist: trusty
 
 rust:
   - 1.8.0

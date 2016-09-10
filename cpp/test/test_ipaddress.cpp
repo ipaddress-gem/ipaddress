@@ -156,7 +156,7 @@ int main() {
               { "10.0.0.0/16", "10.0.2.0/24" }).unwrap()),
           {"10.0.0.0/16"});
 
-      size_t cnt = 1;
+      size_t cnt = 100;
       for (size_t _ = 0; _ < cnt; ++_) {
         Chai::assert.deepEqual(
             IPAddress::to_string_vec(IPAddress::summarize(ip_addresses)), {

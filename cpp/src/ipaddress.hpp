@@ -4,6 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/regex.hpp>
+#include <boost/container/stable_vector.hpp>
 
 #include <string>
 #include <vector>
@@ -377,78 +378,7 @@ class IPAddress {
       return ret;
     }
 
-    static std::vector<IPAddress> aggregate(const std::vector<IPAddress> &networks) {
-      if (networks.size() == 0) {
-        return {};
-      }
-      if (networks.size() == 1) {
-        // console.log("aggregate:", networks[0], networks[0].network());
-        return { networks[0].network() };
-      }
-      auto stack = IPAddress::to_network_vec(networks);
-      std::sort (stack.begin(), stack.end(), [](const IPAddress &a, const IPAddress &b) {
-          return a.lt(b);
-      });
-      // console.log(IPAddress::to_string_vec(stack));
-      // for i in 0..networks.size() {
-      //     println!("{}==={}", &networks[i].to_string_uncompressed(),
-      //         &stack[i].to_string_uncompressed());
-      // }
-      for (ssize_t pos = 0; true;) {
-        if (pos < 0) {
-          pos = 0;
-        }
-        auto stack_len = static_cast<ssize_t>(stack.size()); // borrow checker
-        // println!("loop:{}:{}", pos, stack_len);
-        // if stack_len == 1 {
-        //     println!("exit 1");
-        //     break;
-        // }
-        if (pos >= stack_len) {
-          // println!("exit first:{}:{}", stack_len, pos);
-          break;
-        }
-        auto first = IPAddress::pos_to_idx(pos, stack_len);
-        pos = pos + 1;
-        if (pos >= stack_len) {
-          // println!("exit second:{}:{}", stack_len, pos);
-          break;
-        }
-        auto second = IPAddress::pos_to_idx(pos, stack_len);
-        pos = pos + 1;
-        //auto firstUnwrap = first;
-        if (stack[first].includes(stack[second])) {
-          pos = pos - 2;
-          // println!("remove:1:{}:{}:{}=>{}", first, second, stack_len, pos + 1);
-          auto pidx = IPAddress::pos_to_idx(pos + 1, stack_len);
-          // std::cout << "-1:" << pidx << ":" << stack.size() << std::endl;
-          stack.erase(stack.begin() + pidx);
-        } else {
-          stack[first].prefix = stack[first].prefix.sub(1).unwrap();
-          // println!("complex:{}:{}:{}:{}:P1:{}:P2:{}", pos, stack_len,
-          // first, second,
-          // stack[first].to_string(), stack[second].to_string());
-          if ((stack[first].prefix.num + 1) == stack[second].prefix.num &&
-              stack[first].includes(stack[second])) {
-            pos = pos - 2;
-            auto idx = IPAddress::pos_to_idx(pos, stack_len);
-            stack[idx] = stack[first].clone(); // kaputt
-            auto pidx = IPAddress::pos_to_idx(pos + 1, stack_len);
-            // std::cout << "-1:" << pidx << ":" << stack.size() << std::endl;
-            stack.erase(stack.begin() + pidx);
-            // println!("remove-2:{}:{}", pos + 1, stack_len);
-            pos = pos - 1; // backtrack
-          } else {
-            stack[first].prefix = stack[first].prefix.add(1).unwrap(); //reset prefix
-            // println!("easy:{}:{}=>{}", pos, stack_len, stack[first].to_string());
-            pos = pos - 1; // do it with second as first
-          }
-        }
-      }
-      // println!("agg={}:{}", pos, stack.size());
-      //return stack.erase(0, stack.size());
-      return stack;
-    }
+    static std::vector<IPAddress> aggregate(const std::vector<IPAddress> &networks);
 
     std::vector<size_t> parts() const {
       return this->ip_bits.parts(this->host_address);
