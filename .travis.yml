@@ -12,6 +12,7 @@ install:
     - rvm use 2.2
     - gem install construqt-ipaddress
     - gem install jeweler
+    - gem install test-unit
     - nvm install 6
 
 script:
