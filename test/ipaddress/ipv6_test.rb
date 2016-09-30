@@ -423,4 +423,17 @@ class IPv6MappedTest < Minitest::Test
     assert_equal true, @ip.mapped?
   end
 
+  def test_ranges
+    from = @klass.new('1080:0:0:0:8:800:2000:0')
+    to = @klass.new('1080:0:0:0:8:800:2001:0')
+
+    in_range = @klass.new('1080:0:0:0:8:800:2000:1000')
+    out_range = @klass.new('1080:0:0:0:8:800:2001:1000')
+
+    range = (from..to)
+
+    assert_equal true, range.include?(in_range)
+    assert_equal false, range.include?(out_range)
+  end
 end # class IPv6MappedTest
+

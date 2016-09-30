@@ -215,6 +215,7 @@ module IPAddress;
       to_hex.hex
     end
     alias_method :to_u128, :to_i
+    alias_method :to_int, :to_i # required for smooth ranges support
 
     #
     # True if the IPv6 address is a network

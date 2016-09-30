@@ -15,7 +15,7 @@ module IPAddress;
   # Class IPAddress::IPv4 is used to handle IPv4 type addresses. 
   #
   class IPv4
-    
+
     include IPAddress
     include Enumerable  
     include Comparable                  
@@ -229,6 +229,7 @@ module IPAddress;
     end
     alias_method :to_i, :u32
     alias_method :to_u32, :u32
+    alias_method :to_int, :u32  # required to avoid iteration over range
     
     #
     # Returns the address portion in 
