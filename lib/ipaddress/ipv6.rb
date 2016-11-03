@@ -422,6 +422,20 @@ module IPAddress;
       @prefix == 128 and @compressed == "::1"
     end
 
+    #
+    # Checks if an IPv4 address objects belongs
+    # to a link-local network RFC4291
+    #
+    # Example:
+    #
+    #   ip = IPAddress "fe80::1"
+    #   ip.link_local?
+    #     #=> true
+    #
+    def link_local?
+      [self.class.new("fe80::/64")].any? {|i| i.include? self}
+    end
+
     # 
     # Returns true if the address is a mapped address
     # 

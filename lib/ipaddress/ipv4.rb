@@ -649,6 +649,20 @@ module IPAddress;
     end
 
     #
+    # Checks if an IPv4 address objects belongs
+    # to a link-local network RFC3927
+    #
+    # Example:
+    #
+    #   ip = IPAddress "169.254.0.1"
+    #   ip.link_local?
+    #     #=> true
+    #
+    def link_local?
+      [self.class.new("169.254.0.0/16")].any? {|i| i.include? self}
+    end
+
+    #
     # Returns the IP address in in-addr.arpa format
     # for DNS lookups
     #
