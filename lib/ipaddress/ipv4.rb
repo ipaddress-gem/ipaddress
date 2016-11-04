@@ -89,6 +89,7 @@ module IPAddress;
       # 32 bits interger containing the address
       @u32 = (@octets[0]<< 24) + (@octets[1]<< 16) + (@octets[2]<< 8) + (@octets[3])
       
+      @allocator = 0
     end # def initialize
 
     #
@@ -1061,6 +1062,36 @@ module IPAddress;
       end
       prefix = CLASSFUL.find{|h,k| h === ("%.8b" % address.to_i)}.last
       self.new "#{address}/#{prefix}"
+    end
+
+    #
+    # Allocates a new ip from the current subnet. Optional skip parameter
+    # can be used to skip addresses.
+    #
+    # Will raise StopIteration exception when all addresses have been allocated
+    #
+    # Example:
+    #
+    #    ip = IPAddress("10.0.0.0/24")
+    #    ip.allocate
+    #      #=> "10.0.0.1/24"
+    #    ip.allocate
+    #      #=> "10.0.0.2/24"
+    #    ip.allocate(2)
+    #      #=> "10.0.0.5/24"
+    #
+    #
+    # Uses an internal @allocator which tracks the state of allocated
+    # addresses.
+    #
+    def allocate(skip=0)
+        @allocator += 1 + skip
+
+        next_ip = network_u32+@allocator
+        if next_ip > broadcast_u32+1
+            raise StopIteration
+        end
+        self.class.parse_u32(network_u32+@allocator, @prefix)
     end
 
     #

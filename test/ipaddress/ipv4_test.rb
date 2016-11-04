@@ -595,6 +595,30 @@ class IPv4Test < Minitest::Test
     assert_equal "192.168.200.0/24", ip.to_string
   end
 
+  def test_allocate_addresses
+    ip = @klass.new("10.0.0.0/24")
+    ip1 = ip.allocate
+    ip2 = ip.allocate
+    ip3 = ip.allocate
+    assert_equal "10.0.0.1/24", ip1.to_string
+    assert_equal "10.0.0.2/24", ip2.to_string
+    assert_equal "10.0.0.3/24", ip3.to_string
+  end
+
+  def test_allocate_can_skip_addresses
+    ip = @klass.new("10.0.0.0/24")
+    ip1 = ip.allocate(2)
+    assert_equal "10.0.0.3/24", ip1.to_string
+  end
+
+  def test_allocate_will_raise_stopiteration
+    ip = @klass.new("10.0.0.0/30")
+    ip.allocate(3)
+    assert_raises (StopIteration) do
+      ip.allocate
+    end
+  end
+
 end # class IPv4Test
 
   

@@ -234,6 +234,30 @@ class IPv6Test < Minitest::Test
     assert_equal expected, arr
   end
 
+  def test_allocate_addresses
+    ip = @klass.new("2001:db8::4/125")
+    ip1 = ip.allocate
+    ip2 = ip.allocate
+    ip3 = ip.allocate
+    assert_equal "2001:db8::1", ip1.compressed
+    assert_equal "2001:db8::2", ip2.compressed
+    assert_equal "2001:db8::3", ip3.compressed
+  end
+
+  def test_allocate_can_skip_addresses
+    ip = @klass.new("2001:db8::4/125")
+    ip1 = ip.allocate(2)
+    assert_equal "2001:db8::3", ip1.compressed
+  end
+
+  def test_allocate_will_raise_stopiteration
+    ip = @klass.new("2001:db8::4/125")
+    ip.allocate(6)
+    assert_raises (StopIteration) do
+      ip.allocate
+    end
+  end
+
   def test_method_compare
     ip1 = @klass.new("2001:db8:1::1/64")
     ip2 = @klass.new("2001:db8:2::1/64")

@@ -102,6 +102,7 @@ module IPAddress;
       end
 
       @prefix = Prefix128.new(netmask ? netmask : 128)
+      @allocator = 0
 
     end # def initialize
 
@@ -633,6 +634,36 @@ module IPAddress;
     #
     def self.parse_hex(hex, prefix=128)
       self.parse_u128(hex.hex, prefix)
+    end
+
+    #
+    # Allocates a new ip from the current subnet. Optional skip parameter
+    # can be used to skip addresses.
+    #
+    # Will raise StopIteration exception when all addresses have been allocated
+    #
+    # Example:
+    #
+    #    ip = IPAddress("10.0.0.0/24")
+    #    ip.allocate
+    #      #=> "10.0.0.1/24"
+    #    ip.allocate
+    #      #=> "10.0.0.2/24"
+    #    ip.allocate(2)
+    #      #=> "10.0.0.5/24"
+    #
+    #
+    # Uses an internal @allocator which tracks the state of allocated
+    # addresses.
+    #
+    def allocate(skip=0)
+        @allocator += 1 + skip
+
+        next_ip = network_u128+@allocator
+        if next_ip > broadcast_u128
+            raise StopIteration
+        end
+        self.class.parse_u128(next_ip, @prefix)
     end
     
     private
