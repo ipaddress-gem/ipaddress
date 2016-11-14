@@ -423,7 +423,7 @@ module IPAddress;
     end
 
     #
-    # Checks if an IPv4 address objects belongs
+    # Checks if an IPv6 address objects belongs
     # to a link-local network RFC4291
     #
     # Example:
