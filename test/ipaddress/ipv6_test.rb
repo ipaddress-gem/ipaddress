@@ -58,6 +58,22 @@ class IPv6Test < Minitest::Test
       "ff80:03:02:01::",
       "2001:db8::8:800:200c:417a",
       "fe80::/63"]
+
+    @unique_local = [
+      "fc00::/7",
+      "fc00::/8",
+      "fd00::/8",
+      "fd12:3456:789a:1::1",
+      "fd12:3456:789a:1::/64",
+      "fc00::1"]
+
+    @not_unique_local = [
+      "fc00::/6",
+      "::",
+      "::1",
+      "fe80::",
+      "fe80::1",
+      "fe80::/64"]
     
   end
   
@@ -237,6 +253,15 @@ class IPv6Test < Minitest::Test
     end
     @not_link_local.each do |addr|
       assert_equal false, @klass.new(addr).link_local?
+    end
+  end
+
+  def test_method_unique_local?
+    @unique_local.each do |addr|
+      assert_equal true, @klass.new(addr).unique_local?
+    end
+    @not_unique_local.each do |addr|
+      assert_equal false, @klass.new(addr).unique_local?
     end
   end
 
