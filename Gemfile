@@ -8,4 +8,5 @@ group :development do
   gem 'travis', '>= 1.8.2'
   gem 'jeweler', '>=2.0.1'
   gem 'codeclimate-test-reporter'
+  gem 'simplecov'
 end
