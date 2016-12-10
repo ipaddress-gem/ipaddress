@@ -61,9 +61,6 @@ module IPAddress;
   class IPv6 
     
     include IPAddress
-    include Enumerable  
-    include Comparable                  
-
     
     #
     # Format string to pretty print IPv6 addresses
