@@ -384,6 +384,29 @@ module IPAddress;
     def include?(oth)
       @prefix <= oth.prefix and network_u128 == self.class.new(oth.address+"/#@prefix").network_u128
     end
+    
+    #
+    # Checks whether a subnet includes another subnet.
+    #
+    # ip = IPAddress("2001:db8::/32")
+    #
+    # subnet = IPAddress("2001:db8:1::/48")
+    #
+    # ip.include_network? subnet
+    #   #=> true
+    #
+    # ip.include_network? IPAddress("2001:db8:1:abcd::/64")
+    #   #=> true
+    #
+    # ip.include_network? IPAddress("2001:db8:1:abcd::1234/64")
+    #   #=> false
+    #
+    # ip.include_network? IPAddress("2001:db9:1::/48")
+    #   #=> false
+    #
+    def include_network?(oth)
+      oth.network? && include?(oth)
+    end
 
     #
     # Compressed form of the IPv6 address
