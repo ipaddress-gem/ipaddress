@@ -397,6 +397,13 @@ module IPAddress;
       @compressed
     end
 
+    #
+    # Returns true if the address is a link local address
+    #
+    def link_local?
+      @groups[0] == 0xfe80
+    end
+
     # 
     # Returns true if the address is an unspecified address
     # 

@@ -200,6 +200,12 @@ class IPv6Test < Minitest::Test
     assert_equal "1::1", @klass.new("1:0:0:0:0:0:0:1").compressed
   end
   
+  def test_method_link_local?
+    assert_equal true, @klass.new("fe80::1").link_local?
+    assert_equal true, @klass.new("fe80:ffff::1").link_local?
+    assert_equal false, @klass.new("fe81::1").link_local?
+  end
+
   def test_method_unspecified?
     assert_equal true, @klass.new("::").unspecified?
     assert_equal false, @ip.unspecified?    
