@@ -476,6 +476,13 @@ module IPAddress;
       end
     end
 
+    # Equality operator
+    def ==(oth)
+      oth.class == self.class && \
+        oth.to_u32 == self.to_u32 && \
+        oth.prefix == self.prefix
+    end
+
     #
     # Spaceship operator to compare IPv4 objects
     #

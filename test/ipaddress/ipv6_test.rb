@@ -256,6 +256,10 @@ class IPv6Test < Minitest::Test
     # ip4 should be greater than ip1
     assert_equal true, ip1 < ip4
     assert_equal false, ip1 > ip4
+    # ip1 should be unequal to ip2
+    assert_equal false, ip1 == ip2
+    # ip1 should be unequal to nil
+    assert_equal false, ip1 == nil
     # test sorting
     arr = ["2001:db8:1::1/64","2001:db8:1::1/65",
            "2001:db8:1::2/64","2001:db8:2::1/64"]
