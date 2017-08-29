@@ -512,6 +512,18 @@ module IPAddress;
     end
     
     #
+    # Returns the broadcast address for the given IP.
+    #
+    # ip = IPAddress("2001:db8::8:800:200c:417a/64")
+    #
+    # ip.broadcast.to_s
+    # #=> "2001:db8::ffff:ffff:ffff:ffff"
+    #
+    def broadcast
+      self.class.parse_u128(broadcast_u128, @prefix)
+    end
+    
+    #
     # Expands an IPv6 address in the canocical form
     #
     #   IPAddress::IPv6.expand "2001:0DB8:0:CD30::"
