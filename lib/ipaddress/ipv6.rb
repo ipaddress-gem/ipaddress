@@ -87,6 +87,7 @@ module IPAddress;
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     #
     def initialize(str)
+      raise ArgumentError, "Nil IP" unless str
       ip, netmask = str.split("/")
 
       if str =~ /:.+\./

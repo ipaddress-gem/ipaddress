@@ -92,6 +92,7 @@ class IPv4Test < Minitest::Test
     @invalid_ipv4.each do |i|
       assert_raises(ArgumentError) {@klass.new(i)}
     end
+    assert_raises (ArgumentError) {@klass.new(nil)}
     assert_raises (ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
