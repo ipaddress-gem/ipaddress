@@ -68,14 +68,14 @@ module IPAddress
   #
   def self.ntoa(uint)
     unless(uint.is_a? Numeric and uint <= 0xffffffff and uint >= 0)
-        raise(::ArgumentError, "not a long integer: #{uint.inspect}")
-      end
-      ret = []
-      4.times do 
-        ret.unshift(uint & 0xff)
-        uint >>= 8
-      end
-      ret.join('.')
+      raise(::ArgumentError, "not a long integer: #{uint.inspect}")
+    end
+    ret = []
+    4.times do 
+      ret.unshift(uint & 0xff)
+      uint >>= 8
+    end
+    ret.join('.')
   end
 
   #

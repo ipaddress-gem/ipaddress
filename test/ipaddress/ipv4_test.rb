@@ -83,7 +83,7 @@ class IPv4Test < Minitest::Test
       assert_instance_of @klass, ip
     end
     assert_instance_of IPAddress::Prefix32, @ip.prefix
-    assert_raises (ArgumentError) do
+    assert_raises(ArgumentError) do
       @klass.new 
     end
   end
