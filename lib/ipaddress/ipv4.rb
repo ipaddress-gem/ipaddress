@@ -61,6 +61,7 @@ module IPAddress;
     #   IPAddress::IPv4.new "10.0.0.1/255.0.0.0"
     #
     def initialize(str)
+      raise ArgumentError, "Nil IP" unless str
       ip, netmask = str.split("/")
       
       # Check the ip and remove white space
@@ -509,6 +510,7 @@ module IPAddress;
     #     #=> ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
     #
     def <=>(oth)
+      return nil unless oth.is_a?(self.class)
       return prefix <=> oth.prefix if to_u32 == oth.to_u32  
       to_u32 <=> oth.to_u32
     end

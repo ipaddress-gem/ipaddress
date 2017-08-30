@@ -56,6 +56,7 @@ class IPv6Test < Minitest::Test
     end
     assert_equal 64, @ip.prefix
 
+    assert_raises(ArgumentError) {@klass.new nil }
     assert_raises(ArgumentError) {
       @klass.new "::10.1.1.1"
     }
@@ -258,6 +259,12 @@ class IPv6Test < Minitest::Test
     arr = ["2001:db8:1::1/64","2001:db8:1::1/65",
            "2001:db8:1::2/64","2001:db8:2::1/64"]
     assert_equal arr, [ip1,ip2,ip3,ip4].sort.map{|s| s.to_string}
+    # compare with alien thing
+    ip1 = @klass.new('::1')
+    ip2 = IPAddress::IPv4.new('127.0.0.1')
+    not_ip = String
+    assert_equal nil, ip1 <=> ip2
+    assert_equal nil, ip1 <=> not_ip
   end
 
   def test_classmethod_expand

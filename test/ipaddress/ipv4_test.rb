@@ -92,7 +92,8 @@ class IPv4Test < Minitest::Test
     @invalid_ipv4.each do |i|
       assert_raises(ArgumentError) {@klass.new(i)}
     end
-    assert_raises(ArgumentError) {@klass.new("10.0.0.0/asd")}
+    assert_raises (ArgumentError) {@klass.new(nil)}
+    assert_raises (ArgumentError) {@klass.new("10.0.0.0/asd")}
   end
 
   def test_initialize_without_prefix
@@ -372,6 +373,12 @@ class IPv4Test < Minitest::Test
     ip3 = @klass.new("10.0.0.0/8")
     arr = ["10.0.0.0/8","10.0.0.0/16","10.0.0.0/24"]
     assert_equal arr, [ip1,ip2,ip3].sort.map{|s| s.to_string}
+    # compare with alien thing
+    ip1 = @klass.new('127.0.0.1')
+    ip2 = IPAddress::IPv6.new('::1')
+    not_ip = String
+    assert_equal nil, ip1 <=> ip2
+    assert_equal nil, ip1 <=> not_ip
   end
 
   def test_method_minus
