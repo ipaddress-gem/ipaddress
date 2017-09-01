@@ -74,6 +74,22 @@ class IPv4Test < Minitest::Test
       "10.32.0.1" => ["10.32.0.253", 253],
       "192.0.0.0" => ["192.1.255.255", 131072]
     }
+
+    @link_local = [
+      "169.254.0.0",
+      "169.254.255.255",
+      "169.254.12.34",
+      "169.254.0.0/16",
+      "169.254.0.0/17"]
+    
+    @not_link_local = [
+      "127.0.0.1",
+      "127.0.1.1",
+      "192.168.0.100",
+      "169.255.0.0",
+      "169.254.0.0/15",
+      "0.0.0.0",
+      "255.255.255.255"]
     
   end
 
@@ -308,6 +324,15 @@ class IPv4Test < Minitest::Test
     assert_equal false, @klass.new("172.32.0.0/12").private?
     assert_equal false, @klass.new("172.16.0.0/11").private?
     assert_equal false, @klass.new("192.0.0.2/24").private?
+  end
+
+  def test_method_link_local?
+    @link_local.each do |addr|
+      assert_equal true, @klass.new(addr).link_local?
+    end
+    @not_link_local.each do |addr|
+      assert_equal false, @klass.new(addr).link_local?
+    end
   end
 
   def test_method_octet

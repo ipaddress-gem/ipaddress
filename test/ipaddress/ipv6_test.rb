@@ -42,6 +42,37 @@ class IPv6Test < Minitest::Test
     @network = @klass.new "2001:db8:8:800::/64"
     @arr = [8193,3512,0,0,8,2048,8204,16762]
     @hex = "20010db80000000000080800200c417a"
+
+    @link_local = [
+      "fe80::",
+      "fe80::1",
+      "fe80::208:74ff:feda:625c",
+      "fe80::/64",
+      "fe80::/65"]
+    
+    @not_link_local = [
+      "::",
+      "::1",
+      "ff80:03:02:01::",
+      "2001:db8::8:800:200c:417a",
+      "fe80::/63"]
+
+    @unique_local = [
+      "fc00::/7",
+      "fc00::/8",
+      "fd00::/8",
+      "fd12:3456:789a:1::1",
+      "fd12:3456:789a:1::/64",
+      "fc00::1"]
+
+    @not_unique_local = [
+      "fc00::/6",
+      "::",
+      "::1",
+      "fe80::",
+      "fe80::1",
+      "fe80::/64"]
+    
   end
   
   def test_attribute_address
@@ -213,6 +244,24 @@ class IPv6Test < Minitest::Test
   def test_method_loopback?
     assert_equal true, @klass.new("::1").loopback?
     assert_equal false, @ip.loopback?        
+  end
+
+  def test_method_link_local?
+    @link_local.each do |addr|
+      assert_equal true, @klass.new(addr).link_local?
+    end
+    @not_link_local.each do |addr|
+      assert_equal false, @klass.new(addr).link_local?
+    end
+  end
+
+  def test_method_unique_local?
+    @unique_local.each do |addr|
+      assert_equal true, @klass.new(addr).unique_local?
+    end
+    @not_unique_local.each do |addr|
+      assert_equal false, @klass.new(addr).unique_local?
+    end
   end
 
   def test_method_network
