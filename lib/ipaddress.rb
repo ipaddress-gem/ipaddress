@@ -121,7 +121,7 @@ module IPAddress
   #     #=> false
   #
   def self.valid?(addr)
-    valid_ip?(addr) || valid_ipv4_subnet?(addr)
+    valid_ip?(addr) || valid_ipv4_subnet?(addr) || valid_ipv6_subnet?(addr)
   end
 
   # 
@@ -159,7 +159,31 @@ module IPAddress
 
     valid_ipv4?(ip) && (!(netmask =~ /\A([12]?\d|3[0-2])\z/).nil? || valid_ipv4_netmask?(netmask))
   end
-  
+
+  #
+  # Checks if the given string is a valid IPv6 subnet
+  #
+  # Example:
+  #
+  #   IPAdress::valid_ipv6_subnet? "::/0"
+  #     #=> true
+  #
+  #   IPAdress::valid_ipv6_subnet? "dead:beef:cafe:babe::/64"
+  #     #=> true
+  #
+  #   IPAdress::valid_ipv6_subnet? "2001::1/129"
+  #     #=> false
+  #
+  def self.valid_ipv6_subnet?(addr)
+    ip, netmask = addr.split("/")
+
+    netmask = Integer(netmask, 10)
+
+    valid_ipv6?(ip) && netmask >= 0 && netmask <= 128
+  rescue ArgumentError
+    false
+  end
+
   #
   # Checks if the given string is a valid IPv4 address
   #

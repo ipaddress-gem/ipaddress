@@ -63,6 +63,10 @@ class IPAddressTest < Minitest::Test
     assert_equal true, IPAddress::valid?("10.0.0.0/255.255.255.0")
     assert_equal false, IPAddress::valid?("10.0.0.0/64")
     assert_equal false, IPAddress::valid?("10.0.0.0/255.255.255.256")
+    assert_equal true, IPAddress::valid?("::/0")
+    assert_equal true, IPAddress::valid?("2002::1/128")
+    assert_equal true, IPAddress::valid?("dead:beef:cafe:babe::/64")
+    assert_equal false, IPAddress::valid?("2002::1/129")
   end
 
   def test_module_method_valid_ip?
@@ -94,6 +98,12 @@ class IPAddressTest < Minitest::Test
     assert_equal false, IPAddress::valid_ipv4_subnet?("10.0.0.0/255.255.255.256")
   end
 
+  def test_module_method_valid_ipv6_subnet?
+    assert_equal true, IPAddress::valid_ipv6_subnet?("::/0")
+    assert_equal true, IPAddress::valid_ipv6_subnet?("2002::1/128")
+    assert_equal true, IPAddress::valid_ipv6_subnet?("dead:beef:cafe:babe::/64")
+    assert_equal false, IPAddress::valid_ipv6_subnet?("2002::1/129")
+  end
 end
 
 
