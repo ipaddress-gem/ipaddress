@@ -61,6 +61,7 @@ module IPAddress;
     #   IPAddress::IPv4.new "10.0.0.1/255.0.0.0"
     #
     def initialize(str)
+      raise ArgumentError, "Nil IP" unless str
       ip, netmask = str.split("/")
       
       # Check the ip and remove white space
@@ -89,6 +90,7 @@ module IPAddress;
       # 32 bits interger containing the address
       @u32 = (@octets[0]<< 24) + (@octets[1]<< 16) + (@octets[2]<< 8) + (@octets[3])
       
+      @allocator = 0
     end # def initialize
 
     #
@@ -538,6 +540,7 @@ module IPAddress;
     #     #=> ["10.100.100.1/8","10.100.100.1/16","172.16.0.1/16"]
     #
     def <=>(oth)
+      return nil unless oth.is_a?(self.class)
       return prefix <=> oth.prefix if to_u32 == oth.to_u32  
       to_u32 <=> oth.to_u32
     end
@@ -678,6 +681,20 @@ module IPAddress;
     end
 
     #
+    # Checks if an IPv4 address objects belongs
+    # to a link-local network RFC3927
+    #
+    # Example:
+    #
+    #   ip = IPAddress "169.254.0.1"
+    #   ip.link_local?
+    #     #=> true
+    #
+    def link_local?
+      [self.class.new("169.254.0.0/16")].any? {|i| i.include? self}
+    end
+
+    #
     # Returns the IP address in in-addr.arpa format
     # for DNS lookups
     #
@@ -800,7 +817,7 @@ module IPAddress;
     #
     # we can calculate the subnets with a /26 prefix
     #
-    #   ip.subnets(26).map{&:to_string)
+    #   ip.subnet(26).map{&:to_string)
     #     #=> ["172.16.10.0/26", "172.16.10.64/26", 
     #          "172.16.10.128/26", "172.16.10.192/26"]
     #
@@ -1090,6 +1107,36 @@ module IPAddress;
       end
       prefix = CLASSFUL.find{|h,k| h === ("%.8b" % address.to_i)}.last
       self.new "#{address}/#{prefix}"
+    end
+
+    #
+    # Allocates a new ip from the current subnet. Optional skip parameter
+    # can be used to skip addresses.
+    #
+    # Will raise StopIteration exception when all addresses have been allocated
+    #
+    # Example:
+    #
+    #    ip = IPAddress("10.0.0.0/24")
+    #    ip.allocate
+    #      #=> "10.0.0.1/24"
+    #    ip.allocate
+    #      #=> "10.0.0.2/24"
+    #    ip.allocate(2)
+    #      #=> "10.0.0.5/24"
+    #
+    #
+    # Uses an internal @allocator which tracks the state of allocated
+    # addresses.
+    #
+    def allocate(skip=0)
+        @allocator += 1 + skip
+
+        next_ip = network_u32+@allocator
+        if next_ip > broadcast_u32+1
+            raise StopIteration
+        end
+        self.class.parse_u32(network_u32+@allocator, @prefix)
     end
 
     #

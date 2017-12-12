@@ -38,7 +38,7 @@ class MongoidTest < Minitest::Test
 
     @invalid_values.each do |invalid_value|
       # Invalid addresses should serialize to nil
-      assert_equal nil, IPAddress.mongoize(invalid_value)
+      assert_nil IPAddress.mongoize(invalid_value)
     end
   end
 
@@ -57,7 +57,7 @@ class MongoidTest < Minitest::Test
 
     @invalid_values.each do |invalid_value|
       # Invalid stored value should be loaded as nil
-      assert_equal nil, IPAddress.demongoize(invalid_value)
+      assert_nil IPAddress.demongoize(invalid_value)
     end
   end
 

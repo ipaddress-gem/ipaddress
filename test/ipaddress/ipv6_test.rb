@@ -26,9 +26,7 @@ class IPv6Test < Minitest::Test
       "::1" => 1,
       "0:0:0:0:0:0:0:0" => 0,
       "0:0:0::0:0:0" => 0,
-      "::" => 0,
-      "1080:0:0:0:8:800:200C:417A" => 21932261930451111902915077091070067066,
-      "1080::8:800:200C:417A" => 21932261930451111902915077091070067066}
+      "::" => 0}
       
     @invalid_ipv6 = [":1:2:3:4:5:6:7",
                      ":1:2:3:4:5:6:7",
@@ -44,6 +42,37 @@ class IPv6Test < Minitest::Test
     @network = @klass.new "2001:db8:8:800::/64"
     @arr = [8193,3512,0,0,8,2048,8204,16762]
     @hex = "20010db80000000000080800200c417a"
+
+    @link_local = [
+      "fe80::",
+      "fe80::1",
+      "fe80::208:74ff:feda:625c",
+      "fe80::/64",
+      "fe80::/65"]
+    
+    @not_link_local = [
+      "::",
+      "::1",
+      "ff80:03:02:01::",
+      "2001:db8::8:800:200c:417a",
+      "fe80::/63"]
+
+    @unique_local = [
+      "fc00::/7",
+      "fc00::/8",
+      "fd00::/8",
+      "fd12:3456:789a:1::1",
+      "fd12:3456:789a:1::/64",
+      "fc00::1"]
+
+    @not_unique_local = [
+      "fc00::/6",
+      "::",
+      "::1",
+      "fe80::",
+      "fe80::1",
+      "fe80::/64"]
+    
   end
   
   def test_attribute_address
@@ -58,6 +87,7 @@ class IPv6Test < Minitest::Test
     end
     assert_equal 64, @ip.prefix
 
+    assert_raises(ArgumentError) {@klass.new nil }
     assert_raises(ArgumentError) {
       @klass.new "::10.1.1.1"
     }
@@ -216,6 +246,24 @@ class IPv6Test < Minitest::Test
     assert_equal false, @ip.loopback?        
   end
 
+  def test_method_link_local?
+    @link_local.each do |addr|
+      assert_equal true, @klass.new(addr).link_local?
+    end
+    @not_link_local.each do |addr|
+      assert_equal false, @klass.new(addr).link_local?
+    end
+  end
+
+  def test_method_unique_local?
+    @unique_local.each do |addr|
+      assert_equal true, @klass.new(addr).unique_local?
+    end
+    @not_unique_local.each do |addr|
+      assert_equal false, @klass.new(addr).unique_local?
+    end
+  end
+
   def test_method_network
     @networks.each do |addr,net|
       ip = @klass.new addr
@@ -262,6 +310,29 @@ class IPv6Test < Minitest::Test
     ip = @klass.new("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff/64")
     assert_instance_of @klass, ip.pred
     assert_equal  "ffff:ffff:ffff:ffff:ffff:ffff:ffff:fffe/64", ip.pred.to_string
+
+  def test_allocate_addresses
+    ip = @klass.new("2001:db8::4/125")
+    ip1 = ip.allocate
+    ip2 = ip.allocate
+    ip3 = ip.allocate
+    assert_equal "2001:db8::1", ip1.compressed
+    assert_equal "2001:db8::2", ip2.compressed
+    assert_equal "2001:db8::3", ip3.compressed
+  end
+
+  def test_allocate_can_skip_addresses
+    ip = @klass.new("2001:db8::4/125")
+    ip1 = ip.allocate(2)
+    assert_equal "2001:db8::3", ip1.compressed
+  end
+
+  def test_allocate_will_raise_stopiteration
+    ip = @klass.new("2001:db8::4/125")
+    ip.allocate(6)
+    assert_raises (StopIteration) do
+      ip.allocate
+    end
   end
 
   def test_method_compare
@@ -290,6 +361,12 @@ class IPv6Test < Minitest::Test
     arr = ["2001:db8:1::1/64","2001:db8:1::1/65",
            "2001:db8:1::2/64","2001:db8:2::1/64"]
     assert_equal arr, [ip1,ip2,ip3,ip4].sort.map{|s| s.to_string}
+    # compare with alien thing
+    ip1 = @klass.new('::1')
+    ip2 = IPAddress::IPv4.new('127.0.0.1')
+    not_ip = String
+    assert_equal nil, ip1 <=> ip2
+    assert_equal nil, ip1 <=> not_ip
   end
 
   def test_classmethod_expand

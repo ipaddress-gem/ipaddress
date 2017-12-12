@@ -132,7 +132,7 @@ class Prefix128Test < Minitest::Test
   end
 
   def test_initialize
-    assert_raises (ArgumentError) do
+    assert_raises(ArgumentError) do
       @klass.new 129
     end
     assert_instance_of @klass, @klass.new(64)

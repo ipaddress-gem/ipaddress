@@ -4,7 +4,6 @@ rvm:
 - 2.4
 install:
 - gem install bundler
-- gem uninstall rake -x
 - gem install rake
 - bundle install
 script:
