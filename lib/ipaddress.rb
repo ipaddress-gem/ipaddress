@@ -145,13 +145,13 @@ module IPAddress
   #
   # Example:
   #
-  #   IPAdress::valid_ipv4_subnet? "10.0.0.0/24"
+  #   IPAddress::valid_ipv4_subnet? "10.0.0.0/24"
   #     #=> true
   #
-  #   IPAdress::valid_ipv4_subnet? "10.0.0.0/255.255.255.0"
+  #   IPAddress::valid_ipv4_subnet? "10.0.0.0/255.255.255.0"
   #     #=> true
   #
-  #   IPAdress::valid_ipv4_subnet? "10.0.0.0/64"
+  #   IPAddress::valid_ipv4_subnet? "10.0.0.0/64"
   #     #=> false
   #
   def self.valid_ipv4_subnet?(addr)
@@ -165,13 +165,13 @@ module IPAddress
   #
   # Example:
   #
-  #   IPAdress::valid_ipv6_subnet? "::/0"
+  #   IPAddress::valid_ipv6_subnet? "::/0"
   #     #=> true
   #
-  #   IPAdress::valid_ipv6_subnet? "dead:beef:cafe:babe::/64"
+  #   IPAddress::valid_ipv6_subnet? "dead:beef:cafe:babe::/64"
   #     #=> true
   #
-  #   IPAdress::valid_ipv6_subnet? "2001::1/129"
+  #   IPAddress::valid_ipv6_subnet? "2001::1/129"
   #     #=> false
   #
   def self.valid_ipv6_subnet?(addr)
