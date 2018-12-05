@@ -55,10 +55,10 @@ module IPAddress
 
     #
     # Sums two prefixes or a prefix to a 
-    # number, returns a Fixnum
+    # number, returns a Integer
     #
     def +(oth)
-      if oth.is_a? Fixnum
+      if oth.is_a? Integer
         self.prefix + oth
       else
         self.prefix + oth.prefix
@@ -68,10 +68,10 @@ module IPAddress
     #
     # Returns the difference between two
     # prefixes, or a prefix and a number,
-    # as a Fixnum
+    # as a Integer
     #
     def -(oth)
-      if oth.is_a? Fixnum
+      if oth.is_a? Integer
         self.prefix - oth
       else
         (self.prefix - oth.prefix).abs
