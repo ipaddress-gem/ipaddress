@@ -14,6 +14,7 @@
 
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
+require 'ipaddress/mongoid' if defined?(Mongoid)
 
 module IPAddress
 
@@ -25,6 +26,7 @@ module IPAddress
   # Parse the argument string to create a new
   # IPv4, IPv6 or Mapped IP object
   #
+  #   ip  = IPAddress.parse 167837953 # 10.1.1.1  
   #   ip  = IPAddress.parse "172.16.10.1/24"
   #   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
   #   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
@@ -40,6 +42,12 @@ module IPAddress
   #    #=> IPAddress::IPv6::Mapped
   #
   def IPAddress::parse(str)
+    
+    # Check if an int was passed
+    if str.kind_of? Integer
+      return IPAddress::IPv4.new(ntoa(str))  
+    end
+
     case str
     when /:.+\./
       IPAddress::IPv6::Mapped.new(str)
@@ -50,6 +58,24 @@ module IPAddress
     else
       raise ArgumentError, "Unknown IP Address #{str}"
     end
+  end
+
+  #
+  # Converts a unit32 to IPv4
+  #
+  #   IPAddress::ntoa(167837953)
+  #     #-> "10.1.1.1"
+  #
+  def self.ntoa(uint)
+    unless(uint.is_a? Numeric and uint <= 0xffffffff and uint >= 0)
+      raise(::ArgumentError, "not a long integer: #{uint.inspect}")
+    end
+    ret = []
+    4.times do 
+      ret.unshift(uint & 0xff)
+      uint >>= 8
+    end
+    ret.join('.')
   end
 
   #
@@ -76,22 +102,88 @@ module IPAddress
     self.kind_of? IPAddress::IPv6
   end
 
+
+  #
+  # Checks if the given string is either a valid IP, either a valid IPv4 subnet
+  #
+  # Example:
+  #
+  #   IPAddress::valid? "10.0.0.0/24"
+  #     #=> true
+  #
+  #   IPAddress::valid? "2002::1"
+  #     #=> true
+  #
+  #   IPAddress::valid? "10.0.0.256"
+  #     #=> false
+  #
+  #   IPAddress::valid? "10.0.0.0/999"
+  #     #=> false
+  #
+  def self.valid?(addr)
+    valid_ip?(addr) || valid_ipv4_subnet?(addr) || valid_ipv6_subnet?(addr)
+  end
+
   # 
   # Checks if the given string is a valid IP address,
   # either IPv4 or IPv6
   #
   # Example:
   #
-  #   IPAddress::valid? "2002::1"
+  #   IPAddress::valid_ip? "2002::1"
   #     #=> true
   #
-  #   IPAddress::valid? "10.0.0.256"   
+  #   IPAddress::valid_ip? "10.0.0.256"
   #     #=> false
   #
-  def self.valid?(addr)
+  def self.valid_ip?(addr)
     valid_ipv4?(addr) || valid_ipv6?(addr)
   end
-  
+
+  #
+  # Checks if the given string is a valid IPv4 subnet
+  #
+  # Example:
+  #
+  #   IPAddress::valid_ipv4_subnet? "10.0.0.0/24"
+  #     #=> true
+  #
+  #   IPAddress::valid_ipv4_subnet? "10.0.0.0/255.255.255.0"
+  #     #=> true
+  #
+  #   IPAddress::valid_ipv4_subnet? "10.0.0.0/64"
+  #     #=> false
+  #
+  def self.valid_ipv4_subnet?(addr)
+    ip, netmask = addr.split("/")
+
+    valid_ipv4?(ip) && (!(netmask =~ /\A([12]?\d|3[0-2])\z/).nil? || valid_ipv4_netmask?(netmask))
+  end
+
+  #
+  # Checks if the given string is a valid IPv6 subnet
+  #
+  # Example:
+  #
+  #   IPAddress::valid_ipv6_subnet? "::/0"
+  #     #=> true
+  #
+  #   IPAddress::valid_ipv6_subnet? "dead:beef:cafe:babe::/64"
+  #     #=> true
+  #
+  #   IPAddress::valid_ipv6_subnet? "2001::1/129"
+  #     #=> false
+  #
+  def self.valid_ipv6_subnet?(addr)
+    ip, netmask = addr.split("/")
+
+    netmask = Integer(netmask, 10)
+
+    valid_ipv6?(ip) && netmask >= 0 && netmask <= 128
+  rescue ArgumentError
+    false
+  end
+
   #
   # Checks if the given string is a valid IPv4 address
   #
@@ -188,7 +280,7 @@ end
 #
 # Compatibility with Ruby 1.8
 #
-if RUBY_VERSION =~ /1\.8/
+if RUBY_VERSION =~ /^1\.8/
   class Hash # :nodoc:
     alias :key :index
   end

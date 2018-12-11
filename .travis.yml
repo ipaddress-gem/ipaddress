@@ -1,0 +1,17 @@
+language: ruby
+rvm:
+- 2.3
+- 2.4
+- 2.5
+install:
+- gem install bundler
+- gem install rake
+- bundle install
+script:
+- uname -s
+- rake test
+- codeclimate-test-reporter
+addons:
+  code_climate:
+    repo_token:
+      secure: Na2Ghl3W0IpUWAWx66V9skLie5MqiJWfn7muCSRkAYIVL/j9fR6jhhawOKlX0R6bg4byouOyLieDu9HWsv2EY5L7JweVspodRuuaJndxDQ1E5rOp0mU6vDl7kIqBeboX3AsivXDgcc8C8qvE+WD++vr3oEMg22c2/RIbt6ecJGs=

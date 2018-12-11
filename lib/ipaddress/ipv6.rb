@@ -87,6 +87,7 @@ module IPAddress;
     #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
     #
     def initialize(str)
+      raise ArgumentError, "Nil IP" unless str
       ip, netmask = str.split("/")
 
       if str =~ /:.+\./
@@ -102,6 +103,7 @@ module IPAddress;
       end
 
       @prefix = Prefix128.new(netmask ? netmask : 128)
+      @allocator = 0
 
     end # def initialize
 
@@ -252,6 +254,15 @@ module IPAddress;
     end
     alias_method :group, :[]
 
+    #
+    # Updated the octet specified at index
+    #
+    def []=(index, value)
+      @groups[index] = value
+      initialize("#{IN6FORMAT % @groups}/#{prefix}")
+    end
+    alias_method :group=, :[]=
+
     # 
     # Returns a Base16 number representing the IPv6 
     # address
@@ -388,6 +399,13 @@ module IPAddress;
       @compressed
     end
 
+    #
+    # Returns true if the address is a link local address
+    #
+    def link_local?
+      @groups[0] == 0xfe80
+    end
+
     # 
     # Returns true if the address is an unspecified address
     # 
@@ -404,6 +422,34 @@ module IPAddress;
     #
     def loopback?
       @prefix == 128 and @compressed == "::1"
+    end
+
+    #
+    # Checks if an IPv6 address objects belongs
+    # to a link-local network RFC4291
+    #
+    # Example:
+    #
+    #   ip = IPAddress "fe80::1"
+    #   ip.link_local?
+    #     #=> true
+    #
+    def link_local?
+      [self.class.new("fe80::/64")].any? {|i| i.include? self}
+    end
+
+    #
+    # Checks if an IPv6 address objects belongs
+    # to a unique-local network RFC4193
+    #
+    # Example:
+    #
+    #   ip = IPAddress "fc00::1"
+    #   ip.unique_local?
+    #     #=> true
+    #
+    def unique_local?
+      [self.class.new("fc00::/7")].any? {|i| i.include? self}
     end
 
     # 
@@ -478,6 +524,7 @@ module IPAddress;
     #     #=> ["2001:db8:1::1/64","2001:db8:1::1/65","2001:db8:2::1/64"]
     #
     def <=>(oth)
+      return nil unless oth.is_a?(self.class)
       return prefix <=> oth.prefix if to_u128 == oth.to_u128  
       to_u128 <=> oth.to_u128
     end
@@ -617,6 +664,36 @@ module IPAddress;
     #
     def self.parse_hex(hex, prefix=128)
       self.parse_u128(hex.hex, prefix)
+    end
+
+    #
+    # Allocates a new ip from the current subnet. Optional skip parameter
+    # can be used to skip addresses.
+    #
+    # Will raise StopIteration exception when all addresses have been allocated
+    #
+    # Example:
+    #
+    #    ip = IPAddress("10.0.0.0/24")
+    #    ip.allocate
+    #      #=> "10.0.0.1/24"
+    #    ip.allocate
+    #      #=> "10.0.0.2/24"
+    #    ip.allocate(2)
+    #      #=> "10.0.0.5/24"
+    #
+    #
+    # Uses an internal @allocator which tracks the state of allocated
+    # addresses.
+    #
+    def allocate(skip=0)
+        @allocator += 1 + skip
+
+        next_ip = network_u128+@allocator
+        if next_ip > broadcast_u128
+            raise StopIteration
+        end
+        self.class.parse_u128(next_ip, @prefix)
     end
     
     private
