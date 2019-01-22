@@ -225,6 +225,38 @@ class IPv6Test < Minitest::Test
     assert_equal ["2001:db8:8:800::/63","2001:db9:8:800::/64"], (ip1+ip2).map{|i| i.to_string}
   end
 
+  def test_method_split
+    assert_raises(ArgumentError) {@ip.split(0)}
+    assert_equal @ip.network, @ip.split(1).first
+    
+    network2 = @klass.new "2001:db8:8::/48"
+    
+    arr =  ["2001:db8:8::/51", "2001:db8:8:2000::/51", "2001:db8:8:4000::/51", 
+            "2001:db8:8:6000::/51", "2001:db8:8:8000::/51", "2001:db8:8:a000::/51",
+            "2001:db8:8:c000::/51", "2001:db8:8:e000::/51"]
+    assert_equal arr, network2.split(8).map {|s| s.to_string}
+    arr = ["2001:db8:8::/51", "2001:db8:8:2000::/51", "2001:db8:8:4000::/51",
+           "2001:db8:8:6000::/51", "2001:db8:8:8000::/51", "2001:db8:8:a000::/51",
+           "2001:db8:8:c000::/50"]
+    assert_equal arr, network2.split(7).map {|s| s.to_string}
+    arr = ["2001:db8:8::/51", "2001:db8:8:2000::/51", "2001:db8:8:4000::/51",
+           "2001:db8:8:6000::/51", "2001:db8:8:8000::/50", "2001:db8:8:c000::/50"]
+    assert_equal arr, network2.split(6).map {|s| s.to_string}
+    arr = ["2001:db8:8::/51", "2001:db8:8:2000::/51", "2001:db8:8:4000::/51",
+           "2001:db8:8:6000::/51", "2001:db8:8:8000::/49"]
+    assert_equal arr, network2.split(5).map {|s| s.to_string}
+    arr =  ["2001:db8:8::/50", "2001:db8:8:4000::/50", "2001:db8:8:8000::/50",
+            "2001:db8:8:c000::/50"]
+    assert_equal arr, network2.split(4).map {|s| s.to_string}
+    arr = ["2001:db8:8::/50", "2001:db8:8:4000::/50", "2001:db8:8:8000::/49"]
+    assert_equal arr, network2.split(3).map {|s| s.to_string}
+    arr = ["2001:db8:8::/49", "2001:db8:8:8000::/49"]
+    assert_equal arr, network2.split(2).map {|s| s.to_string}
+    arr = ["2001:db8:8::/48"]
+    assert_equal arr, network2.split(1).map {|s| s.to_string}
+  end
+  
+
   def test_method_literal
     str = "2001-0db8-0000-0000-0008-0800-200c-417a.ipv6-literal.net"
     assert_equal str, @ip.literal
