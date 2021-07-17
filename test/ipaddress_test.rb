@@ -18,17 +18,19 @@ class IPAddressTest < Minitest::Test
 
     @invalid_ipv4_uint32 = [4294967296, # 256.0.0.0
                           "A294967295", # Invalid uINT
-                          -1]           # Invalid 
+                          -1]           # Invalid
 
 
     @ipv4class   = IPAddress::IPv4
     @ipv6class   = IPAddress::IPv6
     @mappedclass = IPAddress::IPv6::Mapped
-    
+
     @invalid_ipv4 = ["10.0.0.256",
                      "10.0.0.0.0",
                      "10.0.0",
-                     "10.0"]
+                     "10.0",
+                     "0127.010.010.010",
+                     "055.055.055.055"]
 
     @valid_ipv4_range = ["10.0.0.1-254",
                          "10.0.1-254.0",
@@ -39,18 +41,18 @@ class IPAddressTest < Minitest::Test
 
   def test_method_IPAddress
 
-    assert_instance_of @ipv4class, @method.call(@valid_ipv4) 
-    assert_instance_of @ipv6class, @method.call(@valid_ipv6) 
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4)
+    assert_instance_of @ipv6class, @method.call(@valid_ipv6)
     assert_instance_of @mappedclass, @method.call(@valid_mapped)
 
     assert_raises(ArgumentError) {@method.call(@invalid_ipv4)}
     assert_raises(ArgumentError) {@method.call(@invalid_ipv6)}
     assert_raises(ArgumentError) {@method.call(@invalid_mapped)}
 
-    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[0]) 
-    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[1]) 
-    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[2]) 
-    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[3]) 
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[0])
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[1])
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[2])
+    assert_instance_of @ipv4class, @method.call(@valid_ipv4_uint32[3])
 
     assert_raises(ArgumentError) {@method.call(@invalid_ipv4_uint32[0])}
     assert_raises(ArgumentError) {@method.call(@invalid_ipv4_uint32[1])}
@@ -59,6 +61,19 @@ class IPAddressTest < Minitest::Test
   end
 
   def test_module_method_valid?
+    assert_equal true, IPAddress::valid?("0.0.0.5/20")
+    assert_equal true, IPAddress::valid?("0.0.0.0/8")
+    assert_equal false, IPAddress::valid?("800.754.1.1/13")
+    assert_equal false, IPAddress::valid?("0xff/4")
+    assert_equal false, IPAddress::valid?("0xff.0xff.0xff.0xfe/20")
+    assert_equal false, IPAddress::valid?("037.05.05.01/8")
+    assert_equal false, IPAddress::valid?("0127.0.0.01/16")
+    assert_equal false, IPAddress::valid?("055.027.043.09/16")
+    # four digits fails the three digits check
+    assert_equal false, IPAddress::valid?("0255.0255.0255.01/20")
+    assert_equal false, IPAddress::valid?("013.055.0255.0216/29")
+    assert_equal false, IPAddress::valid?("013.055.025.021/29")
+    assert_equal false, IPAddress::valid?("052.015.024.020/29")
     assert_equal true, IPAddress::valid?("10.0.0.0/24")
     assert_equal true, IPAddress::valid?("10.0.0.0/255.255.255.0")
     assert_equal false, IPAddress::valid?("10.0.0.0/64")
