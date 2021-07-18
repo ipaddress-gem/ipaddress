@@ -26,12 +26,12 @@ module IPAddress
   # Parse the argument string to create a new
   # IPv4, IPv6 or Mapped IP object
   #
-  #   ip  = IPAddress.parse 167837953 # 10.1.1.1  
+  #   ip  = IPAddress.parse 167837953 # 10.1.1.1
   #   ip  = IPAddress.parse "172.16.10.1/24"
   #   ip6 = IPAddress.parse "2001:db8::8:800:200c:417a/64"
   #   ip_mapped = IPAddress.parse "::ffff:172.16.10.1/128"
   #
-  # All the object created will be instances of the 
+  # All the object created will be instances of the
   # correct class:
   #
   #  ip.class
@@ -42,17 +42,17 @@ module IPAddress
   #    #=> IPAddress::IPv6::Mapped
   #
   def IPAddress::parse(str)
-    
+
     # Check if an int was passed
     if str.kind_of? Integer
-      return IPAddress::IPv4.new(ntoa(str))  
+      return IPAddress::IPv4.new(ntoa(str))
     end
 
     case str
     when /:.+\./
       IPAddress::IPv6::Mapped.new(str)
     when /\./
-      IPAddress::IPv4.new(str) 
+      IPAddress::IPv4.new(str)
     when /:/
       IPAddress::IPv6.new(str)
     else
@@ -71,7 +71,7 @@ module IPAddress
       raise(::ArgumentError, "not a long integer: #{uint.inspect}")
     end
     ret = []
-    4.times do 
+    4.times do
       ret.unshift(uint & 0xff)
       uint >>= 8
     end
@@ -89,7 +89,7 @@ module IPAddress
   def ipv4?
     self.kind_of? IPAddress::IPv4
   end
-  
+
   #
   # True if the object is an IPv6 address
   #
@@ -124,7 +124,7 @@ module IPAddress
     valid_ip?(addr) || valid_ipv4_subnet?(addr) || valid_ipv6_subnet?(addr)
   end
 
-  # 
+  #
   # Checks if the given string is a valid IP address,
   # either IPv4 or IPv6
   #
@@ -196,12 +196,12 @@ module IPAddress
   #     #=> true
   #
   def self.valid_ipv4?(addr)
-    if /\A(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})\Z/ =~ addr
+    if /^(0|[1-9]{1}\d{0,2})\.(0|[1-9]{1}\d{0,2})\.(0|[1-9]{1}\d{0,2})\.(0|[1-9]{1}\d{0,2})$/ =~ addr
       return $~.captures.all? {|i| i.to_i < 256}
     end
     false
   end
-  
+
   #
   # Checks if the argument is a valid IPv4 netmask
   # expressed in dotted decimal format.
@@ -215,7 +215,7 @@ module IPAddress
   rescue
     return false
   end
-  
+
   #
   # Checks if the given string is a valid IPv6 address
   #
@@ -227,35 +227,35 @@ module IPAddress
   #   IPAddress::valid_ipv6? "2002::DEAD::BEEF"
   #     #=> false
   #
-  def self.valid_ipv6?(addr) 
+  def self.valid_ipv6?(addr)
     # https://gist.github.com/cpetschnig/294476
     # http://forums.intermapper.com/viewtopic.php?t=452
     return true if /^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/ =~ addr
     false
   end
 
-  # 
+  #
   # Deprecate method
   #
   def self.deprecate(message = nil) # :nodoc:
     message ||= "You are using deprecated behavior which will be removed from the next major or minor release."
     warn("DEPRECATION WARNING: #{message}")
   end
-  
+
 end # module IPAddress
 
 #
-# IPAddress is a wrapper method built around 
-# IPAddress's library classes. Its purpouse is to 
-# make you indipendent from the type of IP address 
+# IPAddress is a wrapper method built around
+# IPAddress's library classes. Its purpouse is to
+# make you indipendent from the type of IP address
 # you're going to use.
 #
-# For example, instead of creating the three types 
+# For example, instead of creating the three types
 # of IP addresses using their own contructors
 #
 #   ip  = IPAddress::IPv4.new "172.16.10.1/24"
 #   ip6 = IPAddress::IPv6.new "2001:db8::8:800:200c:417a/64"
-#   ip_mapped = IPAddress::IPv6::Mapped "::ffff:172.16.10.1/128" 
+#   ip_mapped = IPAddress::IPv6::Mapped "::ffff:172.16.10.1/128"
 #
 # you can just use the IPAddress wrapper:
 #
@@ -263,7 +263,7 @@ end # module IPAddress
 #   ip6 = IPAddress "2001:db8::8:800:200c:417a/64"
 #   ip_mapped = IPAddress "::ffff:172.16.10.1/128"
 #
-# All the object created will be instances of the 
+# All the object created will be instances of the
 # correct class:
 #
 #  ip.class
@@ -285,8 +285,8 @@ if RUBY_VERSION =~ /^1\.8/
     alias :key :index
   end
   module Math # :nodoc:
-    def Math.log2(n) 
-      log(n) / log(2) 
+    def Math.log2(n)
+      log(n) / log(2)
     end
   end
 end
