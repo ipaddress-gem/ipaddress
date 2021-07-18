@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.require_paths = ["lib"]
   s.authors = ["bluemonk", "mikemackintosh"]
   s.date = "2016-03-23"
-  s.description = "IPAddress is a Ruby library designed to make manipulation\n      of IPv4 and IPv6 addresses both powerful and simple. It mantains\n      a layer of compatibility with Ruby's own IPAddr, while\n      addressing many of its issues."
+  s.description = "IPAddress is a Ruby library designed to make manipulation\n      of IPv4 and IPv6 addresses both powerful and simple. It maintains\n      a layer of compatibility with Ruby's own IPAddr, while\n      addressing many of its issues."
   s.email = "ceresa@gmail.com"
   s.extra_rdoc_files = [
     "CHANGELOG.rdoc",
