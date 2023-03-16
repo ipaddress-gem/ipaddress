@@ -158,7 +158,7 @@ If you need to print out the IPv4 address in a canonical form, you can
 use `IPv4#to_string`:
 
   ip.to_string
-    #=> "172.16.10.l/24"
+    #=> "172.16.10.1/24"
 
 === Changing netmask
     
@@ -168,7 +168,7 @@ object. For example:
   ip.prefix = 25
 
   ip.to_string
-    #=> "172.16.10.l/25"
+    #=> "172.16.10.1/25"
     
 If you need to use a netmask in IPv4 format, you can achive so by
 using the `IPv4#netmask=` method:
