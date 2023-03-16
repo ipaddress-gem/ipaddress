@@ -491,6 +491,16 @@ class IPv4Test < Minitest::Test
     arr = ["172.16.10.0/24"]
     assert_equal arr, @network.subnet(24).map {|s| s.to_string}
   end
+
+  def test_method_subtract
+    a = IPAddress '10.0.0.0/16'
+    b = IPAddress '10.0.128.0/18'
+    c = IPAddress '192.168.0.0/16'
+
+    assert !a.subtract(b).include?(b)
+    assert b.subtract(a).empty?
+    assert_equal a, a.subtract(c).first
+  end
   
   def test_method_supernet
     assert_raises(ArgumentError) {@ip.supernet(24)}     
