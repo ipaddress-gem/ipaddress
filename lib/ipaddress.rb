@@ -276,18 +276,3 @@ end # module IPAddress
 def IPAddress(str)
   IPAddress::parse str
 end
-
-#
-# Compatibility with Ruby 1.8
-#
-if RUBY_VERSION =~ /^1\.8/
-  class Hash # :nodoc:
-    alias :key :index
-  end
-  module Math # :nodoc:
-    def Math.log2(n)
-      log(n) / log(2)
-    end
-  end
-end
-
