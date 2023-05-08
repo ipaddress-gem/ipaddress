@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.description = "IPAddress is a Ruby library designed to make manipulation\n      of IPv4 and IPv6 addresses both powerful and simple. It maintains\n      a layer of compatibility with Ruby's own IPAddr, while\n      addressing many of its issues."
   s.email = "ceresa@gmail.com"
   s.extra_rdoc_files = [
-    "CHANGELOG.rdoc",
+    "CHANGELOG.md",
     "LICENSE.txt",
     "README.rdoc"
   ]
@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
     ".document",
     ".rock.yml",
     ".travis.yml",
-    "CHANGELOG.rdoc",
+    "CHANGELOG.md",
     "CONTRIBUTING.md",
     "Gemfile",
     "LICENSE.txt",
