@@ -34,13 +34,11 @@ Gem::Specification.new do |s|
     "lib/ipaddress.rb",
     "lib/ipaddress/ipv4.rb",
     "lib/ipaddress/ipv6.rb",
-    "lib/ipaddress/mongoid.rb",
     "lib/ipaddress/prefix.rb",
     "lib/ipaddress/version.rb",
     "tasks/jeweler.rake",
     "test/ipaddress/ipv4_test.rb",
     "test/ipaddress/ipv6_test.rb",
-    "test/ipaddress/mongoid_test.rb",
     "test/ipaddress/prefix_test.rb",
     "test/ipaddress_test.rb",
     "test/test_helper.rb"
