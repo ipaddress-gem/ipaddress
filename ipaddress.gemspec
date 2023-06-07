@@ -17,7 +17,7 @@ Gem::Specification.new do |s|
   s.extra_rdoc_files = [
     "CHANGELOG.rdoc",
     "LICENSE.txt",
-    "README.rdoc"
+    "README.md"
   ]
   s.files = [
     ".document",
@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
     "CONTRIBUTING.md",
     "Gemfile",
     "LICENSE.txt",
-    "README.rdoc",
+    "README.md",
     "Rakefile",
     "VERSION",
     "ipaddress.gemspec",
