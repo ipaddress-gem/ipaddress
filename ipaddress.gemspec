@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".document",
-    ".rock.yml",
     ".travis.yml",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
