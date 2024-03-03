@@ -12,16 +12,9 @@ typical usage.
 
 * Ruby 1.9.3 or later
 
-Please refer to [Travis CI](https://travis-ci.org/ipaddress-gem/ipaddress) for
-Build Tests on specific versions of Ruby.
-
-[<img src="https://travis-ci.org/ipaddress-gem/ipaddress.svg?branch=master"
-alt="Build Status" />](https://travis-ci.org/ipaddress-gem/ipaddress) [<img
-src="https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg"
-/>](https://codeclimate.com/github/ipaddress-gem/ipaddress) [<img
-src="https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.s
-vg?style=flat" alt="Dependency Status"
-/>](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
+[![Build Status](https://github.com/ipaddress-gem/ipaddress/actions/workflows/tests/badge.svg)](https://github.com/ipaddress-gem/ipaddress/actions)
+[![Code Climate](https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg)](https://codeclimate.com/github/ipaddress-gem/ipaddress)
+[![Dependency Status](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat)](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
 
 IPAddress 0.8.2 was manually tested on:
 
