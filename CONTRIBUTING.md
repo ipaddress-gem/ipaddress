@@ -1,6 +1,8 @@
 # Contributing to the IPAddress Gem
 
-[![Build Status](https://travis-ci.org/ipaddress-gem/ipaddress.svg?branch=master)](https://travis-ci.org/ipaddress-gem/ipaddress) [![Code Climate](https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg)](https://codeclimate.com/github/ipaddress-gem/ipaddress) [![Dependency Status](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat)](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
+[![Build Status](https://github.com/ipaddress-gem/ipaddress/actions/workflows/tests/badge.svg)](https://github.com/ipaddress-gem/ipaddress/actions)
+[![Code Climate](https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg)](https://codeclimate.com/github/ipaddress-gem/ipaddress)
+[![Dependency Status](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat)](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
 
 This gem is run by people who have jobs.  So please understand if we can't always prioritize PRs and issues.
 
@@ -22,8 +24,6 @@ We will require that you adhere to the [ruby-style-guide](https://github.com/bba
 All submissions of code must include test coverage which describes intent and expected behavior.  The test suite used by this gem is [Minitest](https://github.com/seattlerb/minitest)
 
 Unit tests are expected to execute quickly.  We will ask you to revise any long-running tests.
-
-We intend to add [Travis CI](https://travis-ci.org/) for automatic execution of branch tests.
 
 ## Versioning: Jeweler and Semantic Versioning
 
