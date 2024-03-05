@@ -11,6 +11,7 @@
 
 require 'ipaddress/ipv4'
 require 'ipaddress/ipv6'
+require 'ipaddress/version'
 
 module IPAddress
 

@@ -1,5 +1,9 @@
 # IPAddress
 
+[![Build Status](https://github.com/ipaddress-gem/ipaddress/actions/workflows/tests/badge.svg)](https://github.com/ipaddress-gem/ipaddress/actions)
+[![Code Climate](https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg)](https://codeclimate.com/github/ipaddress-gem/ipaddress)
+[![Dependency Status](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.svg?style=flat)](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
+
 IPAddress is a Ruby library designed to make the use of IPv4 and IPv6
 addresses simple, powerful and enjoyable. It provides a complete set of
 methods to handle IP addresses for any need, from simple scripting to full
@@ -10,34 +14,10 @@ typical usage.
 
 ## Requirements
 
-* Ruby 1.9.3 or later
+* Ruby 3.1.0 or later
 
-Please refer to [Travis CI](https://travis-ci.org/ipaddress-gem/ipaddress) for
+Please refer to [Github Actions](https://travis-ci.org/ipaddress-gem/ipaddress/actions) for
 Build Tests on specific versions of Ruby.
-
-[<img src="https://travis-ci.org/ipaddress-gem/ipaddress.svg?branch=master"
-alt="Build Status" />](https://travis-ci.org/ipaddress-gem/ipaddress) [<img
-src="https://codeclimate.com/github/ipaddress-gem/ipaddress/badges/gpa.svg"
-/>](https://codeclimate.com/github/ipaddress-gem/ipaddress) [<img
-src="https://www.versioneye.com/user/projects/57001305fcd19a0051853bde/badge.s
-vg?style=flat" alt="Dependency Status"
-/>](https://www.versioneye.com/user/projects/57001305fcd19a0051853bde)
-
-IPAddress 0.8.2 was manually tested on:
-
-*   ruby-1.8.7-p334 [ i386 ]
-*   ree-1.8.7-2011.03 [ i386 ]
-*   rbx-head [ ]
-*   jruby-1.6.1 [ linux-i386-java ]
-*   ruby-1.9.1-p431 [ i386 ]
-*   ruby-1.9.2-p180 [ i386 ]
-*   ruby-2.0.0-p353 [ x86_64-darwin14.0.0 ]
-*   ruby-2.1.3-p242 [ x86_64-darwin14.0.0 ]
-
-
-If you want to contribute, please refer to
-[Contributing.md](https://github.com/ipaddress-gem/ipaddress/blob/master/CONTR
-IBUTING.md).
 
 ## Installation
 
@@ -57,11 +37,10 @@ The code is fully documented with RDoc. You can generate the
 documentation with Rake:
 
 ```bash
-$ rake rdoc
+$ bin/rake rdoc
 ```
 
-The latest documentation can be found online at
-[this address][https://rubydoc.info/gems/ipaddress/]
+The latest documentation can be found online at [RubyDoc](https://rubydoc.info/gems/ipaddress/)
 
 ## Introduction via examples
 
@@ -1036,6 +1015,10 @@ in addition to provide an organic API with logical separation and code structure
 We hope that IPAddress will address all these issues and meet all your needs
 in network programming.
 
+## Contributing
+
+If you want to contribute, please refer to [CONTRIBUTING.md](CONTRIBUTING.md).
+
 ## Community
 
 Want to join the community?
@@ -1054,4 +1037,4 @@ and Steve Rawlinson for their support, feedback and bug reports.
 ## Copyright
 
 Copyright (c) 2009-today Marco Ceresa and Mike Mackintosh.
-See LICENSE for details.
+See [LICENSE.txt](LICENSE.txt) for details.

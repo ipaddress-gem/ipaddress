@@ -1,5 +1,16 @@
-Changelog
-=========
+# Changelog
+
+## unreleased
+
+### Added
+- Add `bin/*` scripts for better development tasks
+
+### Changed
+- **Breaking** Change `Ipaddress::VERSION` to `IPAddress::VERSION` to match the gem main module
+- Use `Gemfile` for development dependencies and add `Gemfile.lock` under control version
+- Cleanup and improvement of the gemspec
+- Cleanup of `Rakefile`
+- Changes in `README.md` and `CONTRIBUTING.md` files to reflect the new development process
 
 ## 0.8.3 - 2016-02-17
 
