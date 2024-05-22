@@ -1,6 +1,35 @@
 Changelog
 =========
 
+## 0.9.0 - 2024-05-22
+
+### Added
+- Add IPv4/6 subnet validation (#62)
+- Add Travis CI for branch testing: https://travis-ci.org/ipaddress-gem/ipaddress/branches (#78)
+- Add CodeClimate for test coverage and code review feedback: https://codeclimate.com/github/ipaddress-gem/ipaddress (#78)
+- Use Jeweler to manage versioning and gemspec (#78)
+- Add detection of link-local addresses (#83)
+- Markdown changelog (#141)
+
+### Changed
+- IPAddress.valid? now validates CIDR ranges as well IP addresses (#62)
+- Raise ArgumentError if IP address is nil (#64)
+- Avoid Ruby 1.8 compatibility when using Ruby 2.1.8 (#68)
+- Updates contributing guidelines (#73)
+- Updated Contributing.md to reflect use of Jeweler for versioning (#78)
+- Cleaned up Readme.rdoc to remove version 1.0 mention and to add badges for build testing, coverage, etc (#78)
+- Convert readme from rdoc to Markdown (#138)
+- Remove Mongoid extension (#139)
+- Remove monkeypatch for ruby 1.8 #140
+
+### Fixed
+- Remove duplicate IPAddress::IPv4#multicast? method (#74)
+- Adds minitest to development group in Gemfile (#75)
+- Fix <=> for IPv4 and IPv6 (#76)
+- Make eql? behare like == (#77)
+- IPAddress.valid_ipv4? regexp updated to remove possibility of base-ambiguous IPv4 octets with leading zeroes (#123)
+- Fixes typos in examples, readme, and gem description
+
 ## 0.8.3 - 2016-02-17
 
 ### Added
