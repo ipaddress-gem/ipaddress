@@ -1,12 +1,18 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+# Only development and test dependencies should be listed here.
+# Runtime dependencies should be listed in the gemspec.
+gemspec
 
 group :development do
-  gem 'bundler', '>= 1.0'
-  gem 'rake', '10.5.0'
-  gem 'minitest', '~> 5.8', '>= 5.8.4'
   gem 'pry', '>= 0.10.1'
   gem 'travis', '>= 1.8.2'
-  gem 'jeweler', '>=2.0.1'
+end
+
+group :test do
+  gem 'minitest', '~> 5.8', '>= 5.8.4'
   gem 'codeclimate-test-reporter'
   gem 'simplecov'
 end
