@@ -1,10 +1,9 @@
 require 'rubygems'
 require 'rake'
 require 'rake/clean'
-require "bundler/gem_tasks"
-
-
+require 'bundler/gem_tasks'
 require 'rake/testtask'
+
 Rake::TestTask.new(:test) do |test|
   test.libs << 'lib' << 'test'
   test.pattern = 'test/**/*_test.rb'
@@ -21,10 +20,9 @@ begin
   end
 rescue LoadError
   task :rcov do
-    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
+    abort 'RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov'
   end
 end
-
 
 task :default => :test
 
@@ -43,27 +41,9 @@ Rake::RDocTask.new do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-desc "Open an irb session preloaded with this library"
+desc 'Open an irb session preloaded with this library'
 task :console do
-  sh "irb -rubygems -I lib -r ipaddress.rb"
-end
-
-desc "Look for TODO and FIXME tags in the code"
-task :todo do
-  def egrep(pattern)
-    Dir['**/*.rb'].each do |fn|
-      count = 0
-      open(fn) do |f|
-        while line = f.gets
-          count += 1
-          if line =~ pattern
-            puts "#{fn}:#{count}:#{line}"
-          end
-        end
-      end
-    end
-  end
-  egrep /(FIXME|TODO|TBD)/
+  sh 'irb -rubygems -I lib -r ipaddress.rb'
 end
 
 Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |raketask| load raketask }

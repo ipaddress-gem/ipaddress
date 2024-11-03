@@ -1,6 +1,20 @@
 Changelog
 =========
 
+## Next
+
+### Breaking
+
+- Remove mongoid extension
+- Remove monkeypatch for ruby 1.8
+- Make `eql?` behare like `==`
+
+### Added
+
+- Add allocate() method
+- Add IPv4 and IPv6 subnet validation
+
+
 ## 0.8.3 - 2016-02-17
 
 ### Added
